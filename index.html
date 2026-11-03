@@ -1,10 +1,10 @@
 <!doctype html>
 <html lang="ja">
 <head>
-<script>/* 同期先を自動設定 v1.21（本体スクリプトより前に常時適用） */
+<script>/* 同期先を自動設定 v1.22（本体スクリプトより前に常時適用） */
 try{localStorage.setItem('shiro.farm.sync','https://script.google.com/macros/s/AKfycbyU5cTuDXhCSpBwDc44O2oVCLakPA2OeViwNljtXAZuxPLlA1aQ99p7OrGjMeVglHIkDA/exec');}catch(e){}</script>
-<!-- しろう農園スケジュール管理アプリ v1.21 (2026-11-02 自動同期・共有ボタン非表示・Netlifyバナー非表示・作業ドラッグ連続入力) -->
-<meta name="application-version" content="1.21" />
+<!-- しろう農園スケジュール管理アプリ v1.22 (2026-11-02 自動同期・共有ボタン非表示・Netlifyバナー非表示・作業ドラッグ連続入力) -->
+<meta name="application-version" content="1.22" />
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
 <meta name="theme-color" content="#D8E8CC" />
@@ -377,6 +377,8 @@ body{
     "垣花公三":["洗い","皮むき","充填","梱包","収穫","畑作業","トラクタ作業","休み","その他"],
     "高吉幸光":["洗い","皮むき","充填","梱包","収穫","通販","経理","ふれあい農園","休み","その他"],
     "大谷啓子":["洗い","皮むき","充填","梱包","収穫","通販","経理","ふれあい農園","休み","その他"]
+  ,
+    "平良幸男":["洗い","皮むき","充填","梱包","収穫","農園掃除","ヤギの草刈","休み","その他"]
   };
   var WORKS_ALL=(function(){var seen={},a=[];                      /* 移行判定用の全項目集合 */
     for(var i=0;i<WORKS_DEF.length;i++)if(!seen[WORKS_DEF[i]]){seen[WORKS_DEF[i]]=1;a.push(WORKS_DEF[i]);}

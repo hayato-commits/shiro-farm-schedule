@@ -1,10 +1,10 @@
 <!doctype html>
 <html lang="ja">
 <head>
-<script>/* 同期先を自動設定 v1.22（本体スクリプトより前に常時適用） */
+<script>/* 同期先を自動設定 v1.23（本体スクリプトより前に常時適用） */
 try{localStorage.setItem('shiro.farm.sync','https://script.google.com/macros/s/AKfycbyU5cTuDXhCSpBwDc44O2oVCLakPA2OeViwNljtXAZuxPLlA1aQ99p7OrGjMeVglHIkDA/exec');}catch(e){}</script>
-<!-- しろう農園スケジュール管理アプリ v1.22 (2026-11-02 自動同期・共有ボタン非表示・Netlifyバナー非表示・作業ドラッグ連続入力) -->
-<meta name="application-version" content="1.22" />
+<!-- しろう農園スケジュール管理アプリ v1.23 (2026-11-02 自動同期・共有ボタン非表示・Netlifyバナー非表示・作業ドラッグ連続入力) -->
+<meta name="application-version" content="1.23" />
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
 <meta name="theme-color" content="#D8E8CC" />
@@ -580,6 +580,7 @@ body{
       if(!o.list[i])return;
       if(cls.contains("dv-del"))o.list.splice(i,1);
       else o.list[i].done=!o.list[i].done;
+      dirty["t|"+selName+"|"+openKey]=1;recentSet["t|"+selName+"|"+openKey]=Date.now();
       saveTasks();
       buildTasks();
       return;
@@ -594,7 +595,7 @@ body{
       inp.addEventListener("blur",function(){
         if(!openKey)return;
         var v=inp.value.trim();
-        if(v){taskObj(openKey).list.push({t:v,done:false});saveTasks();}
+        if(v){taskObj(openKey).list.push({t:v,done:false});dirty["t|"+selName+"|"+openKey]=1;recentSet["t|"+selName+"|"+openKey]=Date.now();saveTasks();}
         buildTasks();
       });
       inp.addEventListener("keydown",function(ev){
@@ -835,6 +836,9 @@ body{
       for(var k2 in r2){
         if(!rg.test(k2))continue;
         var rv=r2[k2];if(!rv||!(rv.list instanceof Array))continue;
+        var tk="t|"+n2+"|"+k2;
+        if(dirty[tk])continue;
+        if(recentSet[tk]&&Date.now()-recentSet[tk]<30000){dirty[tk]=1;continue;}
         var lv=o[k2];
         var lempty=!lv||!(lv.list instanceof Array)||!lv.list.length;
         if(rv.list.length){

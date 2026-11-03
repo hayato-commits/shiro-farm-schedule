@@ -1,10 +1,10 @@
 <!doctype html>
 <html lang="ja">
 <head>
-<script>/* 同期先を自動設定 v1.23（本体スクリプトより前に常時適用） */
+<script>/* 同期先を自動設定 v1.24（本体スクリプトより前に常時適用） */
 try{localStorage.setItem('shiro.farm.sync','https://script.google.com/macros/s/AKfycbyU5cTuDXhCSpBwDc44O2oVCLakPA2OeViwNljtXAZuxPLlA1aQ99p7OrGjMeVglHIkDA/exec');}catch(e){}</script>
-<!-- しろう農園スケジュール管理アプリ v1.23 (2026-11-02 自動同期・共有ボタン非表示・Netlifyバナー非表示・作業ドラッグ連続入力) -->
-<meta name="application-version" content="1.23" />
+<!-- しろう農園スケジュール管理アプリ v1.24 (2026-11-02 自動同期・共有ボタン非表示・Netlifyバナー非表示・作業ドラッグ連続入力) -->
+<meta name="application-version" content="1.24" />
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
 <meta name="theme-color" content="#D8E8CC" />
@@ -19,7 +19,7 @@ try{localStorage.setItem('shiro.farm.sync','https://script.google.com/macros/s/A
 <style>
 *,*::before,*::after{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 :root{
-  --bg:#D8E8CC;
+  --bg:#00FF00;
   --ink:#3F4B3A;
   --sub:#7D8676;
   --line:#ACB9A3;
@@ -40,7 +40,7 @@ body{
   background:var(--bg);display:flex;flex-direction:column;overflow:hidden;
 }
 @media (min-width:520px){
-  body{background:#E7E7E0;padding:16px 0}
+  body{background:#00FF00;padding:16px 0}
   #app{height:calc(100dvh - 32px);border-radius:26px;box-shadow:0 18px 60px rgba(63,75,58,.18)}
 }
 
@@ -142,7 +142,7 @@ body{
 
 /* arrows / hint */
 .arrow{position:absolute;top:46%;transform:translateY(-50%);width:36px;height:36px;
-  border-radius:50%;border:1px solid var(--line);background:rgba(216,232,204,.9);
+  border-radius:50%;border:1px solid var(--line);background:rgba(0,255,0,.9);
   display:flex;align-items:center;justify-content:center;color:var(--ink);
   opacity:.5;transition:opacity .2s;z-index:6;cursor:pointer}
 .arrow:active{opacity:1}
@@ -172,7 +172,7 @@ body{
 #day.on{opacity:1;pointer-events:auto;transform:none}
 .dv-top{flex:0 0 auto;display:flex;align-items:flex-start;gap:8px}
 .dv-back{flex:0 0 auto;width:36px;height:36px;border-radius:50%;border:1px solid var(--line);
-  background:rgba(216,232,204,.9);color:var(--ink);display:flex;align-items:center;
+  background:rgba(0,255,0,.9);color:var(--ink);display:flex;align-items:center;
   justify-content:center;cursor:pointer;margin-top:6px;padding:0}
 .dv-back svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;
   stroke-linecap:round;stroke-linejoin:round}

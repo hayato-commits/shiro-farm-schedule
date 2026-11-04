@@ -4,7 +4,7 @@
 <script>/* 同期先を自動設定 v1.23（本体スクリプトより前に常時適用） */
 try{localStorage.setItem('shiro.farm.sync','https://script.google.com/macros/s/AKfycbyU5cTuDXhCSpBwDc44O2oVCLakPA2OeViwNljtXAZuxPLlA1aQ99p7OrGjMeVglHIkDA/exec');}catch(e){}</script>
 <!-- しろう農園スケジュール管理アプリ v1.23 (2026-11-02 自動同期・共有ボタン非表示・Netlifyバナー非表示・作業ドラッグ連続入力) -->
-<meta name="application-version" content="2.15" />
+<meta name="application-version" content="2.31" />
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
 <meta name="theme-color" content="#D8E8CC" />
@@ -338,6 +338,13 @@ body{
 .hc-tags{font-size:9.5px;color:var(--accent);line-height:1.25;word-break:break-all}
 .hc-addrow{display:flex;gap:6px;margin-top:10px}
 .hc-addrow .scr-cell{flex:1 1 auto;min-width:0}
+
+.scr-sumtag{display:block;font-size:11px;color:var(--accent);margin-top:2px}
+.scr-grand{background:rgba(216,232,204,.45);font-weight:600}
+
+.hc-cell.tap{background:#2E7D32;border-color:#1B5E20}
+.hc-cell.tap .hc-d{color:#fff;font-weight:700}
+.hc-cell.tap .hc-tags{color:#FFEB3B}
 </style>
 </head>
 <body>
@@ -887,7 +894,10 @@ body{
       syncBusy=true;
       var dk=Object.keys(dirty);
       syncSt("同期中…",true);
-      fetchT(syncURL,{method:"POST",body:JSON.stringify({sched:schedMem,tasks:taskMem,memo:memoMem}),
+      fetchT(syncURL,{method:"POST",body:JSON.stringify({sched:schedMem,tasks:taskMem,memo:memoMem,
+        farmers:(window.__farmersRef?window.__farmersRef():[]),
+        farmerRecs:(window.__recsRef?window.__recsRef():{}),
+        hcal:(window.__hcalRef?window.__hcalRef():{})}),
         headers:{"Content-Type":"text/plain;charset=utf-8"}}).then(function(r){return r.text();}).then(function(){
           for(var i=0;i<dk.length;i++)delete dirty[dk[i]];
           syncEver=true;
@@ -968,6 +978,8 @@ body{
       if(rv3){if(rv3!==lv3){memoMem[k3]=rv3;ch=true;}}
       else if(syncEver&&lv3){delete memoMem[k3];ch=true;}
     }
+    /* ---- 収穫管理データの共有（農家リスト・記録・収穫カレンダー） ---- */
+    if(window.__hMerge)ch=window.__hMerge(remote,syncEver)||ch;
     return ch;
   }
   function applyMerged(){
@@ -1178,7 +1190,7 @@ body{
       var sub=document.createElement("div");sub.className="adm-subwrap";
       sub.innerHTML='<div class="adm-subgrid">'
         +'<button class="adm-card" data-sub="ledger"><span class="adm-no">01</span><span class="adm-lb">農家個別台帳</span><span class="adm-sub">農家ごとの収穫記録</span></button>'
-        +'<button class="adm-card" data-sub="cal"><span class="adm-no">02</span><span class="adm-lb">収穫カレンダー</span><span class="adm-sub">収穫予定と実績を月別に確認</span></button>'
+        +'<button class="adm-card" data-sub="cal"><span class="adm-no">02</span><span class="adm-lb">発注カレンダー</span><span class="adm-sub">発注予定を月別に確認</span></button>'
         +'</div><button class="adm-home-back" id="adm-pback3">メニューに戻る</button>';
       body.appendChild(sub);
       panel.classList.add("on");panel.setAttribute("aria-hidden","false");
@@ -1207,11 +1219,52 @@ body{
   var farmers=[];
   try{farmers=JSON.parse(localStorage.getItem(FKEY)||"[]")||[];}catch(e){farmers=[];}
   function saveFarmers(){try{localStorage.setItem(FKEY,JSON.stringify(farmers));}catch(e){}}
+  try{if(farmers.length)localStorage.setItem(FKEY,JSON.stringify(farmers));}catch(e){}   /* 起動時に登録リストを再確保 */
   var RKEY="shiro.farm.farmerRecs";
   var recs={};
   try{recs=JSON.parse(localStorage.getItem(RKEY)||"{}")||{};}catch(e){recs={};}
   function saveRecs(){try{localStorage.setItem(RKEY,JSON.stringify(recs));}catch(e){}}
   function recsOf(n){if(!(recs[n]instanceof Array))recs[n]=[];return recs[n];}
+  window.__farmersRef=function(){return farmers;};
+  window.__recsRef=function(){return recs;};
+  window.__hcalRef=function(){return hcal;};
+  window.__hApply=function(f2,r2,h2){   /* サーバー状態を手元に取り込む（削除しない） */
+    if(f2&&!(farmers instanceof Array))farmers=[];
+    if(f2&&f2.length){for(var q=0;q<f2.length;q++)if(farmers.indexOf(f2[q])<0)farmers.push(f2[q]);}
+    if(r2&&typeof r2==="object"){var nk2={};for(var a2 in r2)nk2[a2]=r2[a2];recs=nk2;}
+    if(h2&&typeof h2==="object"){var nh={};for(var b2 in h2)nh[b2]=h2[b2];hcal=nh;}
+    saveFarmers();saveRecs();saveHCal();
+  };
+  window.__hMerge=function(remote,syncEver){
+    var ch=false;
+    var rf=remote&&remote.farmers instanceof Array?remote.farmers:[];
+    var rr=remote&&remote.farmerRecs&&typeof remote.farmerRecs==="object"?remote.farmerRecs:{};
+    var rh=remote&&remote.hcal&&typeof remote.hcal==="object"?remote.hcal:{};
+    var lf=window.__farmersRef()||[];
+    if(rf.length){
+      var added=false;
+      for(var i=0;i<rf.length;i++)if(lf.indexOf(rf[i])<0){lf.push(rf[i]);added=true;}
+      if(added){ch=true;}
+    }
+    var lr=window.__recsRef()||{};
+    for(var nm in rr){
+      var lv=lr[nm]instanceof Array?lr[nm]:null;
+      var rvn=rr[nm]instanceof Array?rr[nm]:[];
+      if(JSON.stringify(lv||[])!==JSON.stringify(rvn)){
+        if(!lv||!lv.length||rvn.length>=lv.length){lr[nm]=rvn.slice();ch=true;}
+      }
+    }
+    var lh=window.__hcalRef()||{};
+    for(var k4 in rh){
+      var lvh=lh[k4]instanceof Array?lh[k4]:null;
+      var rvh=rh[k4]instanceof Array?rh[k4]:[];
+      if(JSON.stringify(lvh||[])!==JSON.stringify(rvh)){
+        if(!lvh||!lvh.length||rvh.length>=lvh.length){lh[k4]=rvh.slice();ch=true;}
+      }
+    }
+    if(ch){saveFarmers();saveRecs();saveHCal();}
+    return ch;
+  };
   function buildLedger(root){
     var head=document.createElement("div");head.className="scr-reghead";
     var reg=document.createElement("button");reg.className="scr-reg";reg.textContent="＋ 農家登録";
@@ -1376,7 +1429,7 @@ body{
   try{hcal=JSON.parse(localStorage.getItem(HCKEY)||"{}")||{};}catch(e){hcal={};}
   function saveHCal(){try{localStorage.setItem(HCKEY,JSON.stringify(hcal));}catch(e){}}
   function openHarvestCal(){
-    document.getElementById("adm-ptitle").textContent="アロエベラ収穫カレンダー";
+    document.getElementById("adm-ptitle").textContent="アロエベラ発注カレンダー";
     var body=document.getElementById("adm-pbody");
     body.innerHTML='';
     var back=document.createElement("button");back.className="scr-dl";back.textContent="← 農家収穫管理に戻る";
@@ -1403,7 +1456,7 @@ body{
         else{var seen={};for(var f3 in farmers){var a2=hcal[key+"|"+farmers[f3]]||[];for(var z=0;z<a2.length;z++){if(!seen[a2[z].kg])seen[a2[z].kg]=1;}}
           vals=Object.keys(seen).map(function(kg){return esc2(kg+"kg");});}
         var dow=new Date(hy,hm,d2).getDay();
-        grid+='<span class="hc-cell'+(dow===0?' sun':'')+'"><span class="hc-d">'+d2+'</span>';
+        grid+='<span class="hc-cell'+(dow===0?' sun':'')+'" data-day="'+d2+'"><span class="hc-d">'+d2+'</span>';
         if(vals.length)grid+='<span class="hc-tags">'+vals.join("・")+'</span>';
         grid+='</span>';
       }
@@ -1411,12 +1464,66 @@ body{
       if(gridEl)gridEl.outerHTML='<div id="hc-gridwrap">'+grid+'</div>';
       else{var w=document.createElement("div");w.id="hc-gridwrap";w.innerHTML=grid;body.appendChild(w);}
     }
+    body.addEventListener("click",function(e){
+      var c=e.target.closest?e.target.closest(".hc-cell[data-day]"):null;
+      if(!c)return;
+      var olds=document.querySelectorAll(".hc-cell.tap");
+      for(var oi=0;oi<olds.length;oi++)olds[oi].classList.remove("tap");
+      c.classList.add("tap");
+      var dd=+c.getAttribute("data-day");
+      var key=hy+"-"+hm+"-"+dd;
+      var rows=[];
+      if(sel.value){var a=hcal[key+"|"+sel.value]||[];for(var z=0;z<a.length;z++)rows.push([sel.value,a[z].kg]);}
+      else{for(var f4=0;f4<farmers.length;f4++){var a2=hcal[key+"|"+farmers[f4]]||[];for(var z2=0;z2<a2.length;z2++)rows.push([farmers[f4],a2[z2].kg]);}}
+      var box=document.getElementById("hc-detail")||document.createElement("div");
+      box.id="hc-detail";box.className="scr-list";
+      var html='<div class="scr-cap">'+(hm+1)+"月"+dd+"日の発注</div>";
+      html+='<div class="hc-addrow">'
+          +'<input class="scr-cell" id="hcd-kg" type="number" step="0.1" placeholder="発注量kg">'
+          +'<select class="scr-cell" id="hcd-f"><option value="">農家を選択</option>'
+          +farmers.map(function(f){return '<option'+(sel.value===f?' selected':'')+'>'+esc2(f)+'</option>';}).join("")+'</select>'
+          +'<button class="scr-regok" id="hcd-save">保存</button></div>';
+      if(!rows.length)html+='<div class="scr-empty">この日の発注記録はありません</div>';
+      else{
+        var per={},order=[],gt=0;
+        for(var r6=0;r6<rows.length;r6++){
+          var nm=rows[r6][0],kg=parseFloat(rows[r6][1])||0;
+          if(!(nm in per)){per[nm]=0;order.push(nm);}
+          per[nm]+=kg;gt+=kg;
+        }
+        for(var o=0;o<order.length;o++){
+          var n2=order[o];
+          html+='<div class="scr-row"><span class="scr-name">'+esc2(n2)+'<span class="scr-sumtag">合計 '+per[n2].toFixed(1)+'kg</span></span></div>';
+        }
+        html+='<div class="scr-row scr-grand"><span class="scr-name">全体合計</span><span class="scr-cnt">'+gt.toFixed(1)+'kg</span></div>';
+      }
+      var old=document.getElementById("hc-detail");
+      if(old)old.remove();
+      var gridWrap=document.getElementById("hc-gridwrap");
+      gridWrap.parentNode.insertBefore(box,gridWrap.nextSibling);
+      if(box.scrollIntoView)box.scrollIntoView({behavior:"smooth",block:"nearest"});
+      box.innerHTML=html;
+      var sv=document.getElementById("hcd-save");
+      sv.addEventListener("click",function(){
+        var kg=document.getElementById("hcd-kg").value.trim();
+        var ff=document.getElementById("hcd-f").value;
+        if(!ff){sv.textContent="農家を選択";setTimeout(function(){sv.textContent="保存";},1500);return;}
+        if(kg===""){sv.textContent="発注量を入力";setTimeout(function(){sv.textContent="保存";},1500);return;}
+        var key2=hy+"-"+hm+"-"+dd;
+        var arr=hcal[key2+"|"+ff]||(hcal[key2+"|"+ff]=[]);
+        arr.push({kg:kg});saveHCal();
+        box.remove();
+        var tps=document.querySelectorAll(".hc-cell.tap");
+        for(var ti=0;ti<tps.length;ti++)tps[ti].classList.remove("tap");
+        draw();                      /* カレンダーに反映してパネルを閉じる */
+      });
+    });
     prev.addEventListener("click",function(){hm--;if(hm<0){hm=11;hy--;}draw();});
     next.addEventListener("click",function(){hm++;if(hm>11){hm=0;hy++;}draw();});
     sel.addEventListener("change",draw);
     bar.appendChild(prev);bar.appendChild(lbl);bar.appendChild(next);bar.appendChild(sel);
     body.appendChild(bar);
-    var add=document.createElement("button");add.className="scr-add";add.textContent="＋ 収穫を記録";
+    var add=document.createElement("button");add.className="scr-add";add.textContent="＋ 発注を記録";
     add.addEventListener("click",function(){
       var row=document.createElement("div");row.className="hc-addrow";
       row.innerHTML='<input class="scr-cell" id="hc-d" type="number" min="1" max="31" placeholder="日">'

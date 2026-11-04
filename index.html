@@ -4,7 +4,7 @@
 <script>/* 同期先を自動設定 v1.23（本体スクリプトより前に常時適用） */
 try{localStorage.setItem('shiro.farm.sync','https://script.google.com/macros/s/AKfycbyU5cTuDXhCSpBwDc44O2oVCLakPA2OeViwNljtXAZuxPLlA1aQ99p7OrGjMeVglHIkDA/exec');}catch(e){}</script>
 <!-- しろう農園スケジュール管理アプリ v1.23 (2026-11-02 自動同期・共有ボタン非表示・Netlifyバナー非表示・作業ドラッグ連続入力) -->
-<meta name="application-version" content="1.32" />
+<meta name="application-version" content="2.10" />
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
 <meta name="theme-color" content="#D8E8CC" />
@@ -282,6 +282,45 @@ body{
 .scr-add{margin-top:12px;border:1px dashed var(--line);border-radius:10px;background:rgba(255,255,255,.5);
   color:var(--ink);font-size:13px;padding:9px 18px;cursor:pointer}
 .scr-add:active{background:rgba(255,255,255,.85)}
+
+.adm-subgrid{display:grid;grid-template-columns:repeat(2,minmax(0,285px));gap:14px;justify-content:center}
+.scr-calttl{font-size:15px;color:var(--sub);padding:8px 2px}
+
+.scr-reg{border:none;border-radius:999px;background:var(--accent);color:#fff;cursor:pointer;margin-bottom:0}
+.scr-reg:active{opacity:.85}
+.scr-regbox{margin:-4px 0 12px}
+.scr-inp{width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:10px;
+  background:rgba(255,255,255,.85);padding:11px 12px;font-size:14px;color:var(--ink)}
+.scr-list{border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.5);padding:6px}
+.scr-empty{padding:14px 10px;color:var(--sub);font-size:13px;text-align:center}
+.scr-row{display:flex;align-items:center;gap:10px;padding:10px 8px;border-bottom:1px solid var(--line)}
+.scr-row:last-child{border-bottom:none}
+.scr-idx{flex:0 0 auto;font-size:11px;color:var(--sub);width:20px}
+.scr-name{flex:1 1 auto;font-size:15px;color:var(--ink)}
+.scr-del{flex:0 0 auto;color:var(--sub);font-size:18px;padding:0 8px;cursor:pointer}
+
+.scr-reghead{display:flex;justify-content:center;align-items:stretch;margin-bottom:12px}
+.scr-reg,.scr-btn2{flex:0 0 31%;min-width:0;box-sizing:border-box;font-size:13px;padding:10px 4px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}
+.scr-reghead{gap:8px;flex-wrap:wrap}
+.scr-regbox{margin:-4px 0 12px;display:flex;gap:8px}
+.scr-regok{flex:0 0 auto;border:1px solid var(--line);border-radius:10px;background:var(--accent);
+  color:#fff;font-size:14px;padding:0 18px;cursor:pointer}
+
+.scr-cap{font-size:15px;font-weight:600;color:var(--ink);margin:4px 0 8px;letter-spacing:.04em}
+.scr-dl{margin-top:12px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.6);
+  color:var(--ink);font-size:13px;padding:10px 16px;cursor:pointer;width:100%;box-sizing:border-box}
+.scr-dl:active{background:rgba(255,255,255,.9)}
+
+.scr-tap{cursor:pointer}
+.scr-tap:active{background:rgba(255,255,255,.85)}
+.scr-cnt{flex:0 0 auto;font-size:11px;color:var(--accent);min-width:18px;text-align:right}
+.scr-cell{width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:6px;
+  background:#fff;padding:6px;font-size:13px;color:var(--ink)}
+
+.scr-btn2{border:none;border-radius:999px;background:var(--accent);color:#fff;cursor:pointer}
+.scr-btn2:active{opacity:.85}
+.scr-sum{margin-top:10px;font-size:14px;font-weight:600;color:var(--ink)}
 </style>
 </head>
 <body>
@@ -332,6 +371,7 @@ body{
   try{selName=localStorage.getItem(NAME_KEY)||"";}catch(e){}
   if(NAMES.indexOf(selName)<0||selName===ADMIN_NAME)selName=ALLNAME;
   var dispName=selName;           /* 選択BOXに表示する値（データー管理は表示専用） */
+  window.__onAdminClose=function(){dispName=selName;syncNames();};
   function syncNames(){
     var list=document.querySelectorAll(".namesel");
     for(var i=0;i<list.length;i++){
@@ -406,7 +446,9 @@ body{
     if(t.value===ADMIN_NAME){
       dispName=ADMIN_NAME;
       try{localStorage.setItem(NAME_KEY,ADMIN_NAME);}catch(err){}
-      syncNames();adminOpen();return;
+      syncNames();adminOpen();
+      t.value="";dispName="";syncNames();          /* 選択を未選択に戻す(再選択でchangeが出るように) */
+      return;
     }
     selName=(NAMES.indexOf(t.value)>=0&&t.value!==ADMIN_NAME)?t.value:ALLNAME;
     dispName=selName;
@@ -1115,6 +1157,16 @@ body{
     document.getElementById("adm-ptitle").textContent=o.t;
     var body=document.getElementById("adm-pbody");
     body.innerHTML='';
+    if(k==="harvest-farm"){
+      var sub=document.createElement("div");sub.className="adm-subwrap";
+      sub.innerHTML='<div class="adm-subgrid">'
+        +'<button class="adm-card" data-sub="ledger"><span class="adm-no">01</span><span class="adm-lb">農家個別台帳</span><span class="adm-sub">農家ごとの収穫記録</span></button>'
+        +'<button class="adm-card" data-sub="cal"><span class="adm-no">02</span><span class="adm-lb">収穫カレンダー</span><span class="adm-sub">収穫予定と実績を月別に確認</span></button>'
+        +'</div><button class="adm-home-back" id="adm-pback3">メニューに戻る</button>';
+      body.appendChild(sub);
+      panel.classList.add("on");panel.setAttribute("aria-hidden","false");
+      return;
+    }
     var scr=document.createElement("div");scr.className="adm-screen";scr.dataset.panel=k;
     var bar=document.createElement("div");bar.className="scr-bar";
     var cols={};
@@ -1133,14 +1185,211 @@ body{
     body.appendChild(scr);
     panel.classList.add("on");panel.setAttribute("aria-hidden","false");
   }
-  window.adminOpen=open;window.adminClose=close;
+  function esc2(x){return String(x).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+  var FKEY="shiro.farm.farmers";
+  var farmers=[];
+  try{farmers=JSON.parse(localStorage.getItem(FKEY)||"[]")||[];}catch(e){farmers=[];}
+  function saveFarmers(){try{localStorage.setItem(FKEY,JSON.stringify(farmers));}catch(e){}}
+  var RKEY="shiro.farm.farmerRecs";
+  var recs={};
+  try{recs=JSON.parse(localStorage.getItem(RKEY)||"{}")||{};}catch(e){recs={};}
+  function saveRecs(){try{localStorage.setItem(RKEY,JSON.stringify(recs));}catch(e){}}
+  function recsOf(n){if(!(recs[n]instanceof Array))recs[n]=[];return recs[n];}
+  function buildLedger(root){
+    var head=document.createElement("div");head.className="scr-reghead";
+    var reg=document.createElement("button");reg.className="scr-reg";reg.textContent="＋ 農家登録";
+    var hbtn=document.createElement("button");hbtn.className="scr-btn2";hbtn.textContent="＋ 収穫データ確認";
+    var pbtn=document.createElement("button");pbtn.className="scr-btn2";pbtn.textContent="＋ 支払い確認";
+    head.appendChild(reg);head.appendChild(hbtn);head.appendChild(pbtn);root.appendChild(head);
+    var box=document.createElement("div");box.className="scr-regbox";box.style.display="none";
+    var inp=document.createElement("input");inp.className="scr-inp";inp.type="text";inp.placeholder="農家の氏名を入力してEnter";
+    var ok=document.createElement("button");ok.className="scr-regok";ok.textContent="登録";
+    ok.addEventListener("click",function(){commit();});
+    box.appendChild(inp);box.appendChild(ok);root.appendChild(box);
+    var cap=document.createElement("div");cap.className="scr-cap";cap.textContent="アロエベラ栽培農家リスト";
+    root.appendChild(cap);
+    var lst=document.createElement("div");lst.className="scr-list";lst.id="farmer-list";root.appendChild(lst);
+    function render(){
+      lst.innerHTML="";
+      if(!farmers.length){
+        var e=document.createElement("div");e.className="scr-empty";e.textContent="登録された農家はありません";lst.appendChild(e);return;
+      }
+      for(var i=0;i<farmers.length;i++){
+        var row=document.createElement("div");row.className="scr-row scr-tap";row.setAttribute("data-f",i);
+        row.innerHTML='<span class="scr-idx">'+(i+1)+'</span><span class="scr-name">'+esc2(farmers[i])+'</span>'
+                     +'<span class="scr-cnt">'+((recs[farmers[i]]||[]).length||"")+'</span>'
+                     +'<span class="scr-del" data-i="'+i+'" aria-label="削除">×</span>';
+        lst.appendChild(row);
+      }
+    }
+    reg.addEventListener("click",function(){
+      box.style.display=box.style.display==="none"?"block":"none";
+      if(box.style.display==="block")inp.focus();
+    });
+    function commit(){
+      var v=inp.value.trim();
+      if(v&&farmers.indexOf(v)<0){farmers.push(v);saveFarmers();}
+      inp.value="";render();inp.focus();          /* 連続登録できるよう入力欄を開いたまま */
+    }
+    inp.addEventListener("keydown",function(ev){
+      if(ev.key!=="Enter")return;
+      ev.preventDefault();commit();
+    });
+    lst.addEventListener("click",function(e){
+      var d=e.target.closest?e.target.closest(".scr-del"):null;
+      if(d){farmers.splice(+d.getAttribute("data-i"),1);saveFarmers();render();return;}
+      var r=e.target.closest?e.target.closest(".scr-row.scr-tap"):null;
+      if(r)openFarmer(farmers[+r.getAttribute("data-f")]);
+    });
+    function openFarmer(name){
+      var back=document.createElement("button");back.className="scr-dl";back.textContent="← 農家リストに戻る";
+      root.innerHTML="";root.appendChild(back);
+      var ttl=document.createElement("div");ttl.className="scr-cap";ttl.textContent=esc2(name)+" の収穫記録";
+      root.appendChild(ttl);
+      var t=document.createElement("table");t.className="scr-table";
+      var fields=["日付","作物","収穫量(kg)","メモ"];
+      var tr=document.createElement("tr");
+      for(var i=0;i<fields.length;i++){var th=document.createElement("th");th.textContent=fields[i];tr.appendChild(th);}
+      tr.appendChild(document.createElement("th"));
+      t.appendChild(tr);
+      var arr=recsOf(name);
+      for(var r2=0;r2<arr.length;r2++){
+        var row=document.createElement("tr");
+        for(var c2=0;c2<4;c2++){var td=document.createElement("td");td.textContent=arr[r2][c2]||"";row.appendChild(td);}
+        var td2=document.createElement("td");td2.innerHTML='<span class="scr-del" data-r="'+r2+'">×</span>';row.appendChild(td2);
+        t.appendChild(row);
+      }
+      root.appendChild(t);
+      var add=document.createElement("button");add.className="scr-add";add.textContent="＋ 記録を追加";
+      add.addEventListener("click",function(){
+        var row=document.createElement("tr");
+        for(var c3=0;c3<4;c3++){var td=document.createElement("td");var ip=document.createElement("input");ip.className="scr-cell";td.appendChild(ip);row.appendChild(td);}
+        var td3=document.createElement("td");td3.innerHTML='<span class="scr-del scr-save">×</span>';row.appendChild(td3);
+        t.appendChild(row);
+        row.querySelector("input").focus();
+      });
+      root.appendChild(add);
+      back.addEventListener("click",function(){root.innerHTML="";buildLedger(root);});
+      t.addEventListener("click",function(e){
+        var sv=e.target.closest?e.target.closest(".scr-save"):null;
+        if(sv){
+          var tr2=sv.closest("tr"),ips=tr2.querySelectorAll("input");
+          var vals=[];for(var q=0;q<ips.length;q++)vals.push(ips[q].value.trim());
+          if(vals.some(function(x){return x;})){arr.push(vals);saveRecs();}
+          tr2.remove();render0();return;
+        }
+        var d2=e.target.closest?e.target.closest(".scr-del[data-r]"):null;
+        if(d2){arr.splice(+d2.getAttribute("data-r"),1);saveRecs();openFarmer(name);}
+      });
+      function render0(){var cnt=document.querySelectorAll(".scr-cnt");for(var z=0;z<cnt.length;z++)cnt[z].textContent=(recs[farmers[+document.getElementById("farmer-list").children[z].getAttribute("data-f")]]||[]).length||"";}
+    }
+    hbtn.addEventListener("click",function(){
+      root.innerHTML="";
+      var back=document.createElement("button");back.className="scr-dl";back.textContent="← 農家リストに戻る";
+      back.addEventListener("click",function(){root.innerHTML="";buildLedger(root);});
+      root.appendChild(back);
+      var ttl=document.createElement("div");ttl.className="scr-cap";ttl.textContent="収穫データ一覧(全農家)";
+      root.appendChild(ttl);
+      var t=document.createElement("table");t.className="scr-table";
+      var fields=["農家名","日付","作物","収穫量(kg)","メモ"];
+      var tr=document.createElement("tr");
+      for(var i=0;i<fields.length;i++){var th=document.createElement("th");th.textContent=fields[i];tr.appendChild(th);}
+      t.appendChild(tr);
+      var total=0,rows=0;
+      for(var f2=0;f2<farmers.length;f2++){
+        var arr=recsOf(farmers[f2]);
+        for(var r2=0;r2<arr.length;r2++){
+          var row=document.createElement("tr");
+          var kg=parseFloat(arr[r2][2])||0;total+=kg;rows++;
+          var cells=[farmers[f2],arr[r2][0]||"",arr[r2][1]||"",arr[r2][2]||"",arr[r2][3]||""];
+          for(var c2=0;c2<cells.length;c2++){var td=document.createElement("td");td.textContent=cells[c2];row.appendChild(td);}
+          t.appendChild(row);
+        }
+      }
+      if(!rows){var e2=document.createElement("tr");var td3=document.createElement("td");td3.colSpan=5;td3.className="scr-empty";td3.textContent="記録がありません";e2.appendChild(td3);t.appendChild(e2);}
+      root.appendChild(t);
+      var sum=document.createElement("div");sum.className="scr-sum";sum.textContent="合計収穫量: "+total.toFixed(1)+" kg("+rows+"件)";
+      root.appendChild(sum);
+    });
+    pbtn.addEventListener("click",function(){
+      root.innerHTML="";
+      var back=document.createElement("button");back.className="scr-dl";back.textContent="← 農家リストに戻る";
+      back.addEventListener("click",function(){root.innerHTML="";buildLedger(root);});
+      root.appendChild(back);
+      var ttl=document.createElement("div");ttl.className="scr-cap";ttl.textContent="支払い確認(農家別)";
+      root.appendChild(ttl);
+      var t=document.createElement("table");t.className="scr-table";
+      var fields=["農家名","収穫量(kg)","単価(円/kg)","支払額(円)","支払済"];
+      var tr=document.createElement("tr");
+      for(var i=0;i<fields.length;i++){var th=document.createElement("th");th.textContent=fields[i];tr.appendChild(th);}
+      t.appendChild(tr);
+      var gt=0;
+      for(var f3=0;f3<farmers.length;f3++){
+        var arr=recsOf(farmers[f3]),kg=0;
+        for(var r3=0;r3<arr.length;r3++)kg+=parseFloat(arr[r3][2])||0;
+        var row=document.createElement("tr");
+        var tdN=document.createElement("td");tdN.textContent=farmers[f3];row.appendChild(tdN);
+        var tdK=document.createElement("td");tdK.textContent=kg?kg.toFixed(1):"0";row.appendChild(tdK);
+        var tdU=document.createElement("td");var iu=document.createElement("input");iu.className="scr-cell";iu.type="number";iu.placeholder="単価";tdU.appendChild(iu);row.appendChild(tdU);
+        var tdP=document.createElement("td");tdP.className="scr-pay";tdP.textContent="0";row.appendChild(tdP);
+        var tdC=document.createElement("td");var ck=document.createElement("input");ck.type="checkbox";tdC.appendChild(ck);row.appendChild(tdC);
+        t.appendChild(row);
+      }
+      root.appendChild(t);
+      var tot=document.createElement("div");tot.className="scr-sum";tot.id="pay-total";tot.textContent="支払合計: 0 円";
+      root.appendChild(tot);
+      t.addEventListener("input",function(e){
+        var row=e.target.closest("tr");if(!row)return;
+        var unit=parseFloat(row.querySelectorAll("input")[0].value)||0;
+        var kg=parseFloat(row.cells[1].textContent)||0;
+        row.cells[3].textContent=(kg*unit).toLocaleString("ja-JP");
+        var gt2=0;
+        var tb=t.querySelectorAll("tbody tr, tr");
+        for(var z=0;z<tb.length;z++){
+          var r5=tb[z];
+          if(r5.cells&&r5.cells.length===5){var u=parseFloat(r5.querySelectorAll("input")[0].value)||0;gt2+=(parseFloat(r5.cells[1].textContent)||0)*u;}
+        }
+        document.getElementById("pay-total").textContent="支払合計: "+Math.round(gt2).toLocaleString("ja-JP")+" 円";
+      });
+    });
+    var dl=document.createElement("button");dl.className="scr-dl";dl.textContent="⬇ アロエベラ栽培農家リストをファイルに保存";
+    dl.addEventListener("click",function(){
+      if(!farmers.length){dl.textContent="登録された農家がありません";setTimeout(function(){dl.textContent="⬇ アロエベラ栽培農家リストをファイルに保存";},1800);return;}
+      var bom="\uFEFF";
+      var lines=["アロエベラ栽培農家リスト","","番号,農家名,登録日"];
+      var now=new Date(),ds=now.getFullYear()+"-"+(now.getMonth()+1)+"-"+now.getDate();
+      for(var i=0;i<farmers.length;i++){
+        lines.push((i+1)+',"'+farmers[i].replace(/"/g,'""')+'",'+ds);
+      }
+      var blob=new Blob([bom+lines.join("\r\n")],{type:"text/csv;charset=utf-8;"});
+      var a=document.createElement("a");
+      a.href=URL.createObjectURL(blob);
+      a.download="アロエベラ栽培農家リスト.csv";
+      document.body.appendChild(a);a.click();document.body.removeChild(a);
+    });
+    root.appendChild(dl);
+    render();
+  }
+  window.adminOpen=open;window.adminClose=function(){close();if(window.__onAdminClose)window.__onAdminClose();};
   adm.addEventListener("click",function(e){
-    var c=e.target.closest?e.target.closest(".adm-card"):null;
+    var sb0=e.target.closest?e.target.closest(".adm-card[data-sub]"):null;
+    if(sb0){openSub(sb0.getAttribute("data-sub"));return;}
+    var c=e.target.closest?e.target.closest(".adm-card[data-panel]"):null;
     if(c){openPanel(c.getAttribute("data-panel"));return;}
     if(e.target.closest("#adm-close")||e.target.closest("#adm-close2"))close();
-    if(e.target.closest("#adm-pback")||e.target.closest("#adm-pback2")){panel.classList.remove("on");panel.setAttribute("aria-hidden","true");}
+    if(e.target.closest("#adm-pback")||e.target.closest("#adm-pback2")||e.target.closest("#adm-pback3")){panel.classList.remove("on");panel.setAttribute("aria-hidden","true");}
   });
-  if((function(){try{return localStorage.getItem("shiro.farm.name")===ADMIN_NAME;}catch(e){return false;}})())open();
+  function openSub(sk){
+    var body=document.getElementById("adm-pbody");
+    body.innerHTML='';
+    var scr=document.createElement("div");scr.className="adm-screen";
+    if(sk==="ledger"){buildLedger(scr);}else{
+      var lab=document.createElement("div");lab.className="scr-calttl";lab.textContent="収穫カレンダー（準備中）";
+      scr.appendChild(lab);
+    }
+    body.appendChild(scr);
+  }
+  if((function(){try{return localStorage.getItem("shiro.farm.name")===ADMIN_NAME;}catch(e){return false;}})()){open();var _ss=document.querySelectorAll(".namesel");for(var _i=0;_i<_ss.length;_i++){_ss[_i].value="";}}
 })();
 </script>
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","spa":2}' crossorigin="anonymous"></script>

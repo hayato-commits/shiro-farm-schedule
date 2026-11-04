@@ -4,7 +4,7 @@
 <script>/* 同期先を自動設定 v1.23（本体スクリプトより前に常時適用） */
 try{localStorage.setItem('shiro.farm.sync','https://script.google.com/macros/s/AKfycbyU5cTuDXhCSpBwDc44O2oVCLakPA2OeViwNljtXAZuxPLlA1aQ99p7OrGjMeVglHIkDA/exec');}catch(e){}</script>
 <!-- しろう農園スケジュール管理アプリ v1.23 (2026-11-02 自動同期・共有ボタン非表示・Netlifyバナー非表示・作業ドラッグ連続入力) -->
-<meta name="application-version" content="2.31" />
+<meta name="application-version" content="2.43" />
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
 <meta name="theme-color" content="#D8E8CC" />
@@ -345,6 +345,16 @@ body{
 .hc-cell.tap{background:#2E7D32;border-color:#1B5E20}
 .hc-cell.tap .hc-d{color:#fff;font-weight:700}
 .hc-cell.tap .hc-tags{color:#FFEB3B}
+
+.hc-delbtn{flex:0 0 auto;border:none;border-radius:8px;background:#D32F2F;color:#fff;
+  font-size:12.5px;padding:6px 14px;cursor:pointer;margin-left:8px}
+.hc-delbtn:active{opacity:.8}
+
+.hc-delspace{flex:0 0 auto;width:64px;margin-left:8px}
+
+.scr-row.scr-rec,.scr-row.scr-grand{display:grid;grid-template-columns:1fr auto 72px;align-items:center}
+.scr-rec .scr-cnt,.scr-grand .scr-cnt{justify-self:end;margin-right:8px}
+.hc-delspace{display:block;width:72px}
 </style>
 </head>
 <body>
@@ -912,6 +922,7 @@ body{
     },1500);
   }
   function now2(){var d=new Date();return (d.getMonth()+1)+"/"+d.getDate()+" "+d.getHours()+":"+("0"+d.getMinutes()).slice(-2);}
+  window.__syncPushRef=syncPush;
   function mergeIn(remote){
     var ch=false,rg=/^\d{4}-\d{1,2}-\d{1,2}$/;
     var rs=remote&&remote.sched?remote.sched:{};
@@ -1164,9 +1175,9 @@ body{
     </div>
     <div class="adm-panel" id="adm-panel" aria-hidden="true">
       <div class="adm-top"><div class="adm-hd"><div class="adm-eyebrow">データー管理</div><div class="adm-title" id="adm-ptitle">-</div></div>
-        <button class="adm-back" id="adm-pback" aria-label="メニューに戻る"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+        <button class="adm-back" id="adm-pback" aria-label="戻る"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
       <div class="adm-body" id="adm-pbody"></div>
-      <button class="adm-home-back" id="adm-pback2">メニューに戻る</button>
+      <button class="adm-home-back" id="adm-pback2">戻る</button>
     </div>
   </div>
 <script>
@@ -1179,10 +1190,12 @@ body{
     "contract":{t:"農作業受託管理"}
   };
   var adm=document.getElementById("admin"),home=adm.querySelector(".adm-home"),panel=document.getElementById("adm-panel");
+  var curPanel=null;
   function open(){adm.classList.add("on");adm.setAttribute("aria-hidden","false");}
   function close(){adm.classList.remove("on");adm.setAttribute("aria-hidden","true");panel.classList.remove("on");panel.setAttribute("aria-hidden","true");}
   function openPanel(k){
     var o=PANELS[k];if(!o)return;
+    curPanel=k;
     document.getElementById("adm-ptitle").textContent=o.t;
     var body=document.getElementById("adm-pbody");
     body.innerHTML='';
@@ -1191,7 +1204,7 @@ body{
       sub.innerHTML='<div class="adm-subgrid">'
         +'<button class="adm-card" data-sub="ledger"><span class="adm-no">01</span><span class="adm-lb">農家個別台帳</span><span class="adm-sub">農家ごとの収穫記録</span></button>'
         +'<button class="adm-card" data-sub="cal"><span class="adm-no">02</span><span class="adm-lb">発注カレンダー</span><span class="adm-sub">発注予定を月別に確認</span></button>'
-        +'</div><button class="adm-home-back" id="adm-pback3">メニューに戻る</button>';
+        +'</div><button class="adm-home-back" id="adm-pback3">戻る</button>';
       body.appendChild(sub);
       panel.classList.add("on");panel.setAttribute("aria-hidden","false");
       return;
@@ -1215,15 +1228,33 @@ body{
     panel.classList.add("on");panel.setAttribute("aria-hidden","false");
   }
   function esc2(x){return String(x).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
-  var FKEY="shiro.farm.farmers";
-  var farmers=[];
-  try{farmers=JSON.parse(localStorage.getItem(FKEY)||"[]")||[];}catch(e){farmers=[];}
-  function saveFarmers(){try{localStorage.setItem(FKEY,JSON.stringify(farmers));}catch(e){}}
-  try{if(farmers.length)localStorage.setItem(FKEY,JSON.stringify(farmers));}catch(e){}   /* 起動時に登録リストを再確保 */
-  var RKEY="shiro.farm.farmerRecs";
-  var recs={};
-  try{recs=JSON.parse(localStorage.getItem(RKEY)||"{}")||{};}catch(e){recs={};}
-  function saveRecs(){try{localStorage.setItem(RKEY,JSON.stringify(recs));}catch(e){}}
+  /* ---- 永続化の三重化：本体キー＋バックアップキー＋GASサーバー同期（v2.22方式を移植） ---- */
+  function rdJSON(k){
+    try{var v=localStorage.getItem(k);if(v==null||v==="")return null;
+      var o=JSON.parse(v);return o==null?null:o;}catch(e){return null;}
+  }
+  function wrJSON(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+  var FKEY="shiro.farm.farmers",FKEYB="shiro.farm.farmers.bak";
+  var farmers=rdJSON(FKEY);
+  if(!(farmers instanceof Array)){
+    var fb=rdJSON(FKEYB);
+    farmers=(fb instanceof Array)?fb:[];
+  }
+  function saveFarmers(push){
+    wrJSON(FKEY,farmers);wrJSON(FKEYB,farmers);
+    if(push!==false&&window.__syncPushRef)window.__syncPushRef();
+  }
+  if(farmers.length){wrJSON(FKEY,farmers);wrJSON(FKEYB,farmers);}   /* 起動時にもう一度確保（同期は起こさない） */
+  var RKEY="shiro.farm.farmerRecs",RKEYB="shiro.farm.farmerRecs.bak";
+  var recs=rdJSON(RKEY);
+  if(!recs||typeof recs!=="object"||recs instanceof Array){
+    var rb=rdJSON(RKEYB);
+    recs=(rb&&typeof rb==="object"&&!(rb instanceof Array))?rb:{};
+  }
+  function saveRecs(push){
+    wrJSON(RKEY,recs);wrJSON(RKEYB,recs);
+    if(push!==false&&window.__syncPushRef)window.__syncPushRef();
+  }
   function recsOf(n){if(!(recs[n]instanceof Array))recs[n]=[];return recs[n];}
   window.__farmersRef=function(){return farmers;};
   window.__recsRef=function(){return recs;};
@@ -1424,12 +1455,18 @@ body{
     });
     render();
   }
-  var HCKEY="shiro.farm.hcal";
-  var hcal={};
-  try{hcal=JSON.parse(localStorage.getItem(HCKEY)||"{}")||{};}catch(e){hcal={};}
-  function saveHCal(){try{localStorage.setItem(HCKEY,JSON.stringify(hcal));}catch(e){}}
+  var HCKEY="shiro.farm.hcal",HCKEYB="shiro.farm.hcal.bak";
+  var hcal=rdJSON(HCKEY);
+  if(!hcal||typeof hcal!=="object"||hcal instanceof Array){
+    var hb=rdJSON(HCKEYB);
+    hcal=(hb&&typeof hb==="object"&&!(hb instanceof Array))?hb:{};
+  }
+  function saveHCal(push){
+    wrJSON(HCKEY,hcal);wrJSON(HCKEYB,hcal);
+    if(push!==false&&window.__syncPushRef)window.__syncPushRef();
+  }
   function openHarvestCal(){
-    document.getElementById("adm-ptitle").textContent="アロエベラ発注カレンダー";
+    document.getElementById("adm-ptitle").textContent="発注カレンダー";
     var body=document.getElementById("adm-pbody");
     body.innerHTML='';
     var back=document.createElement("button");back.className="scr-dl";back.textContent="← 農家収穫管理に戻る";
@@ -1443,8 +1480,27 @@ body{
     var prev=document.createElement("button");prev.className="hc-nav";prev.textContent="‹";
     var next=document.createElement("button");next.className="hc-nav";next.textContent="›";
     var now=new Date();var hy=now.getFullYear(),hm=now.getMonth();
+    function holidaySet(y,m){   /* m=0-11。日本の祝日(振替休日含む)を "d" 数字の集合で返す */
+      var set={},i;
+      function add(mo,dy){if(mo===m)set[dy]=1;}
+      function nthMon(mo,n){var d=new Date(y,mo,1),c=0;for(var dd=1;dd<=31;dd++){var dt=new Date(y,mo,dd);if(dt.getMonth()!==mo)break;if(dt.getDay()===1){c++;if(c===n)return dd;}}return 0;}
+      var eq1=y>=1980?Math.floor(20.8431+0.242194*(y-1980))-Math.floor((y-1980)/4):21;
+      var eq2=y>=1980?Math.floor(23.2488+0.242194*(y-1980))-Math.floor((y-1980)/4):23;
+      add(0,1);add(0,nthMon(0,2));add(1,11);add(1,23);add(3,29);add(4,3);add(4,4);add(4,5);
+      add(6,nthMon(6,3));add(7,11);add(8,nthMon(8,3));add(9,nthMon(9,2));add(10,3);add(10,23);
+      add(2,eq1);add(8,eq2);
+      for(var k in set){   /* 振替休日: 祝日が日曜なら翌月曜 */
+        var dd2=+k,dt=new Date(y,m,dd2);
+        if(dt.getDay()===0){var nx=dd2+1;var ndt=new Date(y,m,nx);if(ndt.getMonth()===m)set[nx]=1;}
+      }
+      if(m===4){   /* 5/3-5/5が日曜のときの5/6振替 */
+        for(var d5=3;d5<=5;d5++){if(new Date(y,4,d5).getDay()===0){set[6]=1;}}
+      }
+      return set;
+    }
     function draw(){
       lbl.textContent=hy+"年"+(hm+1)+"月";
+      var hol=holidaySet(hy,hm);
       var first=new Date(hy,hm,1),off=first.getDay(),dim=new Date(hy,hm+1,0).getDate();
       var grid='<div class="hc-dows">'+["日","月","火","水","木","金","土"].map(function(d,ix){return '<span'+(ix===0?' class="sun"':'')+'>'+d+'</span>';}).join("")+'</div><div class="hc-grid">';
       var farmSel=sel.value;
@@ -1456,15 +1512,16 @@ body{
         else{var seen={};for(var f3 in farmers){var a2=hcal[key+"|"+farmers[f3]]||[];for(var z=0;z<a2.length;z++){if(!seen[a2[z].kg])seen[a2[z].kg]=1;}}
           vals=Object.keys(seen).map(function(kg){return esc2(kg+"kg");});}
         var dow=new Date(hy,hm,d2).getDay();
-        grid+='<span class="hc-cell'+(dow===0?' sun':'')+'" data-day="'+d2+'"><span class="hc-d">'+d2+'</span>';
+        grid+='<span class="hc-cell'+((dow===0||hol[d2])?' sun':'')+'" data-day="'+d2+'"><span class="hc-d">'+d2+'</span>';
         if(vals.length)grid+='<span class="hc-tags">'+vals.join("・")+'</span>';
         grid+='</span>';
       }
       var gridEl=document.getElementById("hc-gridwrap");
       if(gridEl)gridEl.outerHTML='<div id="hc-gridwrap">'+grid+'</div>';
       else{var w=document.createElement("div");w.id="hc-gridwrap";w.innerHTML=grid;body.appendChild(w);}
+      document.getElementById("hc-gridwrap").addEventListener("click",dayTap);   /* 再描画のたびに新要素へ1回だけ付ける */
     }
-    body.addEventListener("click",function(e){
+    function dayTap(e){
       var c=e.target.closest?e.target.closest(".hc-cell[data-day]"):null;
       if(!c)return;
       var olds=document.querySelectorAll(".hc-cell.tap");
@@ -1475,7 +1532,7 @@ body{
       var rows=[];
       if(sel.value){var a=hcal[key+"|"+sel.value]||[];for(var z=0;z<a.length;z++)rows.push([sel.value,a[z].kg]);}
       else{for(var f4=0;f4<farmers.length;f4++){var a2=hcal[key+"|"+farmers[f4]]||[];for(var z2=0;z2<a2.length;z2++)rows.push([farmers[f4],a2[z2].kg]);}}
-      var box=document.getElementById("hc-detail")||document.createElement("div");
+      var box=document.createElement("div");   /* 毎回新規：古いboxのリスナー引き継ぎを防ぐ */
       box.id="hc-detail";box.className="scr-list";
       var html='<div class="scr-cap">'+(hm+1)+"月"+dd+"日の発注</div>";
       html+='<div class="hc-addrow">'
@@ -1485,17 +1542,14 @@ body{
           +'<button class="scr-regok" id="hcd-save">保存</button></div>';
       if(!rows.length)html+='<div class="scr-empty">この日の発注記録はありません</div>';
       else{
-        var per={},order=[],gt=0;
+        html+='<div class="scr-cap" style="font-size:13px">記録(×を押すと削除)</div>';
         for(var r6=0;r6<rows.length;r6++){
-          var nm=rows[r6][0],kg=parseFloat(rows[r6][1])||0;
-          if(!(nm in per)){per[nm]=0;order.push(nm);}
-          per[nm]+=kg;gt+=kg;
+          html+='<div class="scr-row scr-rec"><span class="scr-name">'+esc2(rows[r6][0])+'</span>'
+              +'<span class="scr-cnt">'+esc2(rows[r6][1])+'kg</span>'
+              +'<button class="hc-delbtn" data-r="'+r6+'">削除</button></div>';
         }
-        for(var o=0;o<order.length;o++){
-          var n2=order[o];
-          html+='<div class="scr-row"><span class="scr-name">'+esc2(n2)+'<span class="scr-sumtag">合計 '+per[n2].toFixed(1)+'kg</span></span></div>';
-        }
-        html+='<div class="scr-row scr-grand"><span class="scr-name">全体合計</span><span class="scr-cnt">'+gt.toFixed(1)+'kg</span></div>';
+        var gt=0;for(var t=0;t<rows.length;t++)gt+=parseFloat(rows[t][1])||0;
+        html+='<div class="scr-row scr-grand"><span class="scr-name">全体合計</span><span class="scr-cnt">'+Math.floor(gt)+'kg</span><span class="hc-delspace"></span></div>';
       }
       var old=document.getElementById("hc-detail");
       if(old)old.remove();
@@ -1503,6 +1557,26 @@ body{
       gridWrap.parentNode.insertBefore(box,gridWrap.nextSibling);
       if(box.scrollIntoView)box.scrollIntoView({behavior:"smooth",block:"nearest"});
       box.innerHTML=html;
+      box.addEventListener("click",function(ev){
+        var d2=ev.target.closest?ev.target.closest(".hc-delbtn"):null;
+        if(!d2)return;
+        var ri=+d2.getAttribute("data-r");
+        var key3=hy+"-"+hm+"-"+dd;
+        if(sel.value){
+          var aS=hcal[key3+"|"+sel.value]||[];
+          if(ri>=0&&ri<aS.length)aS.splice(ri,1);
+        }else{
+          var cum=0;
+          for(var f6=0;f6<farmers.length;f6++){var a4=hcal[key3+"|"+farmers[f6]]||[];
+            if(ri>=cum&&ri<cum+a4.length){a4.splice(ri-cum,1);break;}
+            cum+=a4.length;}
+        }
+        saveHCal();
+        box.remove();
+        draw();   /* カレンダー日マスの数量を即時反映 */
+        var cell=document.querySelector('.hc-cell[data-day="'+dd+'"]');
+        if(cell)cell.click();
+      });
       var sv=document.getElementById("hcd-save");
       sv.addEventListener("click",function(){
         var kg=document.getElementById("hcd-kg").value.trim();
@@ -1517,27 +1591,12 @@ body{
         for(var ti=0;ti<tps.length;ti++)tps[ti].classList.remove("tap");
         draw();                      /* カレンダーに反映してパネルを閉じる */
       });
-    });
+    }
     prev.addEventListener("click",function(){hm--;if(hm<0){hm=11;hy--;}draw();});
     next.addEventListener("click",function(){hm++;if(hm>11){hm=0;hy++;}draw();});
     sel.addEventListener("change",draw);
     bar.appendChild(prev);bar.appendChild(lbl);bar.appendChild(next);bar.appendChild(sel);
     body.appendChild(bar);
-    var add=document.createElement("button");add.className="scr-add";add.textContent="＋ 発注を記録";
-    add.addEventListener("click",function(){
-      var row=document.createElement("div");row.className="hc-addrow";
-      row.innerHTML='<input class="scr-cell" id="hc-d" type="number" min="1" max="31" placeholder="日">'
-        +'<select class="scr-cell" id="hc-f"><option value="">農家を選択</option>'+farmers.map(function(f){return '<option>'+esc2(f)+'</option>';}).join("")+'</select>'
-        +'<input class="scr-cell" id="hc-kg" type="number" step="0.1" placeholder="収穫量kg">';
-      var sv=document.createElement("button");sv.className="scr-regok";sv.textContent="保存";
-      sv.addEventListener("click",function(){
-        var dd=row.querySelector("#hc-d").value,ff=row.querySelector("#hc-f").value,kg=row.querySelector("#hc-kg").value.trim();
-        if(dd&&ff&&kg){var key=hy+"-"+hm+"-"+parseInt(dd,10);var arr=hcal[key+"|"+ff]||(hcal[key+"|"+ff]=[]);arr.push({kg:kg});saveHCal();}
-        row.remove();draw();
-      });
-      row.appendChild(sv);body.appendChild(row);
-    });
-    body.appendChild(add);
     panel.classList.add("on");panel.setAttribute("aria-hidden","false");
     draw();
   }
@@ -1548,7 +1607,10 @@ body{
     var c=e.target.closest?e.target.closest(".adm-card[data-panel]"):null;
     if(c){openPanel(c.getAttribute("data-panel"));return;}
     if(e.target.closest("#adm-close")||e.target.closest("#adm-close2"))close();
-    if(e.target.closest("#adm-pback")||e.target.closest("#adm-pback2")||e.target.closest("#adm-pback3")){panel.classList.remove("on");panel.setAttribute("aria-hidden","true");}
+    if(e.target.closest("#adm-pback")||e.target.closest("#adm-pback2")||e.target.closest("#adm-pback3")){
+      if(curPanel==="harvest-farm"&&!document.getElementById("adm-pbody").querySelector(".adm-subwrap")){openPanel("harvest-farm");}
+      else{panel.classList.remove("on");panel.setAttribute("aria-hidden","true");}
+    }
   });
   function openSub(sk){
     if(sk==="cal"){openHarvestCal();return;}

@@ -4,7 +4,7 @@
 <script>/* 同期先を自動設定 v1.23（本体スクリプトより前に常時適用） */
 try{localStorage.setItem('shiro.farm.sync','https://script.google.com/macros/s/AKfycbyU5cTuDXhCSpBwDc44O2oVCLakPA2OeViwNljtXAZuxPLlA1aQ99p7OrGjMeVglHIkDA/exec');}catch(e){}</script>
 <!-- しろう農園スケジュール管理アプリ v1.23 (2026-11-02 自動同期・共有ボタン非表示・Netlifyバナー非表示・作業ドラッグ連続入力) -->
-<meta name="application-version" content="2.43" />
+<meta name="application-version" content="2.45" />
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
 <meta name="theme-color" content="#D8E8CC" />
@@ -895,7 +895,7 @@ body{
   }
   (function(){var _a=saveSched;saveSched=function(){_a();syncPush();};
               var _b=saveTasks;saveTasks=function(){_b();syncPush();};})();
-  function syncPush(){
+  function syncPush(now){
     if(!syncOn())return;
     if(syncBusy){syncPending=true;return;}
     clearTimeout(syncTimer);
@@ -919,8 +919,9 @@ body{
           var m=(err&&err.name==="AbortError")?"タイムアウトしました（通信状態をご確認ください）":err;
           syncSt("送信エラー："+m,false,true);
         });
-    },1500);
+    },now?0:1500);
   }
+  window.__syncPushNow=function(){if(!syncOn())return;clearTimeout(syncTimer);if(syncBusy){syncPending=true;return;}syncPush(true);};   /* 削除など消える可能性のある変更は即時送信 */
   function now2(){var d=new Date();return (d.getMonth()+1)+"/"+d.getDate()+" "+d.getHours()+":"+("0"+d.getMinutes()).slice(-2);}
   window.__syncPushRef=syncPush;
   function mergeIn(remote){
@@ -1279,6 +1280,7 @@ body{
     }
     var lr=window.__recsRef()||{};
     for(var nm in rr){
+      if(recentR["r|"+nm]&&Date.now()-recentR["r|"+nm]<GUARD_MS)continue;   /* 自端末の変更を優先（復活防止） */
       var lv=lr[nm]instanceof Array?lr[nm]:null;
       var rvn=rr[nm]instanceof Array?rr[nm]:[];
       if(JSON.stringify(lv||[])!==JSON.stringify(rvn)){
@@ -1287,6 +1289,7 @@ body{
     }
     var lh=window.__hcalRef()||{};
     for(var k4 in rh){
+      if(recentH["h|"+k4]&&Date.now()-recentH["h|"+k4]<GUARD_MS)continue;   /* 自端末の変更を優先（復活防止） */
       var lvh=lh[k4]instanceof Array?lh[k4]:null;
       var rvh=rh[k4]instanceof Array?rh[k4]:[];
       if(JSON.stringify(lvh||[])!==JSON.stringify(rvh)){
@@ -1380,7 +1383,7 @@ body{
           tr2.remove();render0();return;
         }
         var d2=e.target.closest?e.target.closest(".scr-del[data-r]"):null;
-        if(d2){arr.splice(+d2.getAttribute("data-r"),1);saveRecs();openFarmer(name);}
+        if(d2){arr.splice(+d2.getAttribute("data-r"),1);markR(name);saveRecs();if(window.__syncPushNow)window.__syncPushNow();openFarmer(name);}
       });
       function render0(){var cnt=document.querySelectorAll(".scr-cnt");for(var z=0;z<cnt.length;z++)cnt[z].textContent=(recs[farmers[+document.getElementById("farmer-list").children[z].getAttribute("data-f")]]||[]).length||"";}
     }
@@ -1465,6 +1468,12 @@ body{
     wrJSON(HCKEY,hcal);wrJSON(HCKEYB,hcal);
     if(push!==false&&window.__syncPushRef)window.__syncPushRef();
   }
+  var recentH={},recentR={};   /* 直近の自端末変更の記録（復活防止・端末に保存して開き直し後も有効） */
+  try{recentH=JSON.parse(localStorage.getItem("shiro.farm.recentH")||"{}")||{};}catch(e){recentH={};}
+  try{recentR=JSON.parse(localStorage.getItem("shiro.farm.recentR")||"{}")||{};}catch(e){recentR={};}
+  function markH(k){recentH["h|"+k]=Date.now();try{localStorage.setItem("shiro.farm.recentH",JSON.stringify(recentH));}catch(e){}}
+  function markR(n){recentR["r|"+n]=Date.now();try{localStorage.setItem("shiro.farm.recentR",JSON.stringify(recentR));}catch(e){}}
+  var GUARD_MS=600000;   /* 保護は10分：開き直しても古いサーバーデータで上書きされない */
   function openHarvestCal(){
     document.getElementById("adm-ptitle").textContent="発注カレンダー";
     var body=document.getElementById("adm-pbody");
@@ -1571,7 +1580,9 @@ body{
             if(ri>=cum&&ri<cum+a4.length){a4.splice(ri-cum,1);break;}
             cum+=a4.length;}
         }
+        markH(key3);
         saveHCal();
+        if(window.__syncPushNow)window.__syncPushNow();   /* 閉じる前に必ずサーバーへ反映 */
         box.remove();
         draw();   /* カレンダー日マスの数量を即時反映 */
         var cell=document.querySelector('.hc-cell[data-day="'+dd+'"]');
@@ -1585,7 +1596,7 @@ body{
         if(kg===""){sv.textContent="発注量を入力";setTimeout(function(){sv.textContent="保存";},1500);return;}
         var key2=hy+"-"+hm+"-"+dd;
         var arr=hcal[key2+"|"+ff]||(hcal[key2+"|"+ff]=[]);
-        arr.push({kg:kg});saveHCal();
+        arr.push({kg:kg});markH(key2);saveHCal();
         box.remove();
         var tps=document.querySelectorAll(".hc-cell.tap");
         for(var ti=0;ti<tps.length;ti++)tps[ti].classList.remove("tap");

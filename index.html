@@ -1,10 +1,10 @@
 <!doctype html>
 <html lang="ja">
 <head>
-<script>/* 同期先を自動設定 v1.24（本体スクリプトより前に常時適用） */
+<script>/* 同期先を自動設定 v1.23（本体スクリプトより前に常時適用） */
 try{localStorage.setItem('shiro.farm.sync','https://script.google.com/macros/s/AKfycbyU5cTuDXhCSpBwDc44O2oVCLakPA2OeViwNljtXAZuxPLlA1aQ99p7OrGjMeVglHIkDA/exec');}catch(e){}</script>
-<!-- しろう農園スケジュール管理アプリ v1.24 (2026-11-02 自動同期・共有ボタン非表示・Netlifyバナー非表示・作業ドラッグ連続入力) -->
-<meta name="application-version" content="1.24" />
+<!-- しろう農園スケジュール管理アプリ v1.23 (2026-11-02 自動同期・共有ボタン非表示・Netlifyバナー非表示・作業ドラッグ連続入力) -->
+<meta name="application-version" content="1.32" />
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
 <meta name="theme-color" content="#D8E8CC" />
@@ -19,7 +19,7 @@ try{localStorage.setItem('shiro.farm.sync','https://script.google.com/macros/s/A
 <style>
 *,*::before,*::after{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 :root{
-  --bg:#00FF00;
+  --bg:#D8E8CC;
   --ink:#3F4B3A;
   --sub:#7D8676;
   --line:#ACB9A3;
@@ -40,7 +40,7 @@ body{
   background:var(--bg);display:flex;flex-direction:column;overflow:hidden;
 }
 @media (min-width:520px){
-  body{background:#00FF00;padding:16px 0}
+  body{background:#E7E7E0;padding:16px 0}
   #app{height:calc(100dvh - 32px);border-radius:26px;box-shadow:0 18px 60px rgba(63,75,58,.18)}
 }
 
@@ -142,7 +142,7 @@ body{
 
 /* arrows / hint */
 .arrow{position:absolute;top:46%;transform:translateY(-50%);width:36px;height:36px;
-  border-radius:50%;border:1px solid var(--line);background:rgba(0,255,0,.9);
+  border-radius:50%;border:1px solid var(--line);background:rgba(216,232,204,.9);
   display:flex;align-items:center;justify-content:center;color:var(--ink);
   opacity:.5;transition:opacity .2s;z-index:6;cursor:pointer}
 .arrow:active{opacity:1}
@@ -172,7 +172,7 @@ body{
 #day.on{opacity:1;pointer-events:auto;transform:none}
 .dv-top{flex:0 0 auto;display:flex;align-items:flex-start;gap:8px}
 .dv-back{flex:0 0 auto;width:36px;height:36px;border-radius:50%;border:1px solid var(--line);
-  background:rgba(0,255,0,.9);color:var(--ink);display:flex;align-items:center;
+  background:rgba(216,232,204,.9);color:var(--ink);display:flex;align-items:center;
   justify-content:center;cursor:pointer;margin-top:6px;padding:0}
 .dv-back svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;
   stroke-linecap:round;stroke-linejoin:round}
@@ -241,6 +241,47 @@ body{
 .dv-selwrap .chev{position:absolute;right:10px;top:50%;width:7px;height:7px;margin-top:-5px;
   border-right:1px solid var(--sub);border-bottom:1px solid var(--sub);transform:rotate(45deg);pointer-events:none}
   .dv-sel.draghit{background:rgba(110,150,100,.32)!important;}
+
+/* ---------- データー管理 ---------- */
+#admin{position:absolute;inset:0;z-index:20;background:var(--bg);display:flex;flex-direction:column;
+  padding:calc(var(--safe-t) + 26px) 20px calc(14px + var(--safe-b));opacity:0;pointer-events:none;
+  transform:translateY(14px);transition:opacity .22s,transform .22s}
+#admin.on{opacity:1;pointer-events:auto;transform:none}
+.adm-home,.adm-panel{position:absolute;inset:0;display:flex;flex-direction:column;
+  padding:calc(var(--safe-t) + 26px) 20px calc(14px + var(--safe-b))}
+.adm-panel{opacity:0;pointer-events:none;transform:translateY(14px);transition:opacity .22s,transform .22s;background:var(--bg)}
+.adm-panel.on{opacity:1;pointer-events:auto;transform:none}
+.adm-top{flex:0 0 auto;display:flex;align-items:flex-start;gap:8px}
+.adm-hd{flex:1 1 auto;min-width:0;padding-left:8px}
+.adm-eyebrow{font-size:11px;letter-spacing:.22em;color:var(--sub)}
+.adm-title{font-size:30px;line-height:1.15;margin-top:2px;color:var(--ink)}
+.adm-back{flex:0 0 auto;width:36px;height:36px;border-radius:50%;border:1px solid var(--line);
+  background:rgba(216,232,204,.9);color:var(--ink);display:flex;align-items:center;
+  justify-content:center;cursor:pointer;margin-top:6px;padding:0}
+.adm-back svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;
+  stroke-linecap:round;stroke-linejoin:round}
+.adm-wrap{flex:1 1 auto;display:flex;flex-direction:column;justify-content:center;align-items:center;min-height:0}
+.adm-grid{display:grid;grid-template-columns:repeat(2,minmax(0,285px));gap:14px;margin-top:16px}
+.adm-card{position:relative;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.55);
+  padding:18px 18px 15px;display:flex;flex-direction:column;align-items:flex-start;gap:6px;cursor:pointer;
+  text-align:left;min-height:0}
+.adm-card:active{background:rgba(255,255,255,.8)}
+.adm-no{font-size:14px;letter-spacing:.18em;color:var(--sub)}
+.adm-lb{font-size:20px;line-height:1.25;color:var(--ink);font-weight:600}
+.adm-sub{font-size:14px;color:var(--sub);line-height:1.4}
+.adm-body{flex:1 1 auto;margin-top:18px;border:1px solid var(--line);border-radius:12px;
+  background:rgba(255,255,255,.5);padding:16px;color:var(--ink);font-size:13px;line-height:1.7}
+
+.adm-home-back{flex:0 0 auto;margin-top:20px;border:1px solid var(--line);border-radius:999px;
+  background:rgba(255,255,255,.7);color:var(--ink);font-size:14px;padding:10px 26px;cursor:pointer}
+.adm-home-back:active{background:rgba(255,255,255,.95)}
+.scr-table{width:100%;border-collapse:collapse;font-size:12.5px}
+.scr-table th,.scr-table td{border:1px solid var(--line);padding:7px 6px;text-align:left;min-width:64px}
+.scr-table th{background:rgba(216,232,204,.55);font-weight:600}
+.scr-table td{min-height:30px}
+.scr-add{margin-top:12px;border:1px dashed var(--line);border-radius:10px;background:rgba(255,255,255,.5);
+  color:var(--ink);font-size:13px;padding:9px 18px;cursor:pointer}
+.scr-add:active{background:rgba(255,255,255,.85)}
 </style>
 </head>
 <body>
@@ -282,19 +323,20 @@ body{
   var HOL={"2024-0-1":1,"2024-0-8":1,"2024-1-11":1,"2024-1-23":1,"2024-2-20":1,"2024-3-29":1,"2024-4-3":1,"2024-4-4":1,"2024-4-5":1,"2024-6-15":1,"2024-7-11":1,"2024-8-16":1,"2024-8-22":1,"2024-9-14":1,"2024-10-3":1,"2024-10-23":1,"2024-1-12":1,"2024-4-6":1,"2024-7-12":1,"2024-8-23":1,"2024-10-4":1,"2025-0-1":1,"2025-0-13":1,"2025-1-11":1,"2025-1-23":1,"2025-2-20":1,"2025-3-29":1,"2025-4-3":1,"2025-4-4":1,"2025-4-5":1,"2025-6-21":1,"2025-7-11":1,"2025-8-15":1,"2025-8-23":1,"2025-9-13":1,"2025-10-3":1,"2025-10-23":1,"2025-1-24":1,"2025-4-6":1,"2025-10-24":1,"2026-0-1":1,"2026-0-12":1,"2026-1-11":1,"2026-1-23":1,"2026-2-20":1,"2026-3-29":1,"2026-4-3":1,"2026-4-4":1,"2026-4-5":1,"2026-6-20":1,"2026-7-11":1,"2026-8-21":1,"2026-8-23":1,"2026-9-12":1,"2026-10-3":1,"2026-10-23":1,"2026-4-6":1,"2027-0-1":1,"2027-0-11":1,"2027-1-11":1,"2027-1-23":1,"2027-2-21":1,"2027-3-29":1,"2027-4-3":1,"2027-4-4":1,"2027-4-5":1,"2027-6-19":1,"2027-7-11":1,"2027-8-20":1,"2027-8-23":1,"2027-9-11":1,"2027-10-3":1,"2027-10-23":1,"2027-2-22":1,"2028-0-1":1,"2028-0-10":1,"2028-1-11":1,"2028-1-23":1,"2028-2-20":1,"2028-3-29":1,"2028-4-3":1,"2028-4-4":1,"2028-4-5":1,"2028-6-17":1,"2028-7-11":1,"2028-8-18":1,"2028-8-22":1,"2028-9-9":1,"2028-10-3":1,"2028-10-23":1};   /* 日本の祝日 2024-2028（月は0始まり） */
 
   /* 氏名（サブタイトル枠） */
-  var NAMES=["しろう農園全体","砂川勇人","砂川春樹","垣花公三","高吉幸光","砂川広美","宮国美喜子","大谷啓子","平良幸男","宮国歩"];
-  var ALLNAME=NAMES[0];                /* デフォルト氏名 */
+  var NAMES=["しろう農園全体","砂川勇人","砂川春樹","垣花公三","高吉幸光","砂川広美","宮国美喜子","大谷啓子","平良幸男","宮国歩","データー管理"];
+  var ADMIN_NAME="データー管理";  var ALLNAME=NAMES[0];                /* デフォルト氏名 */
   var NAME_KEY="shiro.farm.name";
   var NAME_OPTS='<option value="">選択してください</option>';
   for(var ni=0;ni<NAMES.length;ni++){NAME_OPTS+='<option value="'+NAMES[ni]+'">'+NAMES[ni]+'</option>';}
   var selName="";
   try{selName=localStorage.getItem(NAME_KEY)||"";}catch(e){}
-  if(NAMES.indexOf(selName)<0)selName=ALLNAME;
+  if(NAMES.indexOf(selName)<0||selName===ADMIN_NAME)selName=ALLNAME;
+  var dispName=selName;           /* 選択BOXに表示する値（データー管理は表示専用） */
   function syncNames(){
     var list=document.querySelectorAll(".namesel");
     for(var i=0;i<list.length;i++){
-      list[i].value=selName;
-      list[i].classList.toggle("empty",selName==="");
+      list[i].value=dispName;
+      list[i].classList.toggle("empty",dispName==="");
     }
   }
 
@@ -361,10 +403,17 @@ body{
   pager.addEventListener("change",function(e){
     var t=e.target;
     if(!t||!t.classList||!t.classList.contains("namesel"))return;
-    selName=NAMES.indexOf(t.value)>=0?t.value:ALLNAME;
+    if(t.value===ADMIN_NAME){
+      dispName=ADMIN_NAME;
+      try{localStorage.setItem(NAME_KEY,ADMIN_NAME);}catch(err){}
+      syncNames();adminOpen();return;
+    }
+    selName=(NAMES.indexOf(t.value)>=0&&t.value!==ADMIN_NAME)?t.value:ALLNAME;
+    dispName=selName;
     try{localStorage.setItem(NAME_KEY,selName);}catch(err){}
     syncNames();
     refreshAllTags();
+    adminClose();
   });
   syncNames();
 
@@ -1028,6 +1077,70 @@ body{
   setTimeout(function(){try{killScripts(document.documentElement);killIframes(document.documentElement);}catch(e){}},300);
   setTimeout(function(){try{killScripts(document.documentElement);killIframes(document.documentElement);}catch(e){}},1500);
   setTimeout(function(){try{killScripts(document.documentElement);killIframes(document.documentElement);}catch(e){}},4000);
+})();
+</script>
+  <div id="admin" aria-hidden="true">
+    <div class="adm-home">
+      <div class="adm-top"><div class="adm-hd"><div class="adm-eyebrow">SHIRO FARM</div><div class="adm-title">データー管理</div></div>
+        <button class="adm-back" id="adm-close" aria-label="カレンダーに戻る"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+      <div class="adm-wrap"><div class="adm-grid">
+        <button class="adm-card" data-panel="harvest-farm"><span class="adm-no">01</span><span class="adm-lb">農家収穫管理</span><span class="adm-sub">農家別の収穫量を記録</span></button>
+        <button class="adm-card" data-panel="harvest-data"><span class="adm-no">02</span><span class="adm-lb">収穫データ管理</span><span class="adm-sub">収穫データの一覧・集計</span></button>
+        <button class="adm-card" data-panel="product"><span class="adm-no">03</span><span class="adm-lb">製造製品管理</span><span class="adm-sub">製品の製造・在庫を記録</span></button>
+        <button class="adm-card" data-panel="contract"><span class="adm-no">04</span><span class="adm-lb">農作業受託管理</span><span class="adm-sub">受託作業の案件を管理</span></button>
+      </div></div>
+      <button class="adm-home-back" id="adm-close2">カレンダーに戻る</button>
+    </div>
+    <div class="adm-panel" id="adm-panel" aria-hidden="true">
+      <div class="adm-top"><div class="adm-hd"><div class="adm-eyebrow">データー管理</div><div class="adm-title" id="adm-ptitle">-</div></div>
+        <button class="adm-back" id="adm-pback" aria-label="メニューに戻る"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+      <div class="adm-body" id="adm-pbody"></div>
+      <button class="adm-home-back" id="adm-pback2">メニューに戻る</button>
+    </div>
+  </div>
+<script>
+(function(){
+  var ADMIN_NAME="データー管理";
+  var PANELS={
+    "harvest-farm":{t:"農家収穫管理"},
+    "harvest-data":{t:"収穫データ管理"},
+    "product":{t:"製造製品管理"},
+    "contract":{t:"農作業受託管理"}
+  };
+  var adm=document.getElementById("admin"),home=adm.querySelector(".adm-home"),panel=document.getElementById("adm-panel");
+  function open(){adm.classList.add("on");adm.setAttribute("aria-hidden","false");}
+  function close(){adm.classList.remove("on");adm.setAttribute("aria-hidden","true");panel.classList.remove("on");panel.setAttribute("aria-hidden","true");}
+  function openPanel(k){
+    var o=PANELS[k];if(!o)return;
+    document.getElementById("adm-ptitle").textContent=o.t;
+    var body=document.getElementById("adm-pbody");
+    body.innerHTML='';
+    var scr=document.createElement("div");scr.className="adm-screen";scr.dataset.panel=k;
+    var bar=document.createElement("div");bar.className="scr-bar";
+    var cols={};
+    if(k==="harvest-farm")cols={fields:["日付","農家名","作物","収穫量(kg)","担当者","メモ"]};
+    else if(k==="harvest-data")cols={fields:["日付","作物","収穫量(kg)","出荷先","備考"]};
+    else if(k==="product")cols={fields:["日付","製品名","製造量","在庫数","担当者","備考"]};
+    else cols={fields:["日付","依頼主","作業内容","作業日","担当者","報酬(円)","状態"]};
+    var t=document.createElement("table");t.className="scr-table";
+    var tr=document.createElement("tr");
+    for(var i=0;i<cols.fields.length;i++){var th=document.createElement("th");th.textContent=cols.fields[i];tr.appendChild(th);}
+    t.appendChild(tr);
+    for(var r=0;r<4;r++){var r2=document.createElement("tr");for(var c2=0;c2<cols.fields.length;c2++){var td=document.createElement("td");td.innerHTML="&nbsp;";r2.appendChild(td);}t.appendChild(r2);}
+    scr.appendChild(t);
+    var add=document.createElement("button");add.className="scr-add";add.textContent="＋ 行を追加";
+    scr.appendChild(add);
+    body.appendChild(scr);
+    panel.classList.add("on");panel.setAttribute("aria-hidden","false");
+  }
+  window.adminOpen=open;window.adminClose=close;
+  adm.addEventListener("click",function(e){
+    var c=e.target.closest?e.target.closest(".adm-card"):null;
+    if(c){openPanel(c.getAttribute("data-panel"));return;}
+    if(e.target.closest("#adm-close")||e.target.closest("#adm-close2"))close();
+    if(e.target.closest("#adm-pback")||e.target.closest("#adm-pback2")){panel.classList.remove("on");panel.setAttribute("aria-hidden","true");}
+  });
+  if((function(){try{return localStorage.getItem("shiro.farm.name")===ADMIN_NAME;}catch(e){return false;}})())open();
 })();
 </script>
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","spa":2}' crossorigin="anonymous"></script>

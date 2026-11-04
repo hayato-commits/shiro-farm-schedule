@@ -4,7 +4,7 @@
 <script>/* 同期先を自動設定 v1.23（本体スクリプトより前に常時適用） */
 try{localStorage.setItem('shiro.farm.sync','https://script.google.com/macros/s/AKfycbyU5cTuDXhCSpBwDc44O2oVCLakPA2OeViwNljtXAZuxPLlA1aQ99p7OrGjMeVglHIkDA/exec');}catch(e){}</script>
 <!-- しろう農園スケジュール管理アプリ v1.23 (2026-11-02 自動同期・共有ボタン非表示・Netlifyバナー非表示・作業ドラッグ連続入力) -->
-<meta name="application-version" content="2.45" />
+<meta name="application-version" content="2.46" />
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
 <meta name="theme-color" content="#D8E8CC" />
@@ -1293,7 +1293,7 @@ body{
       var lvh=lh[k4]instanceof Array?lh[k4]:null;
       var rvh=rh[k4]instanceof Array?rh[k4]:[];
       if(JSON.stringify(lvh||[])!==JSON.stringify(rvh)){
-        if(!lvh||!lvh.length||rvh.length>=lvh.length){lh[k4]=rvh.slice();ch=true;}
+        if(!lvh||!lvh.length||rvh.length>=lvh.length){lh[k4]=rvh.slice();ch=true;window.__hcDirty=true;}
       }
     }
     if(ch){saveFarmers();saveRecs();saveHCal();}
@@ -1573,14 +1573,13 @@ body{
         var key3=hy+"-"+hm+"-"+dd;
         if(sel.value){
           var aS=hcal[key3+"|"+sel.value]||[];
-          if(ri>=0&&ri<aS.length)aS.splice(ri,1);
+          if(ri>=0&&ri<aS.length){aS.splice(ri,1);markH(key3+"|"+sel.value);}
         }else{
           var cum=0;
           for(var f6=0;f6<farmers.length;f6++){var a4=hcal[key3+"|"+farmers[f6]]||[];
-            if(ri>=cum&&ri<cum+a4.length){a4.splice(ri-cum,1);break;}
+            if(ri>=cum&&ri<cum+a4.length){a4.splice(ri-cum,1);markH(key3+"|"+farmers[f6]);break;}
             cum+=a4.length;}
         }
-        markH(key3);
         saveHCal();
         if(window.__syncPushNow)window.__syncPushNow();   /* 閉じる前に必ずサーバーへ反映 */
         box.remove();
@@ -1596,13 +1595,14 @@ body{
         if(kg===""){sv.textContent="発注量を入力";setTimeout(function(){sv.textContent="保存";},1500);return;}
         var key2=hy+"-"+hm+"-"+dd;
         var arr=hcal[key2+"|"+ff]||(hcal[key2+"|"+ff]=[]);
-        arr.push({kg:kg});markH(key2);saveHCal();
+        arr.push({kg:kg});markH(key2+"|"+ff);saveHCal();
         box.remove();
         var tps=document.querySelectorAll(".hc-cell.tap");
         for(var ti=0;ti<tps.length;ti++)tps[ti].classList.remove("tap");
         draw();                      /* カレンダーに反映してパネルを閉じる */
       });
     }
+    window.__hcRedraw=function(){var p=document.getElementById("adm-panel");if(p&&p.classList.contains("on")&&document.getElementById("hc-gridwrap"))draw();};   /* 同期でデータが変わったら表示も追従 */
     prev.addEventListener("click",function(){hm--;if(hm<0){hm=11;hy--;}draw();});
     next.addEventListener("click",function(){hm++;if(hm>11){hm=0;hy++;}draw();});
     sel.addEventListener("change",draw);
@@ -1631,6 +1631,12 @@ body{
     if(sk==="ledger"){buildLedger(scr);}
     body.appendChild(scr);
   }
+  setInterval(function(){   /* 同期が裏でデータを変えたら開いているカレンダーを再描画 */
+    if(window.__hcDirty){window.__hcDirty=false;
+      var p=document.getElementById("adm-panel");
+      if(p&&p.classList.contains("on")&&document.getElementById("hc-gridwrap")&&window.__hcRedraw)window.__hcRedraw();
+    }
+  },1000);
   if((function(){try{return localStorage.getItem("shiro.farm.name")===ADMIN_NAME;}catch(e){return false;}})()){open();var _ss=document.querySelectorAll(".namesel");for(var _i=0;_i<_ss.length;_i++){_ss[_i].value="";}}
 })();
 </script>

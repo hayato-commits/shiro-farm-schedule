@@ -1,12 +1,37 @@
 <!doctype html>
-<!-- 更新ルール：プログラムを変更したら必ず meta application-version と画面表示（ver-chip）を同時に上げる（例 3.41 / v3.58）。画面のバージョンは meta から800msごとに自動反映される。
-     表記ルール：メタ application-version は数字のみ（例 3.12）、画面の ver-chip は v 付き（例 v3.58）。メタに v を付けると表示が vv3.58 になるため禁止（同期処理が "v"+値 で組み立てる） -->
+<!-- 更新ルール：プログラムを変更したら必ず meta application-version と画面表示（ver-chip）を同時に上げる（例 3.41 / v3.68）。画面のバージョンは meta から800msごとに自動反映される。
+     表記ルール：メタ application-version は数字のみ（例 3.12）、画面の ver-chip は v 付き（例 v3.68）。メタに v を付けると表示が vv3.68 になるため禁止（同期処理が "v"+値 で組み立てる） -->
 <html lang="ja">
 <head>
-<script>/* 同期先を自動設定 v3.58（本体スクリプトより前に常時適用） */
-try{localStorage.setItem('shiro.farm.sync','https://script.google.com/macros/s/AKfycbyU5cTuDXhCSpBwDc44O2oVCLakPA2OeViwNljtXAZuxPLlA1aQ99p7OrGjMeVglHIkDA/exec');}catch(e){}</script>
-<!-- しろう農園スケジュール管理アプリ v3.58 (2026-11-06 自動同期・共有ボタン非表示・作業ドラッグ連続入力／Netlify関連コード撤去) -->
-<meta name="application-version" content="3.58" />
+<script>/* 同期先を自動設定 v3.68（本体スクリプトより前に常時適用） */
+try{localStorage.setItem('shiro.farm.sync','https://script.google.com/macros/s/AKfycbyU5cTuDXhCSpBwDc44O2oVCLakPA2OeViwNljtXAZuxPLlA1aQ99p7OrGjMeVglHIkDA/exec');}catch(e){}</script><script>/* 設定データの早期復元（本体読込より前に実行：消えていれば控えから戻す） */
+(function(){
+  try{
+    var KEYS=["shiro.farm.payinfo","shiro.farm.payunit","shiro.farm.payunit.last","shiro.farm.paydest",
+              "shiro.farm.destlast","shiro.farm.dest","shiro.farm.destmst","shiro.farm.yld","shiro.farm.yldrng",
+              "shiro.farm.product","shiro.farm.contract","shiro.farm.hcal","shiro.farm.dcal","shiro.farm.farmers",
+              "shiro.farm.farmerRecs","shiro.farm.deliv"];
+    function notEmpty(v){
+      if(v===null||v===undefined||v==="")return false;
+      if(v instanceof Array)return v.length>0;
+      if(typeof v==="object")return Object.keys(v).length>0;
+      return true;
+    }
+    var out=[];
+    for(var i=0;i<KEYS.length;i++){
+      var k=KEYS[i],cur=null;
+      try{cur=localStorage.getItem(k);}catch(e){continue;}
+      var cv=null;try{cv=cur===null?null:JSON.parse(cur);}catch(e){cv=cur;}
+      if(notEmpty(cv))continue;
+      var mir=null;try{mir=localStorage.getItem("shiroM."+k);}catch(e){continue;}
+      if(mir===null)continue;
+      try{localStorage.setItem(k,mir);out.push(k);}catch(e){}
+    }
+    window.__earlyRestored=out;
+  }catch(e){}
+})();</script>
+<!-- しろう農園スケジュール管理アプリ v3.68 (2026-11-06 自動同期・共有ボタン非表示・作業ドラッグ連続入力／Netlify関連コード撤去) -->
+<meta name="application-version" content="3.68" />
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
 <meta name="theme-color" content="#D8E8CC" />
@@ -71,6 +96,12 @@ body{
 .title{font-size:14.5px;letter-spacing:.03em;line-height:1.45;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 /* name picker (subtitle slot) */
+#hd-syncrow{display:flex;justify-content:flex-end;margin:5px 0 0;height:30px;line-height:30px}
+#hd-sync{height:30px;padding:0 20px;border:none;border-radius:15px;background:#33502c;color:#fff;
+  font-size:12.5px;font-weight:800;font-family:inherit;letter-spacing:.08em;cursor:pointer;
+  white-space:nowrap;-webkit-tap-highlight-color:transparent;touch-action:manipulation;
+  box-shadow:0 1px 4px rgba(0,0,0,.16)}
+#hd-sync:disabled{background:#6b8a62}
 .namebox{position:relative;display:flex;align-items:center;margin-top:8px;
   border:1px solid var(--line);border-radius:10px;height:42px;padding:0 26px 0 11px;
   background:rgba(255,255,255,.22)}
@@ -475,9 +506,10 @@ body{
     html+='<div class="hd">';
     html+='<div class="bouquet">'+BOUQUET+'</div>';
     html+='<div class="ym"><div class="y">'+y+'</div><div class="m">'+(m+1)+'</div>'
-        +'<div class="en">'+EN[m]+'<span class=\'ver-chip\'>v3.58</span></div></div>';
+        +'<div class="en">'+EN[m]+'<span class=\'ver-chip\'>v3.68</span></div></div>';
     html+='</div>';
     html+='<div class="title-wrap"><div class="title">しろう農園スケジュール管理表</div>'
+        +'<div id="hd-syncrow"><button type="button" id="hd-sync" aria-label="同期">同期</button></div>'
         +'<div class="namebox"><span class="lb">氏名</span>'
         +'<select class="namesel" aria-label="氏名を選択">'+NAME_OPTS+'</select>'
         +'<span class="chev"></span></div></div>';
@@ -932,6 +964,8 @@ body{
   try{syncURL=localStorage.getItem(SYNC_KEY)||"";}catch(e){}
   var syncTimer=null,syncBusy=false,syncPending=false;
   function syncOn(){return !!syncURL;}
+  window.__syncOnOk=function(){try{return syncOn();}catch(e){return false;}};
+  window.__syncPullNow=function(q){try{return syncPull(q);}catch(e){}};
   function wrapSave(name){
     var orig=window[name];
     if(typeof orig!=="function")return;
@@ -981,6 +1015,40 @@ body{
     setTimeout(function(){keepSave();},1500);
   }
   window.__keepRestore=keepRestore;
+  /* ==== 設定データ全般のミラー保存／起動時復元（消えても戻す） ==== */
+  var SETKEYS=["shiro.farm.payinfo","shiro.farm.payunit","shiro.farm.payunit.last","shiro.farm.paydest",
+               "shiro.farm.destlast","shiro.farm.dest","shiro.farm.destmst","shiro.farm.yld","shiro.farm.yldrng",
+               "shiro.farm.product","shiro.farm.contract","shiro.farm.hcal","shiro.farm.dcal","shiro.farm.farmers",
+               "shiro.farm.farmerRecs","shiro.farm.deliv","shiro.farm.farmers.bak"];
+  function isNotEmpty(v){
+    if(v===null||v===undefined||v==="")return false;
+    if(v instanceof Array)return v.length>0;
+    if(typeof v==="object")return Object.keys(v).length>0;
+    return true;
+  }
+  window.__setMirror=function(){
+    for(var i=0;i<SETKEYS.length;i++){
+      var k=SETKEYS[i],raw=null;
+      try{raw=localStorage.getItem(k);}catch(e){continue;}
+      if(raw===null)continue;
+      var v=null;try{v=JSON.parse(raw);}catch(e){v=raw;}
+      if(!isNotEmpty(v))continue;
+      try{localStorage.setItem("shiroM."+k,raw);}catch(e){}
+    }
+  };
+  window.__setRestore=function(){
+    var restored=[];
+    for(var i=0;i<SETKEYS.length;i++){
+      var k=SETKEYS[i],cur=null;
+      try{cur=localStorage.getItem(k);}catch(e){continue;}
+      var curv=null;try{curv=cur===null?null:JSON.parse(cur);}catch(e){curv=cur;}
+      if(isNotEmpty(curv))continue;
+      var mir=null;try{mir=localStorage.getItem("shiroM."+k);}catch(e){continue;}
+      if(mir===null)continue;
+      try{localStorage.setItem(k,mir);restored.push(k);}catch(e){}
+    }
+    return restored;
+  };
   window.__keepSave=keepSave;
   window.__destMapSet=function(m){destMap=m;try{wrJSON(NKEY,m);wrJSON(NKEYB,m);}catch(e){}};
   function prePushMerge(){   /* 送信直前にサーバーの納入先等を取り込み、空上書きを防ぐ */
@@ -1194,9 +1262,9 @@ body{
     });
   })();
   if(syncOn())setTimeout(syncPull,400);
-  setInterval(function(){
+  setInterval(function(){   /* 自動受信は30秒間隔（通信量・電池節約） */
     if(syncOn()&&!document.hidden&&!syncBusy&&!editingBusy())syncPull(true);
-  },5000);
+  },30000);
   document.addEventListener("focusout",function(){
     if(pendingMerged&&!editingBusy()){pendingMerged=false;applyMerged();}
   });
@@ -1250,7 +1318,7 @@ body{
 
   <div id="admin" aria-hidden="true">
     <div class="adm-home">
-      <div class="adm-top"><div class="adm-hd"><div class="adm-eyebrow">SHIRO FARM<span class="ver-chip">v3.58</span></div><div class="adm-title" style="font-size:23px;letter-spacing:0;white-space:nowrap">データ管理メイン画面</div></div>
+      <div class="adm-top"><div class="adm-hd"><div class="adm-eyebrow">SHIRO FARM<span class="ver-chip">v3.68</span></div><div class="adm-title" style="font-size:23px;letter-spacing:0;white-space:nowrap">データ管理メイン画面</div></div>
         <button class="adm-back" id="adm-close" aria-label="カレンダーに戻る"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
       <div class="adm-wrap"><div class="adm-grid">
         <button class="adm-card" data-panel="harvest-farm"><span class="adm-no">01</span><span class="adm-lb">農家管理</span><span class="adm-sub">農家の登録・一覧・支払い確認</span></button>
@@ -1259,13 +1327,17 @@ body{
         <button class="adm-card" data-panel="contract"><span class="adm-no">04</span><span class="adm-lb" style="font-size:17px;white-space:nowrap">農作業受託管理</span><span class="adm-sub">受託作業と報酬の記録</span></button>
       </div></div>
       <div id="app-ver" style="margin:14px 4px 0;padding:10px 12px;border:1px dashed #acb9a3;border-radius:10px;background:rgba(255,255,255,.55);font-size:11.5px;line-height:1.6;color:#3f4b3a">
-        <div style="font-weight:800;font-size:12.5px">アプリ版 <span class="ver-chip">v3.58</span><span style="font-weight:400;margin-left:6px;color:#7d8676">更新日 2026-11-06</span></div>
-        <div style="margin-top:3px;color:#3f4b3a">今回の更新：納入先データが消える問題を修正（送信前の和集合マージ＋端末内の控えから自動復元）</div>
+        <div style="font-weight:800;font-size:12.5px">アプリ版 <span class="ver-chip">v3.68</span><span style="font-weight:400;margin-left:6px;color:#7d8676">更新日 2026-11-06</span></div>
+        <div style="margin-top:3px;color:#3f4b3a">今回の更新：氏名BOXの上の同期ボタンを少し大きく（既存の同期ボタンは変更なし）</div>
+      </div>
+      <div style="display:flex;gap:8px;margin:12px 4px 0;flex-wrap:wrap">
+        <button type="button" id="home-sync" style="flex:1 1 auto;min-width:120px;min-height:46px;border:none;border-radius:10px;background:#33502c;color:#fff;font-size:14px;font-weight:800;font-family:inherit;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.16);-webkit-tap-highlight-color:transparent;touch-action:manipulation">同期</button>
+        <span id="home-sync-info" style="flex:1 1 100%;font-size:11.5px;color:#7d8676;min-height:16px;line-height:1.5"></span>
       </div>
       <button class="adm-home-back" id="adm-close2">カレンダーに戻る</button>
     </div>
     <div class="adm-panel" id="adm-panel" aria-hidden="true">
-      <div class="adm-top"><div class="adm-hd"><div class="adm-eyebrow">データー管理<span class="ver-chip">v3.58</span></div><div class="adm-title" id="adm-ptitle">-</div></div>
+      <div class="adm-top"><div class="adm-hd"><div class="adm-eyebrow">データー管理<span class="ver-chip">v3.68</span></div><div class="adm-title" id="adm-ptitle">-</div></div>
         <button class="adm-back" id="adm-pback" aria-label="戻る"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
       <div class="adm-body" id="adm-pbody"></div>
       <button class="adm-home-back" id="adm-pback2">戻る</button>
@@ -1699,6 +1771,44 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     if(navStack.length){var s=navStack.pop();curPanel=s.k;curExtra=s.extra;renderPanel(s.k,s.extra);}
     else{goAdminHome();}
   }
+  (function(){   /* メイン画面の同期ボタン */
+    var btn=document.getElementById("home-sync"),info=document.getElementById("home-sync-info");
+    if(!btn)return;
+    var tmr=null;
+    function setInfo(t,col){if(info){info.textContent=t;info.style.color=col||"#7d8676";}}
+    btn.addEventListener("click",function(){
+      var okOn=window.__syncOnOk?window.__syncOnOk():false;
+      if(!okOn){setInfo("同期先が未設定です","#b4542e");return;}
+      var lb=btn.textContent;btn.disabled=true;btn.textContent="同期中…";btn.style.background="#6b8a62";setInfo("");
+      try{if(window.__syncPushNow)window.__syncPushNow();}catch(e){}
+      clearTimeout(tmr);
+      setTimeout(function(){
+        if(window.__syncPullNow)window.__syncPullNow();
+        setTimeout(function(){
+          btn.disabled=false;btn.textContent="完了";btn.style.background="#2e7d32";
+          setInfo("同期しました（"+new Date().toLocaleTimeString("ja-JP",{hour:"2-digit",minute:"2-digit"})+"）","#2e7d32");
+          clearTimeout(tmr);
+          tmr=setTimeout(function(){btn.textContent=lb;btn.style.background="#33502c";},1800);
+        },1600);
+      },700);
+    });
+  })();
+  (function(){   /* 氏名BOXの上に置いた同期ボタン（委譲） */
+    document.addEventListener("click",function(ev){
+      var b=ev.target&&ev.target.closest?ev.target.closest("#hd-sync"):null;
+      if(!b)return;
+      ev.preventDefault();ev.stopPropagation();
+      var lb="同期";
+      var okOn=window.__syncOnOk?window.__syncOnOk():false;
+      if(!okOn){b.textContent="未設定";setTimeout(function(){b.textContent=lb;},1800);return;}
+      b.disabled=true;b.textContent="…";
+      try{if(window.__syncPushNow)window.__syncPushNow();}catch(e){}
+      setTimeout(function(){
+        if(window.__syncPullNow)window.__syncPullNow();
+        setTimeout(function(){b.disabled=false;b.textContent="完了";setTimeout(function(){b.textContent=lb;},1600);},1500);
+      },700);
+    },true);
+  })();
   function renderPanel(k,extra){
     extra=extra||"";
     var o=PANELS[k];if(!o)return;
@@ -1796,7 +1906,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     if(!(rows instanceof Array))rows=[];
     var cap=document.createElement("div");cap.className="scr-cap";
     cap.style.fontSize="13px";cap.style.letterSpacing="0";
-    cap.innerHTML=esc2(title)+'<span class=\'ver-chip\'>v3.58</span>';
+    cap.innerHTML=esc2(title)+'<span class=\'ver-chip\'>v3.68</span>';
     root.appendChild(cap);
     var t=document.createElement("table");t.className="scr-table";
     var tr=document.createElement("tr");
@@ -1839,7 +1949,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     });
   }
   function esc2(x){return String(x).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
-  /* ---- 永続化の三重化：本体キー＋バックアップキー＋GASサーバー同期（v3.58方式） ---- */
+  /* ---- 永続化の三重化：本体キー＋バックアップキー＋GASサーバー同期（v3.68方式） ---- */
   function rdJSON(k){
     try{var v=localStorage.getItem(k);if(v==null||v==="")return null;
       var o=JSON.parse(v);return o==null?null:o;}catch(e){return null;}
@@ -2491,13 +2601,33 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     saveDestLast();
   }
   window.__destLastRef=function(){return destLast;};
+  /* 画面のスコープに依存せず、保存領域から常に最新の割当を読む／書く */
+  window.__destMapFresh=function(){
+    var m=null;
+    try{m=JSON.parse(localStorage.getItem("shiro.farm.dest")||"{}");}catch(e){m={};}
+    if(!m||typeof m!=="object"||m instanceof Array)m={};
+    try{
+      var bk=JSON.parse(localStorage.getItem("shiro.farm.dest.bak")||"{}");
+      if(bk&&typeof bk==="object"){for(var k in bk){if(bk[k]&&!m[k])m[k]=bk[k];}}
+    }catch(e){}
+    return m;
+  };
+  window.__destAssign=function(nm,dk,v){
+    var d=normDestName(v||"");
+    var m=window.__destMapFresh();
+    if(d){m[nm+"|"+dk]=d;}else{delete m[nm+"|"+dk];}
+    try{wrJSON("shiro.farm.dest",m);wrJSON("shiro.farm.dest.bak",m);}catch(e){}
+    rememberDest(nm,d);
+    try{if(window.__syncPushNow)window.__syncPushNow();}catch(e){}
+    return d;
+  };
   window.__destLastOf=destLastOf;
   function saveDestMst(){setTimeout(function(){try{if(window.__keepSave)window.__keepSave();}catch(e){}},0);
     wrJSON(MSTKEY,destMst);wrJSON(MSTKEYB,destMst);
     try{if(window.__syncPushNow)window.__syncPushNow();}catch(e){}
   }
   function buildDestMst(root){
-    var ttl=document.createElement("div");ttl.className="scr-cap";ttl.innerHTML='納入先の登録<span class=\'ver-chip\'>v3.58</span>';
+    var ttl=document.createElement("div");ttl.className="scr-cap";ttl.innerHTML='納入先の登録<span class=\'ver-chip\'>v3.68</span>';
     root.appendChild(ttl);
     var cap=document.createElement("div");cap.className="scr-cap";cap.style.fontSize="13px";
     cap.textContent="よく使う納入先を登録しておくと便利です";
@@ -2537,7 +2667,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   }
   function buildDeliv(root,mode){
     mode=mode||"menu";   /* "menu"=加工ゲル表示 / "dest"=納入先表示 / "ledger"=農家管理>納品データ確認 */
-    var ttl=document.createElement("div");ttl.className="scr-cap";if(mode!=='ledger'){ttl.style.fontSize='12px';ttl.style.letterSpacing='0';}ttl.innerHTML=(mode==='ledger'?'納品データ確認（農家管理）':(mode==='dest'?'納品数量と納品先の確認':'納品数量と加工ゲルの確認'))+'<span class=\'ver-chip\'>v3.58</span>';
+    var ttl=document.createElement("div");ttl.className="scr-cap";if(mode!=='ledger'){ttl.style.fontSize='12px';ttl.style.letterSpacing='0';}ttl.innerHTML=(mode==='ledger'?'納品データ確認（農家管理）':(mode==='dest'?'納品数量と納品先の確認':'納品数量と加工ゲルの確認'))+'<span class=\'ver-chip\'>v3.68</span>';
     root.appendChild(ttl);
     var cap=document.createElement("div");cap.className="scr-cap";cap.style.fontSize="13px";
     cap.textContent=(mode==='ledger')?'農家管理の納品データ確認です。納品カレンダーに入力したデータを農家ごとに確認できます':(mode==='dest'?'納品カレンダーに入力した納品データを納入先とあわせて確認できます':'納品カレンダーに入力した納品データの一覧です');
@@ -2619,7 +2749,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       for(var i=0;i<fields.length;i++){var th=document.createElement("th");th.textContent=fields[i];tr.appendChild(th);}
       t.appendChild(tr);
       var tq=0,tg=0,ry=0,cy=0;
-      var destNeedSave=false;
+      var destNeedSave=false;window.__pendingAssign=[];
       for(var r2=0;r2<rows.length;r2++){
         var nm2=rows[r2][0],d2=rows[r2][1];tq+=d2.kg;
         var yr2=(typeof d2.yr==="number")?d2.yr:0.45;tg+=d2.kg*yr2;ry+=yr2;cy++;
@@ -2633,9 +2763,12 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
         var selN=document.createElement("select");
         selN.className="scr-cell scr-dest";
         selN.style.width="100%";selN.style.minWidth="150px";selN.style.maxWidth="240px";
-        var curMap=((mode==="ledger")?destMapL:destMap);
+        var curMap=((mode==="ledger")?destMapL:(window.__destMapFresh?window.__destMapFresh():destMap));
         var cur=curMap[nm2+"|"+d2.y+"-"+d2.m+"-"+d2.d]||"";
-        if(!cur&&nm2){var dl0=destLastOf(nm2);if(dl0){cur=dl0;curMap[nm2+"|"+d2.y+"-"+d2.m+"-"+d2.d]=dl0;destNeedSave=true;}}
+        if(!cur&&nm2){
+          var dl0=destLastOf(nm2);
+          if(dl0){cur=dl0;curMap[nm2+"|"+d2.y+"-"+d2.m+"-"+d2.d]=dl0;destNeedSave=true;if(window.__pendingAssign)window.__pendingAssign.push([nm2,d2.y+"-"+d2.m+"-"+d2.d,dl0]);}
+        }
         var opts='<option value="">— 選択 —</option>';
         for(var m5=0;m5<destMst.length;m5++){if(destMst[m5]===cur){opts+='<option value="'+esc2(destMst[m5])+'" selected>'+esc2(destMst[m5])+'</option>';}else{opts+='<option value="'+esc2(destMst[m5])+'">'+esc2(destMst[m5])+'</option>';}}
         if(cur&&destMst.indexOf(cur)<0)opts+='<option value="'+esc2(cur)+'" selected>'+esc2(cur)+'</option>';   /* 過去に自由入力した値も選択肢に残す */
@@ -2671,7 +2804,13 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       e3.appendChild(tc);e3.appendChild(tde);e3.appendChild(tdq);e3.appendChild(tdy);e3.appendChild(tdg);
       }
       t.appendChild(e3);
-      if(destNeedSave){if(mode==="ledger")saveDestL();else saveDest();}
+      if(destNeedSave){
+        if(mode==="ledger"){saveDestL();}
+        else if(window.__pendingAssign&&window.__pendingAssign.length){
+          for(var pi=0;pi<window.__pendingAssign.length;pi++){var pa=window.__pendingAssign[pi];if(window.__destAssign)window.__destAssign(pa[0],pa[1],pa[2]);}
+        }else{saveDest();}
+      }
+      window.__pendingAssign=[];
       lst.appendChild(t);
       var sum=document.createElement("div");sum.className="scr-sum";
       sum.textContent=(mode==="ledger")?("合計納品数量: "+Math.floor(tq)+" kg（"+rows.length+"件）"):("合計納品数量: "+Math.floor(tq)+" kg（"+rows.length+"件）・加工ゲル合計: "+Math.round(tg*10)/10+" kg");
@@ -2683,10 +2822,14 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     lst.addEventListener("change",function(e){
       var inpD=e.target.closest?e.target.closest("select.scr-dest"):null;
       if(inpD){
-        var nmD=inpD.getAttribute("data-n"),vlD=normDestName(inpD.value);
-        if(mode==="ledger"){destMapL[nmD+"|"+inpD.getAttribute("data-y")]=vlD;saveDestL();}
-        else{destMap[nmD+"|"+inpD.getAttribute("data-y")]=vlD;saveDest();}
-        rememberDest(nmD,vlD);   /* 農家ごとに記憶 */
+        var nmD=inpD.getAttribute("data-n"),dkD=inpD.getAttribute("data-y");
+        if(mode==="ledger"){
+          var vlL=normDestName(inpD.value);
+          destMapL[nmD+"|"+dkD]=vlL;saveDestL();rememberDest(nmD,vlL);
+        }else{
+          var vlS=window.__destAssign?window.__destAssign(nmD,dkD,inpD.value):normDestName(inpD.value);
+          destMap[nmD+"|"+dkD]=vlS;
+        }
         return;
       }
       var inp=e.target.closest?e.target.closest("input[data-y]"):null;
@@ -2765,6 +2908,22 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   if(!payInfo||typeof payInfo!=="object"||payInfo instanceof Array)payInfo={};
   function savePayInfo(){wrJSON(PAYKEY,payInfo);wrJSON(PAYKEYB,payInfo);try{if(window.__syncPushNow)window.__syncPushNow();}catch(e){}}
   window.__payInfoRef=function(){return payInfo;};
+  window.__payInfoFresh=function(){
+    var m=null;
+    try{m=JSON.parse(localStorage.getItem(PAYKEY)||"{}");}catch(e){m={};}
+    if(!m||typeof m!=="object"||m instanceof Array)m={};
+    try{var bk=JSON.parse(localStorage.getItem(PAYKEYB)||"{}");if(bk&&typeof bk==="object"){for(var k in bk){if(bk[k]&&!m[k])m[k]=bk[k];}}}catch(e){}
+    return m;
+  };
+  window.__payInfoSet=function(kk,obj){   /* 画面スコープに依存せず保存 */
+    var m=window.__payInfoFresh();
+    if(obj) {m[kk]=obj;} else {delete m[kk];}
+    payInfo=m;
+    try{wrJSON(PAYKEY,m);wrJSON(PAYKEYB,m);}catch(e){}
+    try{if(window.__syncPushNow)window.__syncPushNow();}catch(e){}
+    try{if(window.__setMirror)window.__setMirror();}catch(e){}
+    return m;
+  };
   /* ---- 単価（月ごとに1つの共通単価） ---- */
   var PAYUKEY="shiro.farm.payunit",payUnit=rdJSON(PAYUKEY);
   if(!payUnit||typeof payUnit!=="object"||payUnit instanceof Array)payUnit={};
@@ -3151,7 +3310,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   function buildPayContent(root){
     var ym=payMonth(),UNIT=100;
     var ttl=document.createElement("div");ttl.className="scr-cap";ttl.style.fontSize="13px";ttl.style.letterSpacing="0";
-    ttl.innerHTML='支払い確認（月別・全農家）<span class=\'ver-chip\'>v3.58</span>';
+    ttl.innerHTML='支払い確認（月別・全農家）<span class=\'ver-chip\'>v3.68</span>';
     root.appendChild(ttl);
     var note=document.createElement("div");note.className="scr-cap";note.style.fontSize="12px";note.style.letterSpacing="0";
     note.textContent="納品受注カレンダーに登録された納品量 × 単価（下の欄で一括変更できます）";
@@ -3179,7 +3338,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     root.appendChild(ubar);
     var wrap=document.createElement("div");root.appendChild(wrap);
     function render(){
-      lbl.innerHTML=ym.y+"年"+(ym.m+1)+"月<span class=\'ver-chip\'>v3.58</span>";
+      lbl.innerHTML=ym.y+"年"+(ym.m+1)+"月<span class=\'ver-chip\'>v3.68</span>";
       wrap.innerHTML="";
       var UNIT=payUnitFor(ym.y,ym.m);
       if(document.activeElement!==uinp)uinp.value=String(UNIT);
@@ -3225,11 +3384,12 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
         clr.setAttribute("data-pk",pkAttr);clr.setAttribute("aria-label","支払日を削除");clr.title="支払日を削除";
         clr.style.cssText="margin-left:4px;height:26px;padding:0 8px;line-height:24px;text-align:center;border:1px solid #d9a3a3;border-radius:6px;background:#fdecec;color:#b3261e;font-size:11px;font-weight:700;cursor:pointer;vertical-align:middle;-webkit-tap-highlight-color:transparent;touch-action:manipulation;white-space:nowrap;display:"+(rec.d?"inline-block":"none");
         function applyDateForKey(kk,v,btnEl,clrEl){   /* キーを引数で受け取り、確実にその行へ書き込む */
-          var o=payInfo[kk]||(payInfo[kk]={});
-          if(v){o.d=v;payInfo[kk]=o;}
-          else{try{delete o.d;}catch(e2){o.d="";}if(!o.paid){delete payInfo[kk];}else{payInfo[kk]=o;}}
-          savePayInfo();
-          var cur=(payInfo[kk]||{}).d||"";
+          var fresh=window.__payInfoFresh?window.__payInfoFresh():payInfo;
+          var o=fresh[kk]||{};
+          if(v){o.d=v;}else{try{delete o.d;}catch(e2){o.d="";}}
+          var keep=(o.d||o.paid)?o:null;
+          if(window.__payInfoSet){window.__payInfoSet(kk,keep);}else{payInfo[kk]=o;savePayInfo();}
+          var cur=(window.__payInfoFresh?window.__payInfoFresh()[kk]||{}:payInfo[kk]||{}).d||"";
           if(btnEl){
             btnEl.textContent=cur?cur.replace(/-/g,"/"):"未設定";
             btnEl.style.borderColor=cur?"#9cc08c":"#c9c9c1";
@@ -3301,7 +3461,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     var ok=document.createElement("button");ok.className="scr-regok";ok.textContent="登録";
     ok.addEventListener("click",function(){commit();});
     box.appendChild(inp);box.appendChild(ok);root.appendChild(box);
-    var cap=document.createElement("div");cap.className="scr-cap";cap.innerHTML='アロエベラ栽培農家リスト<span class=\'ver-chip\'>v3.58</span>';
+    var cap=document.createElement("div");cap.className="scr-cap";cap.innerHTML='アロエベラ栽培農家リスト<span class=\'ver-chip\'>v3.68</span>';
     root.appendChild(cap);
     var gmsg=document.createElement("div");gmsg.className="scr-guardmsg";gmsg.id="scr-guardmsg";root.appendChild(gmsg);
     var lst=document.createElement("div");lst.className="scr-list";lst.id="farmer-list";root.appendChild(lst);
@@ -3341,7 +3501,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     function openFarmer(name){
       var back=document.createElement("button");back.className="scr-dl";back.textContent="← 農家リストに戻る";
       root.innerHTML="";root.appendChild(back);
-      var ttl=document.createElement("div");ttl.className="scr-cap";ttl.innerHTML=esc2(name)+" の収穫記録<span class=\'ver-chip\'>v3.58</span>";
+      var ttl=document.createElement("div");ttl.className="scr-cap";ttl.innerHTML=esc2(name)+" の収穫記録<span class=\'ver-chip\'>v3.68</span>";
       root.appendChild(ttl);
       var t=document.createElement("table");t.className="scr-table";
       var fields=["日付","作物","収穫量(kg)","メモ"];
@@ -3464,6 +3624,32 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       else{navBack();}
     });
     body.appendChild(back);
+    /* 同期ボタン：カレンダーの日付マスのすぐ下に表示 */
+    var srow=document.createElement("div");srow.id="cal-syncrow";
+    srow.style.cssText="display:flex;justify-content:flex-end;align-items:center;gap:8px;margin:8px 2px 10px";
+    var sbtn=document.createElement("button");sbtn.type="button";sbtn.className="cal-syncfab";sbtn.id="cal-sync";
+    sbtn.textContent="同期";
+    sbtn.style.cssText="min-width:96px;height:40px;padding:0 18px;border:none;border-radius:20px;background:#33502c;color:#fff;"
+      +"font-size:13.5px;font-weight:800;font-family:inherit;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.18);"
+      +"-webkit-tap-highlight-color:transparent;touch-action:manipulation;letter-spacing:.02em;white-space:nowrap";
+    var sdone=null;
+    sbtn.addEventListener("click",function(){
+      var okOn=window.__syncOnOk?window.__syncOnOk():false;
+      if(!okOn){sbtn.textContent="未設定";sbtn.style.background="#b4542e";clearTimeout(sdone);
+        sdone=setTimeout(function(){sbtn.textContent="同期";sbtn.style.background="#33502c";},1800);return;}
+      sbtn.disabled=true;sbtn.textContent="同期中…";sbtn.style.background="#6b8a62";
+      try{if(window.__syncPushNow)window.__syncPushNow();}catch(e){}
+      setTimeout(function(){
+        if(window.__syncPullNow)window.__syncPullNow();
+        setTimeout(function(){
+          sbtn.disabled=false;sbtn.textContent="完了";sbtn.style.background="#2e7d32";
+          clearTimeout(sdone);
+          sdone=setTimeout(function(){sbtn.textContent="同期";sbtn.style.background="#33502c";},1600);
+        },1500);
+      },700);
+    });
+    srow.appendChild(sbtn);
+    body.appendChild(srow);   /* draw() で日付マスの直後へ移動する */
     var bar=document.createElement("div");bar.className="hc-bar";
     var sel=document.createElement("select");sel.className="hc-sel";
     sel.innerHTML='<option value="">全農家</option>';
@@ -3491,7 +3677,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       return set;
     }
     function draw(){
-      lbl.innerHTML=hy+"年"+(hm+1)+"月<span class=\'ver-chip\'>v3.58</span>";
+      lbl.innerHTML=hy+"年"+(hm+1)+"月<span class=\'ver-chip\'>v3.68</span>";
       var hol=holidaySet(hy,hm);
       var first=new Date(hy,hm,1),off=first.getDay(),dim=new Date(hy,hm+1,0).getDate();
       var grid='<div class="hc-dows">'+["日","月","火","水","木","金","土"].map(function(d,ix){return '<span'+(ix===0?' class="sun"':'')+'>'+d+'</span>';}).join("")+'</div><div class="hc-grid">';
@@ -3512,6 +3698,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       if(gridEl)gridEl.outerHTML='<div id="hc-gridwrap">'+grid+'</div>';
       else{var w=document.createElement("div");w.id="hc-gridwrap";w.innerHTML=grid;body.appendChild(w);}
       document.getElementById("hc-gridwrap").addEventListener("click",dayTap);   /* 再描画のたびに新要素へ1回だけ付ける */
+      var sr=document.getElementById("cal-syncrow"),gw=document.getElementById("hc-gridwrap");
+      if(sr&&gw&&gw.parentNode===body)body.insertBefore(sr,gw.nextSibling);   /* 日付マスのすぐ下へ */
     }
     function dayTap(e){
       var c=e.target.closest?e.target.closest(".hc-cell[data-day]"):null;
@@ -3526,7 +3714,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       else{for(var f4=0;f4<farmers.length;f4++){var a2=CALD[key+"|"+farmers[f4]]||[];for(var z2=0;z2<a2.length;z2++)rows.push([farmers[f4],a2[z2].kg]);}}
       var box=document.createElement("div");   /* 毎回新規：古いboxのリスナー引き継ぎを防ぐ */
       box.id="hc-detail";box.className="scr-list";box.setAttribute("data-day",dd);
-      var html='<div class="scr-cap">'+(hm+1)+"月"+dd+"日の"+CALT.w+'<span class=\'ver-chip\'>v3.58</span></div>';
+      var html='<div class="scr-cap">'+(hm+1)+"月"+dd+"日の"+CALT.w+'<span class=\'ver-chip\'>v3.68</span></div>';
       html+='<div class="hc-addrow">'
           +'<input class="scr-cell" id="hcd-kg" type="number" step="0.1" placeholder="'+CALT.w+'量kg">'
           +'<select class="scr-cell" id="hcd-f"><option value="">農家を選択</option>'
@@ -3742,6 +3930,9 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   },800);
 try{if(window.__normDestAll)window.__normDestAll();}catch(e){}
 try{if(window.__keepRestore)window.__keepRestore();}catch(e){}
+try{if(window.__setRestore)window.__setRestore();}catch(e){}
+setTimeout(function(){try{if(window.__setMirror)window.__setMirror();}catch(e){}},1200);
+setInterval(function(){try{if(window.__setMirror)window.__setMirror();}catch(e){}},4000);
 if((function(){try{return localStorage.getItem("shiro.farm.name")===ADMIN_NAME;}catch(e){return false;}})()){open();var _ss=document.querySelectorAll(".namesel");for(var _i=0;_i<_ss.length;_i++){_ss[_i].value="";}}
 })();
 </script>

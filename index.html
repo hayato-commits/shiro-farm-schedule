@@ -1,12 +1,12 @@
 <!doctype html>
-<!-- 更新ルール：プログラムを変更したら必ず meta application-version と画面表示（ver-chip）を同時に上げる（例 3.41 / v3.50）。画面のバージョンは meta から800msごとに自動反映される。
-     表記ルール：メタ application-version は数字のみ（例 3.12）、画面の ver-chip は v 付き（例 v3.50）。メタに v を付けると表示が vv3.50 になるため禁止（同期処理が "v"+値 で組み立てる） -->
+<!-- 更新ルール：プログラムを変更したら必ず meta application-version と画面表示（ver-chip）を同時に上げる（例 3.41 / v3.52）。画面のバージョンは meta から800msごとに自動反映される。
+     表記ルール：メタ application-version は数字のみ（例 3.12）、画面の ver-chip は v 付き（例 v3.52）。メタに v を付けると表示が vv3.52 になるため禁止（同期処理が "v"+値 で組み立てる） -->
 <html lang="ja">
 <head>
-<script>/* 同期先を自動設定 v3.50（本体スクリプトより前に常時適用） */
+<script>/* 同期先を自動設定 v3.52（本体スクリプトより前に常時適用） */
 try{localStorage.setItem('shiro.farm.sync','https://script.google.com/macros/s/AKfycbyU5cTuDXhCSpBwDc44O2oVCLakPA2OeViwNljtXAZuxPLlA1aQ99p7OrGjMeVglHIkDA/exec');}catch(e){}</script>
-<!-- しろう農園スケジュール管理アプリ v3.50 (2026-11-06 自動同期・共有ボタン非表示・作業ドラッグ連続入力／Netlify関連コード撤去) -->
-<meta name="application-version" content="3.50" />
+<!-- しろう農園スケジュール管理アプリ v3.52 (2026-11-06 自動同期・共有ボタン非表示・作業ドラッグ連続入力／Netlify関連コード撤去) -->
+<meta name="application-version" content="3.52" />
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
 <meta name="theme-color" content="#D8E8CC" />
@@ -475,7 +475,7 @@ body{
     html+='<div class="hd">';
     html+='<div class="bouquet">'+BOUQUET+'</div>';
     html+='<div class="ym"><div class="y">'+y+'</div><div class="m">'+(m+1)+'</div>'
-        +'<div class="en">'+EN[m]+'<span class=\'ver-chip\'>v3.50</span></div></div>';
+        +'<div class="en">'+EN[m]+'<span class=\'ver-chip\'>v3.52</span></div></div>';
     html+='</div>';
     html+='<div class="title-wrap"><div class="title">しろう農園スケジュール管理表</div>'
         +'<div class="namebox"><span class="lb">氏名</span>'
@@ -962,7 +962,8 @@ body{
         destmst:(window.__destMstRef?window.__destMstRef():[]),
         farmerDel:(window.__farmDelRef?window.__farmDelRef():{}),
         payunit:(window.__payUnitRef?window.__payUnitRef():{}),
-        paylast:String(window.__payLastRef?window.__payLastRef():"")}),
+        paylast:String(window.__payLastRef?window.__payLastRef():""),
+        xl:(window.__xlSnap?window.__xlSnap():{})}),
           headers:{"Content-Type":"text/plain;charset=utf-8"}}).then(function(r){return r.text();}).then(function(){
             for(var i=0;i<dk.length;i++)delete dirty[dk[i]];
             syncEver=true;
@@ -1057,6 +1058,7 @@ body{
     }
     /* ---- 収穫管理データの共有（農家リスト・記録・収穫カレンダー） ---- */
     if(window.__hMerge)ch=window.__hMerge(remote,syncEver)||ch;
+    if(window.__xlMerge)ch=window.__xlMerge(remote)||ch;
     return ch;
   }
   function applyMerged(){
@@ -1188,7 +1190,7 @@ body{
 
   <div id="admin" aria-hidden="true">
     <div class="adm-home">
-      <div class="adm-top"><div class="adm-hd"><div class="adm-eyebrow">SHIRO FARM<span class="ver-chip">v3.50</span></div><div class="adm-title" style="font-size:23px;letter-spacing:0;white-space:nowrap">データ管理メイン画面</div></div>
+      <div class="adm-top"><div class="adm-hd"><div class="adm-eyebrow">SHIRO FARM<span class="ver-chip">v3.52</span></div><div class="adm-title" style="font-size:23px;letter-spacing:0;white-space:nowrap">データ管理メイン画面</div></div>
         <button class="adm-back" id="adm-close" aria-label="カレンダーに戻る"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
       <div class="adm-wrap"><div class="adm-grid">
         <button class="adm-card" data-panel="harvest-farm"><span class="adm-no">01</span><span class="adm-lb">農家管理</span><span class="adm-sub">農家の登録・一覧・支払い確認</span></button>
@@ -1197,13 +1199,13 @@ body{
         <button class="adm-card" data-panel="contract"><span class="adm-no">04</span><span class="adm-lb" style="font-size:17px;white-space:nowrap">農作業受託管理</span><span class="adm-sub">受託作業と報酬の記録</span></button>
       </div></div>
       <div id="app-ver" style="margin:14px 4px 0;padding:10px 12px;border:1px dashed #acb9a3;border-radius:10px;background:rgba(255,255,255,.55);font-size:11.5px;line-height:1.6;color:#3f4b3a">
-        <div style="font-weight:800;font-size:12.5px">アプリ版 <span class="ver-chip">v3.50</span><span style="font-weight:400;margin-left:6px;color:#7d8676">更新日 2026-11-06</span></div>
-        <div style="margin-top:3px;color:#3f4b3a">今回の更新：保存できないプレビュー環境では明細を画像で表示（長押し保存）／通常のブラウザではPDF保存のまま</div>
+        <div style="font-weight:800;font-size:12.5px">アプリ版 <span class="ver-chip">v3.52</span><span style="font-weight:400;margin-left:6px;color:#7d8676">更新日 2026-11-06</span></div>
+        <div style="margin-top:3px;color:#3f4b3a">今回の更新：納入先名が全角10文字を超える場合は半角へ自動変換（登録・取込・既存データ）</div>
       </div>
       <button class="adm-home-back" id="adm-close2">カレンダーに戻る</button>
     </div>
     <div class="adm-panel" id="adm-panel" aria-hidden="true">
-      <div class="adm-top"><div class="adm-hd"><div class="adm-eyebrow">データー管理<span class="ver-chip">v3.50</span></div><div class="adm-title" id="adm-ptitle">-</div></div>
+      <div class="adm-top"><div class="adm-hd"><div class="adm-eyebrow">データー管理<span class="ver-chip">v3.52</span></div><div class="adm-title" id="adm-ptitle">-</div></div>
         <button class="adm-back" id="adm-pback" aria-label="戻る"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
       <div class="adm-body" id="adm-pbody"></div>
       <button class="adm-home-back" id="adm-pback2">戻る</button>
@@ -1734,7 +1736,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     if(!(rows instanceof Array))rows=[];
     var cap=document.createElement("div");cap.className="scr-cap";
     cap.style.fontSize="13px";cap.style.letterSpacing="0";
-    cap.innerHTML=esc2(title)+'<span class=\'ver-chip\'>v3.50</span>';
+    cap.innerHTML=esc2(title)+'<span class=\'ver-chip\'>v3.52</span>';
     root.appendChild(cap);
     var t=document.createElement("table");t.className="scr-table";
     var tr=document.createElement("tr");
@@ -1777,7 +1779,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     });
   }
   function esc2(x){return String(x).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
-  /* ---- 永続化の三重化：本体キー＋バックアップキー＋GASサーバー同期（v3.50方式） ---- */
+  /* ---- 永続化の三重化：本体キー＋バックアップキー＋GASサーバー同期（v3.52方式） ---- */
   function rdJSON(k){
     try{var v=localStorage.getItem(k);if(v==null||v==="")return null;
       var o=JSON.parse(v);return o==null?null:o;}catch(e){return null;}
@@ -1832,7 +1834,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     if(!(list instanceof Array)||!list.length)return false;
     var ch=false;
     for(var i=0;i<list.length;i++){
-      var v=String(list[i]||"").trim();
+      var v=normDestName(list[i]);
       if(v&&destMst.indexOf(v)<0){destMst.push(v);ch=true;}
     }
     if(ch){wrJSON(MSTKEY,destMst);wrJSON(MSTKEYB,destMst);}
@@ -1958,12 +1960,470 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   var destMst=rdJSON(MSTKEY);
   if(!(destMst instanceof Array))destMst=[];
   if(!destMst.length){var mb5=rdJSON(MSTKEYB);if(mb5 instanceof Array&&mb5.length)destMst=mb5;}
+  window.__destMstMerge=function(list){   /* サーバーの納入先を手元へ取り込む（和集合） */
+    if(!(list instanceof Array)||!list.length)return false;
+    var ch=false;
+    for(var i=0;i<list.length;i++){
+      var v=normDestName(list[i]);
+      if(v&&destMst.indexOf(v)<0){destMst.push(v);ch=true;}
+    }
+    if(ch){wrJSON(MSTKEY,destMst);wrJSON(MSTKEYB,destMst);}
+    return ch;
+  };
+  window.__hMerge=function(remote,syncEver){
+    var ch=false;
+    if(remote&&(remote.destmst||remote.destMst)){   /* サーバーの納入先マスタを必ず取り込む */
+      if(window.__destMstMerge(remote.destmst||remote.destMst))ch=true;
+    }
+    var needPush=false;   /* 取り込んだ中に手元より古いデータがあった=自端末の変更が未送信 */
+    var delivRef=window.__delivRef(),delivTsRef=window.__delivTsRef();
+    var rf=remote&&remote.farmers instanceof Array?remote.farmers:[];
+    var rr=remote&&remote.farmerRecs&&typeof remote.farmerRecs==="object"?remote.farmerRecs:{};
+    var rh=remote&&remote.hcal&&typeof remote.hcal==="object"?remote.hcal:{};
+    var lf=window.__farmersRef()||[];
+    /* サーバー側の削除記録を取り込み、手元からも除外する */
+    var rfd=(remote&&(remote.farmerDel||remote.farmerdel))||null;
+    if(rfd&&typeof rfd==="object"){
+      for(var dn2 in rfd){
+        if(!farmDel[dn2]){farmDel[dn2]=rfd[dn2]||Date.now();ch=true;}
+        var k2=lf.indexOf(dn2);
+        if(k2>=0){lf.splice(k2,1);ch=true;}
+      }
+      if(ch)saveFarmDel();
+    }
+    if(rf.length){
+      var added=false;
+      for(var i=0;i<rf.length;i++){if(isFarmDel(rf[i]))continue;if(lf.indexOf(rf[i])<0){lf.push(rf[i]);added=true;}}
+      if(added){ch=true;}
+    }
+    var lr=window.__recsRef()||{};
+    var lrt=window.__recsTsRef()||{};
+    for(var nm in rr){
+      if(recentR["r|"+nm]&&Date.now()-recentR["r|"+nm]<GUARD_MS)continue;   /* 自端末の変更を優先（復活防止） */
+      var lv=lr[nm]instanceof Array?lr[nm]:null;
+      var rvn=rr[nm]instanceof Array?rr[nm]:[];
+      var rt2=(remote.recsTs&&typeof remote.recsTs[nm]==="number")?remote.recsTs[nm]:0;
+      var lt2=(lrt[nm]&&typeof lrt[nm]==="number")?lrt[nm]:0;
+      var ad2=false;
+      if(rt2>0){ad2=(!lt2||rt2>lt2);}   /* 新形式：時刻が新しいほうを採用（削除も伝わる） */
+      else if(!lt2){
+        ad2=(JSON.stringify(lv||[])!==JSON.stringify(rvn))&&(!lv||!lv.length||rvn.length>=lv.length);   /* 旧形式：従来ルール */
+      }else if(JSON.stringify(lv||[])!==JSON.stringify(rvn)){needPush=true;}   /* 手元のほうが新しい：送り返す */
+      if(ad2){lr[nm]=rvn.slice();lrt[nm]=rt2||Date.now();ch=true;}
+    }
+    var lh=window.__hcalRef()||{};
+    var lht=window.__hcalTsRef()||{};
+    for(var k4 in rh){
+      if(recentH["h|"+k4]&&Date.now()-recentH["h|"+k4]<GUARD_MS)continue;   /* 自端末の変更を優先（復活防止） */
+      var lvh=lh[k4]instanceof Array?lh[k4]:null;
+      var rvh=rh[k4]instanceof Array?rh[k4]:[];
+      var rts=(remote.hcalTs&&typeof remote.hcalTs[k4]==="number")?remote.hcalTs[k4]:0;
+      var lts=(lht[k4]&&typeof lht[k4]==="number")?lht[k4]:0;
+      var ad4=false;
+      if(rts>0){ad4=(!lts||rts>lts);}   /* 新形式：時刻が新しいほうを採用（削除も伝わる） */
+      else if(!lts){
+        ad4=(JSON.stringify(lvh||[])!==JSON.stringify(rvh))&&(!lvh||!lvh.length||rvh.length>=lvh.length);   /* 旧形式：従来ルール */
+      }else if(JSON.stringify(lvh||[])!==JSON.stringify(rvh)){needPush=true;}   /* 手元のほうが新しい：送り返す */
+      if(ad4){lh[k4]=rvh.slice();lht[k4]=rts||Date.now();ch=true;window.__hcDirty=true;}
+    }
+    var rd2=remote&&remote.deliv&&remote.deliv.rows instanceof Array?remote.deliv.rows:null;
+    var rdt=(remote&&typeof remote.delivTs==="number")?remote.delivTs:0;
+    var ldt=(delivTsRef&&typeof delivTsRef.d==="number")?delivTsRef.d:0;
+    if(rd2){
+      if(rdt>0){
+        if(!ldt||rdt>ldt){delivRef.rows=rd2.slice();delivTsRef.d=rdt;ch=true;}
+        else if(JSON.stringify(delivRef.rows)!==JSON.stringify(rd2)){needPush=true;}
+      }else if(!ldt&&JSON.stringify(delivRef.rows)!==JSON.stringify(rd2)){
+        if(rd2.length>=delivRef.rows.length){delivRef.rows=rd2.slice();ch=true;}
+        else{needPush=true;}
+      }
+    }
+    var rdc=remote&&remote.dcal&&typeof remote.dcal==="object"?remote.dcal:null;
+    if(rdc&&JSON.stringify(delivCal)!==JSON.stringify(rdc)){
+      var rdt2=(remote&&typeof remote.dcalTs==="number")?remote.dcalTs:0;
+      var ldt2=(recentDC&&typeof recentDC.d==="number")?recentDC.d:0;
+      if(rdt2>0){
+        if(!ldt2||rdt2>ldt2){delivCal=rdc;recentDC.d=rdt2;saveDelivCal(false);ch=true;window.__hcDirty=true;}
+        else{needPush=true;}
+      }else if(!ldt2||Date.now()-ldt2>=GUARD_MS){
+        if(Object.keys(rdc).length>=Object.keys(delivCal).length){delivCal=rdc;saveDelivCal(false);ch=true;window.__hcDirty=true;}
+        else{needPush=true;}
+      }
+    }
+    if(needPush&&!window.__merging&&window.__syncPushRef)window.__syncPushRef();   /* 未送信だった自端末の変更を送る */
+    if(ch){saveFarmers();saveRecs();saveHCal();saveTs();saveDeliv(false);}
+    return ch;
+  };
+  var YKEY="shiro.farm.yld",YKEYB="shiro.farm.yld.bak";
+  var yldMap=rdJSON(YKEY);
+  if(!yldMap||typeof yldMap!=="object"||yldMap instanceof Array)yldMap={};
+  if(!Object.keys(yldMap).length){var yb2=rdJSON(YKEYB);if(yb2&&typeof yb2==="object"&&!(yb2 instanceof Array)&&Object.keys(yb2).length)yldMap=yb2;}
+  function saveYld(){wrJSON(YKEY,yldMap);wrJSON(YKEYB,yldMap);}
+  var RKEY="shiro.farm.yldrng",RKEYB="shiro.farm.yldrng.bak";
+  function defMonthRange(){   /* 既定は「今月」の1日〜月末 */
+    var n=new Date(),y=n.getFullYear(),m=n.getMonth();
+    var eom=new Date(y,m+1,0);
+    function f(d){return y+"-"+("0"+(m+1)).slice(-2)+"-"+("0"+d).slice(-2);}
+    return {from:f(1),to:f(eom.getDate())};
+  }
+  var yldRng=rdJSON(RKEY);
+  if(!yldRng||typeof yldRng!=="object"||yldRng instanceof Array)yldRng={};
+  if(!Object.keys(yldRng).length){var rb3=rdJSON(RKEYB);if(rb3&&typeof rb3==="object"&&!(rb3 instanceof Array)&&Object.keys(rb3).length)yldRng=rb3;}
+  function saveRng(){wrJSON(RKEY,yldRng);wrJSON(RKEYB,yldRng);}
+  var NKEY="shiro.farm.dest",NKEYB="shiro.farm.dest.bak";
+  var destMap=rdJSON(NKEY);
+  if(!destMap||typeof destMap!=="object"||destMap instanceof Array)destMap={};
+  if(!Object.keys(destMap).length){var nb4=rdJSON(NKEYB);if(nb4&&typeof nb4==="object"&&!(nb4 instanceof Array)&&Object.keys(nb4).length)destMap=nb4;}
+  function saveDest(){wrJSON(NKEY,destMap);wrJSON(NKEYB,destMap);}
+  /* --- 農家管理>納品データ確認 専用の保存領域（納品データ管理側とは別物にする） --- */
+  var LKEY="shiro.farm.ledger",LKEYB="shiro.farm.ledger.bak";
+  var led=rdJSON(LKEY);
+  if(!led||typeof led!=="object"||led instanceof Array)led={};
+  function saveLed(){wrJSON(LKEY,led);wrJSON(LKEYB,led);}
+  var yldMapL=led.yld instanceof Object&&!(led.yld instanceof Array)?led.yld:{};
+  var destMapL=led.dst instanceof Object&&!(led.dst instanceof Array)?led.dst:{};
+  var yldRngL=led.rng instanceof Object&&!(led.rng instanceof Array)?led.rng:{};
+  function saveYldL(){led.yld=yldMapL;saveLed();}
+  function saveDestL(){led.dst=destMapL;saveLed();}
+  function saveRngL(){led.rng=yldRngL;saveLed();}
+  var MSTKEY="shiro.farm.destmst",MSTKEYB="shiro.farm.destmst.bak";
+  var destMst=rdJSON(MSTKEY);
+  if(!(destMst instanceof Array))destMst=[];
+  if(!destMst.length){var mb5=rdJSON(MSTKEYB);if(mb5 instanceof Array&&mb5.length)destMst=mb5;}
+  window.__destMstMerge=function(list){   /* サーバーの納入先を手元へ取り込む（和集合） */
+    if(!(list instanceof Array)||!list.length)return false;
+    var ch=false;
+    for(var i=0;i<list.length;i++){
+      var v=normDestName(list[i]);
+      if(v&&destMst.indexOf(v)<0){destMst.push(v);ch=true;}
+    }
+    if(ch){wrJSON(MSTKEY,destMst);wrJSON(MSTKEYB,destMst);}
+    return ch;
+  };
+  window.__hMerge=function(remote,syncEver){
+    var ch=false;
+    if(remote&&(remote.destmst||remote.destMst)){   /* サーバーの納入先マスタを必ず取り込む */
+      if(window.__destMstMerge(remote.destmst||remote.destMst))ch=true;
+    }
+    var needPush=false;   /* 取り込んだ中に手元より古いデータがあった=自端末の変更が未送信 */
+    var delivRef=window.__delivRef(),delivTsRef=window.__delivTsRef();
+    var rf=remote&&remote.farmers instanceof Array?remote.farmers:[];
+    var rr=remote&&remote.farmerRecs&&typeof remote.farmerRecs==="object"?remote.farmerRecs:{};
+    var rh=remote&&remote.hcal&&typeof remote.hcal==="object"?remote.hcal:{};
+    var lf=window.__farmersRef()||[];
+    /* サーバー側の削除記録を取り込み、手元からも除外する */
+    var rfd=(remote&&(remote.farmerDel||remote.farmerdel))||null;
+    if(rfd&&typeof rfd==="object"){
+      for(var dn2 in rfd){
+        if(!farmDel[dn2]){farmDel[dn2]=rfd[dn2]||Date.now();ch=true;}
+        var k2=lf.indexOf(dn2);
+        if(k2>=0){lf.splice(k2,1);ch=true;}
+      }
+      if(ch)saveFarmDel();
+    }
+    if(rf.length){
+      var added=false;
+      for(var i=0;i<rf.length;i++){if(isFarmDel(rf[i]))continue;if(lf.indexOf(rf[i])<0){lf.push(rf[i]);added=true;}}
+      if(added){ch=true;}
+    }
+    var lr=window.__recsRef()||{};
+    var lrt=window.__recsTsRef()||{};
+    for(var nm in rr){
+      if(recentR["r|"+nm]&&Date.now()-recentR["r|"+nm]<GUARD_MS)continue;   /* 自端末の変更を優先（復活防止） */
+      var lv=lr[nm]instanceof Array?lr[nm]:null;
+      var rvn=rr[nm]instanceof Array?rr[nm]:[];
+      var rt2=(remote.recsTs&&typeof remote.recsTs[nm]==="number")?remote.recsTs[nm]:0;
+      var lt2=(lrt[nm]&&typeof lrt[nm]==="number")?lrt[nm]:0;
+      var ad2=false;
+      if(rt2>0){ad2=(!lt2||rt2>lt2);}   /* 新形式：時刻が新しいほうを採用（削除も伝わる） */
+      else if(!lt2){
+        ad2=(JSON.stringify(lv||[])!==JSON.stringify(rvn))&&(!lv||!lv.length||rvn.length>=lv.length);   /* 旧形式：従来ルール */
+      }else if(JSON.stringify(lv||[])!==JSON.stringify(rvn)){needPush=true;}   /* 手元のほうが新しい：送り返す */
+      if(ad2){lr[nm]=rvn.slice();lrt[nm]=rt2||Date.now();ch=true;}
+    }
+    var lh=window.__hcalRef()||{};
+    var lht=window.__hcalTsRef()||{};
+    for(var k4 in rh){
+      if(recentH["h|"+k4]&&Date.now()-recentH["h|"+k4]<GUARD_MS)continue;   /* 自端末の変更を優先（復活防止） */
+      var lvh=lh[k4]instanceof Array?lh[k4]:null;
+      var rvh=rh[k4]instanceof Array?rh[k4]:[];
+      var rts=(remote.hcalTs&&typeof remote.hcalTs[k4]==="number")?remote.hcalTs[k4]:0;
+      var lts=(lht[k4]&&typeof lht[k4]==="number")?lht[k4]:0;
+      var ad4=false;
+      if(rts>0){ad4=(!lts||rts>lts);}   /* 新形式：時刻が新しいほうを採用（削除も伝わる） */
+      else if(!lts){
+        ad4=(JSON.stringify(lvh||[])!==JSON.stringify(rvh))&&(!lvh||!lvh.length||rvh.length>=lvh.length);   /* 旧形式：従来ルール */
+      }else if(JSON.stringify(lvh||[])!==JSON.stringify(rvh)){needPush=true;}   /* 手元のほうが新しい：送り返す */
+      if(ad4){lh[k4]=rvh.slice();lht[k4]=rts||Date.now();ch=true;window.__hcDirty=true;}
+    }
+    var rd2=remote&&remote.deliv&&remote.deliv.rows instanceof Array?remote.deliv.rows:null;
+    var rdt=(remote&&typeof remote.delivTs==="number")?remote.delivTs:0;
+    var ldt=(delivTsRef&&typeof delivTsRef.d==="number")?delivTsRef.d:0;
+    if(rd2){
+      if(rdt>0){
+        if(!ldt||rdt>ldt){delivRef.rows=rd2.slice();delivTsRef.d=rdt;ch=true;}
+        else if(JSON.stringify(delivRef.rows)!==JSON.stringify(rd2)){needPush=true;}
+      }else if(!ldt&&JSON.stringify(delivRef.rows)!==JSON.stringify(rd2)){
+        if(rd2.length>=delivRef.rows.length){delivRef.rows=rd2.slice();ch=true;}
+        else{needPush=true;}
+      }
+    }
+    var rdc=remote&&remote.dcal&&typeof remote.dcal==="object"?remote.dcal:null;
+    if(rdc&&JSON.stringify(delivCal)!==JSON.stringify(rdc)){
+      var rdt2=(remote&&typeof remote.dcalTs==="number")?remote.dcalTs:0;
+      var ldt2=(recentDC&&typeof recentDC.d==="number")?recentDC.d:0;
+      if(rdt2>0){
+        if(!ldt2||rdt2>ldt2){delivCal=rdc;recentDC.d=rdt2;saveDelivCal(false);ch=true;window.__hcDirty=true;}
+        else{needPush=true;}
+      }else if(!ldt2||Date.now()-ldt2>=GUARD_MS){
+        if(Object.keys(rdc).length>=Object.keys(delivCal).length){delivCal=rdc;saveDelivCal(false);ch=true;window.__hcDirty=true;}
+        else{needPush=true;}
+      }
+    }
+    if(needPush&&!window.__merging&&window.__syncPushRef)window.__syncPushRef();   /* 未送信だった自端末の変更を送る */
+    if(ch){saveFarmers();saveRecs();saveHCal();saveTs();saveDeliv(false);}
+    return ch;
+  };
+  var YKEY="shiro.farm.yld",YKEYB="shiro.farm.yld.bak";
+  var yldMap=rdJSON(YKEY);
+  if(!yldMap||typeof yldMap!=="object"||yldMap instanceof Array)yldMap={};
+  if(!Object.keys(yldMap).length){var yb2=rdJSON(YKEYB);if(yb2&&typeof yb2==="object"&&!(yb2 instanceof Array)&&Object.keys(yb2).length)yldMap=yb2;}
+  function saveYld(){wrJSON(YKEY,yldMap);wrJSON(YKEYB,yldMap);}
+  var RKEY="shiro.farm.yldrng",RKEYB="shiro.farm.yldrng.bak";
+  function defMonthRange(){   /* 既定は「今月」の1日〜月末 */
+    var n=new Date(),y=n.getFullYear(),m=n.getMonth();
+    var eom=new Date(y,m+1,0);
+    function f(d){return y+"-"+("0"+(m+1)).slice(-2)+"-"+("0"+d).slice(-2);}
+    return {from:f(1),to:f(eom.getDate())};
+  }
+  var yldRng=rdJSON(RKEY);
+  if(!yldRng||typeof yldRng!=="object"||yldRng instanceof Array)yldRng={};
+  if(!Object.keys(yldRng).length){var rb3=rdJSON(RKEYB);if(rb3&&typeof rb3==="object"&&!(rb3 instanceof Array)&&Object.keys(rb3).length)yldRng=rb3;}
+  function saveRng(){wrJSON(RKEY,yldRng);wrJSON(RKEYB,yldRng);}
+  var NKEY="shiro.farm.dest",NKEYB="shiro.farm.dest.bak";
+  var destMap=rdJSON(NKEY);
+  if(!destMap||typeof destMap!=="object"||destMap instanceof Array)destMap={};
+  if(!Object.keys(destMap).length){var nb4=rdJSON(NKEYB);if(nb4&&typeof nb4==="object"&&!(nb4 instanceof Array)&&Object.keys(nb4).length)destMap=nb4;}
+  function saveDest(){wrJSON(NKEY,destMap);wrJSON(NKEYB,destMap);}
+  /* --- 農家管理>納品データ確認 専用の保存領域（納品データ管理側とは別物にする） --- */
+  var LKEY="shiro.farm.ledger",LKEYB="shiro.farm.ledger.bak";
+  var led=rdJSON(LKEY);
+  if(!led||typeof led!=="object"||led instanceof Array)led={};
+  function saveLed(){wrJSON(LKEY,led);wrJSON(LKEYB,led);}
+  var yldMapL=led.yld instanceof Object&&!(led.yld instanceof Array)?led.yld:{};
+  var destMapL=led.dst instanceof Object&&!(led.dst instanceof Array)?led.dst:{};
+  var yldRngL=led.rng instanceof Object&&!(led.rng instanceof Array)?led.rng:{};
+  function saveYldL(){led.yld=yldMapL;saveLed();}
+  function saveDestL(){led.dst=destMapL;saveLed();}
+  function saveRngL(){led.rng=yldRngL;saveLed();}
+  var MSTKEY="shiro.farm.destmst",MSTKEYB="shiro.farm.destmst.bak";
+  var destMst=rdJSON(MSTKEY);
+  if(!(destMst instanceof Array))destMst=[];
+  if(!destMst.length){var mb5=rdJSON(MSTKEYB);if(mb5 instanceof Array&&mb5.length)destMst=mb5;}
+  window.__destMstMerge=function(list){   /* サーバーの納入先を手元へ取り込む（和集合） */
+    if(!(list instanceof Array)||!list.length)return false;
+    var ch=false;
+    for(var i=0;i<list.length;i++){
+      var v=normDestName(list[i]);
+      if(v&&destMst.indexOf(v)<0){destMst.push(v);ch=true;}
+    }
+    if(ch){wrJSON(MSTKEY,destMst);wrJSON(MSTKEYB,destMst);}
+    return ch;
+  };
+  window.__hMerge=function(remote,syncEver){
+    var ch=false;
+    if(remote&&(remote.destmst||remote.destMst)){   /* サーバーの納入先マスタを必ず取り込む */
+      if(window.__destMstMerge(remote.destmst||remote.destMst))ch=true;
+    }
+    var needPush=false;   /* 取り込んだ中に手元より古いデータがあった=自端末の変更が未送信 */
+    var delivRef=window.__delivRef(),delivTsRef=window.__delivTsRef();
+    var rf=remote&&remote.farmers instanceof Array?remote.farmers:[];
+    var rr=remote&&remote.farmerRecs&&typeof remote.farmerRecs==="object"?remote.farmerRecs:{};
+    var rh=remote&&remote.hcal&&typeof remote.hcal==="object"?remote.hcal:{};
+    var lf=window.__farmersRef()||[];
+    /* サーバー側の削除記録を取り込み、手元からも除外する */
+    var rfd=(remote&&(remote.farmerDel||remote.farmerdel))||null;
+    if(rfd&&typeof rfd==="object"){
+      for(var dn2 in rfd){
+        if(!farmDel[dn2]){farmDel[dn2]=rfd[dn2]||Date.now();ch=true;}
+        var k2=lf.indexOf(dn2);
+        if(k2>=0){lf.splice(k2,1);ch=true;}
+      }
+      if(ch)saveFarmDel();
+    }
+    if(rf.length){
+      var added=false;
+      for(var i=0;i<rf.length;i++){if(isFarmDel(rf[i]))continue;if(lf.indexOf(rf[i])<0){lf.push(rf[i]);added=true;}}
+      if(added){ch=true;}
+    }
+    var lr=window.__recsRef()||{};
+    var lrt=window.__recsTsRef()||{};
+    for(var nm in rr){
+      if(recentR["r|"+nm]&&Date.now()-recentR["r|"+nm]<GUARD_MS)continue;   /* 自端末の変更を優先（復活防止） */
+      var lv=lr[nm]instanceof Array?lr[nm]:null;
+      var rvn=rr[nm]instanceof Array?rr[nm]:[];
+      var rt2=(remote.recsTs&&typeof remote.recsTs[nm]==="number")?remote.recsTs[nm]:0;
+      var lt2=(lrt[nm]&&typeof lrt[nm]==="number")?lrt[nm]:0;
+      var ad2=false;
+      if(rt2>0){ad2=(!lt2||rt2>lt2);}   /* 新形式：時刻が新しいほうを採用（削除も伝わる） */
+      else if(!lt2){
+        ad2=(JSON.stringify(lv||[])!==JSON.stringify(rvn))&&(!lv||!lv.length||rvn.length>=lv.length);   /* 旧形式：従来ルール */
+      }else if(JSON.stringify(lv||[])!==JSON.stringify(rvn)){needPush=true;}   /* 手元のほうが新しい：送り返す */
+      if(ad2){lr[nm]=rvn.slice();lrt[nm]=rt2||Date.now();ch=true;}
+    }
+    var lh=window.__hcalRef()||{};
+    var lht=window.__hcalTsRef()||{};
+    for(var k4 in rh){
+      if(recentH["h|"+k4]&&Date.now()-recentH["h|"+k4]<GUARD_MS)continue;   /* 自端末の変更を優先（復活防止） */
+      var lvh=lh[k4]instanceof Array?lh[k4]:null;
+      var rvh=rh[k4]instanceof Array?rh[k4]:[];
+      var rts=(remote.hcalTs&&typeof remote.hcalTs[k4]==="number")?remote.hcalTs[k4]:0;
+      var lts=(lht[k4]&&typeof lht[k4]==="number")?lht[k4]:0;
+      var ad4=false;
+      if(rts>0){ad4=(!lts||rts>lts);}   /* 新形式：時刻が新しいほうを採用（削除も伝わる） */
+      else if(!lts){
+        ad4=(JSON.stringify(lvh||[])!==JSON.stringify(rvh))&&(!lvh||!lvh.length||rvh.length>=lvh.length);   /* 旧形式：従来ルール */
+      }else if(JSON.stringify(lvh||[])!==JSON.stringify(rvh)){needPush=true;}   /* 手元のほうが新しい：送り返す */
+      if(ad4){lh[k4]=rvh.slice();lht[k4]=rts||Date.now();ch=true;window.__hcDirty=true;}
+    }
+    var rd2=remote&&remote.deliv&&remote.deliv.rows instanceof Array?remote.deliv.rows:null;
+    var rdt=(remote&&typeof remote.delivTs==="number")?remote.delivTs:0;
+    var ldt=(delivTsRef&&typeof delivTsRef.d==="number")?delivTsRef.d:0;
+    if(rd2){
+      if(rdt>0){
+        if(!ldt||rdt>ldt){delivRef.rows=rd2.slice();delivTsRef.d=rdt;ch=true;}
+        else if(JSON.stringify(delivRef.rows)!==JSON.stringify(rd2)){needPush=true;}
+      }else if(!ldt&&JSON.stringify(delivRef.rows)!==JSON.stringify(rd2)){
+        if(rd2.length>=delivRef.rows.length){delivRef.rows=rd2.slice();ch=true;}
+        else{needPush=true;}
+      }
+    }
+    var rdc=remote&&remote.dcal&&typeof remote.dcal==="object"?remote.dcal:null;
+    if(rdc&&JSON.stringify(delivCal)!==JSON.stringify(rdc)){
+      var rdt2=(remote&&typeof remote.dcalTs==="number")?remote.dcalTs:0;
+      var ldt2=(recentDC&&typeof recentDC.d==="number")?recentDC.d:0;
+      if(rdt2>0){
+        if(!ldt2||rdt2>ldt2){delivCal=rdc;recentDC.d=rdt2;saveDelivCal(false);ch=true;window.__hcDirty=true;}
+        else{needPush=true;}
+      }else if(!ldt2||Date.now()-ldt2>=GUARD_MS){
+        if(Object.keys(rdc).length>=Object.keys(delivCal).length){delivCal=rdc;saveDelivCal(false);ch=true;window.__hcDirty=true;}
+        else{needPush=true;}
+      }
+    }
+    if(needPush&&!window.__merging&&window.__syncPushRef)window.__syncPushRef();   /* 未送信だった自端末の変更を送る */
+    if(ch){saveFarmers();saveRecs();saveHCal();saveTs();saveDeliv(false);}
+    return ch;
+  };
+  var YKEY="shiro.farm.yld",YKEYB="shiro.farm.yld.bak";
+  var yldMap=rdJSON(YKEY);
+  if(!yldMap||typeof yldMap!=="object"||yldMap instanceof Array)yldMap={};
+  if(!Object.keys(yldMap).length){var yb2=rdJSON(YKEYB);if(yb2&&typeof yb2==="object"&&!(yb2 instanceof Array)&&Object.keys(yb2).length)yldMap=yb2;}
+  function saveYld(){wrJSON(YKEY,yldMap);wrJSON(YKEYB,yldMap);}
+  var RKEY="shiro.farm.yldrng",RKEYB="shiro.farm.yldrng.bak";
+  function defMonthRange(){   /* 既定は「今月」の1日〜月末 */
+    var n=new Date(),y=n.getFullYear(),m=n.getMonth();
+    var eom=new Date(y,m+1,0);
+    function f(d){return y+"-"+("0"+(m+1)).slice(-2)+"-"+("0"+d).slice(-2);}
+    return {from:f(1),to:f(eom.getDate())};
+  }
+  var yldRng=rdJSON(RKEY);
+  if(!yldRng||typeof yldRng!=="object"||yldRng instanceof Array)yldRng={};
+  if(!Object.keys(yldRng).length){var rb3=rdJSON(RKEYB);if(rb3&&typeof rb3==="object"&&!(rb3 instanceof Array)&&Object.keys(rb3).length)yldRng=rb3;}
+  function saveRng(){wrJSON(RKEY,yldRng);wrJSON(RKEYB,yldRng);}
+  var NKEY="shiro.farm.dest",NKEYB="shiro.farm.dest.bak";
+  var destMap=rdJSON(NKEY);
+  if(!destMap||typeof destMap!=="object"||destMap instanceof Array)destMap={};
+  if(!Object.keys(destMap).length){var nb4=rdJSON(NKEYB);if(nb4&&typeof nb4==="object"&&!(nb4 instanceof Array)&&Object.keys(nb4).length)destMap=nb4;}
+  function saveDest(){wrJSON(NKEY,destMap);wrJSON(NKEYB,destMap);}
+  /* --- 農家管理>納品データ確認 専用の保存領域（納品データ管理側とは別物にする） --- */
+  var LKEY="shiro.farm.ledger",LKEYB="shiro.farm.ledger.bak";
+  var led=rdJSON(LKEY);
+  if(!led||typeof led!=="object"||led instanceof Array)led={};
+  function saveLed(){wrJSON(LKEY,led);wrJSON(LKEYB,led);}
+  var yldMapL=led.yld instanceof Object&&!(led.yld instanceof Array)?led.yld:{};
+  var destMapL=led.dst instanceof Object&&!(led.dst instanceof Array)?led.dst:{};
+  var yldRngL=led.rng instanceof Object&&!(led.rng instanceof Array)?led.rng:{};
+  function saveYldL(){led.yld=yldMapL;saveLed();}
+  function saveDestL(){led.dst=destMapL;saveLed();}
+  function saveRngL(){led.rng=yldRngL;saveLed();}
+  var MSTKEY="shiro.farm.destmst",MSTKEYB="shiro.farm.destmst.bak";
+  var destMst=rdJSON(MSTKEY);
+  if(!(destMst instanceof Array))destMst=[];
+  if(!destMst.length){var mb5=rdJSON(MSTKEYB);if(mb5 instanceof Array&&mb5.length)destMst=mb5;}
+  (function(){   /* 既存データの正規化 */
+    try{
+      var chg=false;
+      for(var i=0;i<destMst.length;i++){var nv=normDestName(destMst[i]);if(nv!==destMst[i]){destMst[i]=nv;chg=true;}}
+      if(chg){
+        var seen={},un=[];
+        for(var j=0;j<destMst.length;j++){if(destMst[j]&&!seen[destMst[j]]){seen[destMst[j]]=1;un.push(destMst[j]);}}
+        destMst.length=0;for(var q=0;q<un.length;q++)destMst.push(un[q]);
+        wrJSON(MSTKEY,destMst);wrJSON(MSTKEYB,destMst);
+      }
+      var dm=rdJSON(NKEY);
+      if(dm&&typeof dm==="object"&&!(dm instanceof Array)){
+        var c2=false;
+        for(var k in dm){var v2=normDestName(dm[k]);if(v2!==dm[k]){dm[k]=v2;c2=true;}}
+        if(c2){wrJSON(NKEY,dm);wrJSON(NKEYB,dm);}
+      }
+    }catch(e){}
+  })();
+  /* ---- 納入先名の正規化：全角10文字（幅20）超は半角へ ---- */
+  var HW_MAP={};
+  (function(){
+    var zen="０１２３４５６７８９ＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚ＝－＋／＆．，（）！？：；＃％＠＄";
+    var han="0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ=-+/&.,()!?:;#%@$";
+    for(var i=0;i<zen.length&&i<han.length;i++)HW_MAP[zen.charAt(i)]=han.charAt(i);
+    HW_MAP["\u3000"]=" ";
+    var kana={"ア":"ｱ","イ":"ｲ","ウ":"ｳ","エ":"ｴ","オ":"ｵ","カ":"ｶ","キ":"ｷ","ク":"ｸ","ケ":"ｹ","コ":"ｺ","サ":"ｻ","シ":"ｼ","ス":"ｽ","セ":"ｾ","ソ":"ｿ","タ":"ﾀ","チ":"ﾁ","ツ":"ﾂ","テ":"ﾃ","ト":"ﾄ","ナ":"ﾅ","ニ":"ﾆ","ヌ":"ﾇ","ネ":"ﾈ","ノ":"ﾉ","ハ":"ﾊ","ヒ":"ﾋ","フ":"ﾌ","ヘ":"ﾍ","ホ":"ﾎ","マ":"ﾏ","ミ":"ﾐ","ム":"ﾑ","メ":"ﾒ","モ":"ﾓ","ヤ":"ﾔ","ユ":"ﾕ","ヨ":"ﾖ","ラ":"ﾗ","リ":"ﾘ","ル":"ﾙ","レ":"ﾚ","ロ":"ﾛ","ワ":"ﾜ","ヲ":"ｦ","ン":"ﾝ","ァ":"ｧ","ィ":"ｨ","ゥ":"ｩ","ェ":"ｪ","ォ":"ｫ","ッ":"ｯ","ャ":"ｬ","ュ":"ｭ","ョ":"ｮ","ー":"ｰ","・":"･"};
+    for(var k in kana)HW_MAP[k]=kana[k];
+    var daku={"ガ":"ｶﾞ","ギ":"ｷﾞ","グ":"ｸﾞ","ゲ":"ｹﾞ","ゴ":"ｺﾞ","ザ":"ｻﾞ","ジ":"ｼﾞ","ズ":"ｽﾞ","ゼ":"ｾﾞ","ゾ":"ｿﾞ","ダ":"ﾀﾞ","ヂ":"ﾁﾞ","ヅ":"ﾂﾞ","デ":"ﾃﾞ","ド":"ﾄﾞ","バ":"ﾊﾞ","ビ":"ﾋﾞ","ブ":"ﾌﾞ","ベ":"ﾍﾞ","ボ":"ﾎﾞ","パ":"ﾊﾟ","ピ":"ﾋﾟ","プ":"ﾌﾟ","ペ":"ﾍﾟ","ポ":"ﾎﾟ","ヴ":"ｳﾞ"};
+    for(var k2 in daku)HW_MAP[k2]=daku[k2];
+  })();
+  function toHankaku(s){var o="";for(var i=0;i<s.length;i++){var ch=s.charAt(i);o+=(HW_MAP[ch]!==undefined?HW_MAP[ch]:ch);}return o;}
+  function nameWidth(s){
+    var w=0;
+    for(var i=0;i<s.length;i++){var cd=s.charCodeAt(i);
+      w+=((cd>=0x1100&&cd<=0x115F)||(cd>=0x2E80&&cd<=0xA4CF)||(cd>=0xAC00&&cd<=0xD7A3)||(cd>=0xF900&&cd<=0xFAFF)||(cd>=0xFE30&&cd<=0xFE6F)||(cd>=0xFF00&&cd<=0xFF60)||(cd>=0xFFE0&&cd<=0xFFE6))?2:1;}
+    return w;
+  }
+  function normDestName(s){
+    var v=String(s==null?"":s).trim();
+    if(!v)return "";
+    if(nameWidth(v)>20){
+      v=toHankaku(v);
+      if(nameWidth(v)>20){var o="",w=0;for(var i=0;i<v.length;i++){var ch=v.charAt(i),cw=nameWidth(ch);if(w+cw>20)break;o+=ch;w+=cw;}v=o;}
+    }
+    return v;
+  }
+  window.__normDestName=normDestName;
+  window.__normDestAll=function(){
+    try{
+      var chg=false;
+      var list=window.__destMstRef?window.__destMstRef():null;
+      if(list instanceof Array){
+        for(var i=0;i<list.length;i++){var nv=normDestName(list[i]);if(nv!==list[i]){list[i]=nv;chg=true;}}
+        if(chg){
+          var seen={},un=[];
+          for(var j=0;j<list.length;j++){if(list[j]&&!seen[list[j]]){seen[list[j]]=1;un.push(list[j]);}}
+          list.length=0;for(var q=0;q<un.length;q++)list.push(un[q]);
+          wrJSON(MSTKEY,list);wrJSON(MSTKEYB,list);
+        }
+      }
+      var dm=rdJSON(NKEY);
+      if(dm&&typeof dm==="object"&&!(dm instanceof Array)){
+        var c2=false;
+        for(var k in dm){var v2=normDestName(dm[k]);if(v2!==dm[k]){dm[k]=v2;c2=true;}}
+        if(c2){wrJSON(NKEY,dm);wrJSON(NKEYB,dm);destMap=dm;}
+      }
+    }catch(err){}
+  };
   function saveDestMst(){
     wrJSON(MSTKEY,destMst);wrJSON(MSTKEYB,destMst);
     try{if(window.__syncPushNow)window.__syncPushNow();}catch(e){}
   }
   function buildDestMst(root){
-    var ttl=document.createElement("div");ttl.className="scr-cap";ttl.innerHTML='納入先の登録<span class=\'ver-chip\'>v3.50</span>';
+    var ttl=document.createElement("div");ttl.className="scr-cap";ttl.innerHTML='納入先の登録<span class=\'ver-chip\'>v3.52</span>';
     root.appendChild(ttl);
     var cap=document.createElement("div");cap.className="scr-cap";cap.style.fontSize="13px";
     cap.textContent="よく使う納入先を登録しておくと便利です";
@@ -1984,7 +2444,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       }
     }
     function commit(){
-      var v=inp.value.trim();
+      var v=normDestName(inp.value);
       if(!v)return;
       if(destMst.indexOf(v)<0)destMst.push(v);
       inp.value="";
@@ -2003,7 +2463,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   }
   function buildDeliv(root,mode){
     mode=mode||"menu";   /* "menu"=加工ゲル表示 / "dest"=納入先表示 / "ledger"=農家管理>納品データ確認 */
-    var ttl=document.createElement("div");ttl.className="scr-cap";if(mode!=='ledger'){ttl.style.fontSize='12px';ttl.style.letterSpacing='0';}ttl.innerHTML=(mode==='ledger'?'納品データ確認（農家管理）':(mode==='dest'?'納品数量と納品先の確認':'納品数量と加工ゲルの確認'))+'<span class=\'ver-chip\'>v3.50</span>';
+    var ttl=document.createElement("div");ttl.className="scr-cap";if(mode!=='ledger'){ttl.style.fontSize='12px';ttl.style.letterSpacing='0';}ttl.innerHTML=(mode==='ledger'?'納品データ確認（農家管理）':(mode==='dest'?'納品数量と納品先の確認':'納品数量と加工ゲルの確認'))+'<span class=\'ver-chip\'>v3.52</span>';
     root.appendChild(ttl);
     var cap=document.createElement("div");cap.className="scr-cap";cap.style.fontSize="13px";
     cap.textContent=(mode==='ledger')?'農家管理の納品データ確認です。納品カレンダーに入力したデータを農家ごとに確認できます':(mode==='dest'?'納品カレンダーに入力した納品データを納入先とあわせて確認できます':'納品カレンダーに入力した納品データの一覧です');
@@ -2143,7 +2603,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     var rF=(mode==="ledger")?yldRngL:yldRng;if(!rF.from||!rF.to){rF.from=inpC1.value;rF.to=inpC2.value;(mode==="ledger"?saveRngL:saveRng)();}   /* この画面で指定した範囲を次回も使う */
     lst.addEventListener("change",function(e){
       var inpD=e.target.closest?e.target.closest("select.scr-dest"):null;
-      if(inpD){if(mode==="ledger"){destMapL[inpD.getAttribute("data-n")+"|"+inpD.getAttribute("data-y")]=inpD.value.trim();saveDestL();}else{destMap[inpD.getAttribute("data-n")+"|"+inpD.getAttribute("data-y")]=inpD.value.trim();saveDest();}return;}
+      if(inpD){if(mode==="ledger"){destMapL[inpD.getAttribute("data-n")+"|"+inpD.getAttribute("data-y")]=normDestName(inpD.value);saveDestL();}else{destMap[inpD.getAttribute("data-n")+"|"+inpD.getAttribute("data-y")]=normDestName(inpD.value);saveDest();}return;}
       var inp=e.target.closest?e.target.closest("input[data-y]"):null;
       if(!inp)return;
       var nm=inp.getAttribute("data-n"),dkey=inp.getAttribute("data-y");
@@ -2561,7 +3021,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   function buildPayContent(root){
     var ym=payMonth(),UNIT=100;
     var ttl=document.createElement("div");ttl.className="scr-cap";ttl.style.fontSize="13px";ttl.style.letterSpacing="0";
-    ttl.innerHTML='支払い確認（月別・全農家）<span class=\'ver-chip\'>v3.50</span>';
+    ttl.innerHTML='支払い確認（月別・全農家）<span class=\'ver-chip\'>v3.52</span>';
     root.appendChild(ttl);
     var note=document.createElement("div");note.className="scr-cap";note.style.fontSize="12px";note.style.letterSpacing="0";
     note.textContent="納品受注カレンダーに登録された納品量 × 単価（下の欄で一括変更できます）";
@@ -2589,7 +3049,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     root.appendChild(ubar);
     var wrap=document.createElement("div");root.appendChild(wrap);
     function render(){
-      lbl.innerHTML=ym.y+"年"+(ym.m+1)+"月<span class=\'ver-chip\'>v3.50</span>";
+      lbl.innerHTML=ym.y+"年"+(ym.m+1)+"月<span class=\'ver-chip\'>v3.52</span>";
       wrap.innerHTML="";
       var UNIT=payUnitFor(ym.y,ym.m);
       if(document.activeElement!==uinp)uinp.value=String(UNIT);
@@ -2682,7 +3142,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     var ok=document.createElement("button");ok.className="scr-regok";ok.textContent="登録";
     ok.addEventListener("click",function(){commit();});
     box.appendChild(inp);box.appendChild(ok);root.appendChild(box);
-    var cap=document.createElement("div");cap.className="scr-cap";cap.innerHTML='アロエベラ栽培農家リスト<span class=\'ver-chip\'>v3.50</span>';
+    var cap=document.createElement("div");cap.className="scr-cap";cap.innerHTML='アロエベラ栽培農家リスト<span class=\'ver-chip\'>v3.52</span>';
     root.appendChild(cap);
     var gmsg=document.createElement("div");gmsg.className="scr-guardmsg";gmsg.id="scr-guardmsg";root.appendChild(gmsg);
     var lst=document.createElement("div");lst.className="scr-list";lst.id="farmer-list";root.appendChild(lst);
@@ -2722,7 +3182,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     function openFarmer(name){
       var back=document.createElement("button");back.className="scr-dl";back.textContent="← 農家リストに戻る";
       root.innerHTML="";root.appendChild(back);
-      var ttl=document.createElement("div");ttl.className="scr-cap";ttl.innerHTML=esc2(name)+" の収穫記録<span class=\'ver-chip\'>v3.50</span>";
+      var ttl=document.createElement("div");ttl.className="scr-cap";ttl.innerHTML=esc2(name)+" の収穫記録<span class=\'ver-chip\'>v3.52</span>";
       root.appendChild(ttl);
       var t=document.createElement("table");t.className="scr-table";
       var fields=["日付","作物","収穫量(kg)","メモ"];
@@ -2872,7 +3332,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       return set;
     }
     function draw(){
-      lbl.innerHTML=hy+"年"+(hm+1)+"月<span class=\'ver-chip\'>v3.50</span>";
+      lbl.innerHTML=hy+"年"+(hm+1)+"月<span class=\'ver-chip\'>v3.52</span>";
       var hol=holidaySet(hy,hm);
       var first=new Date(hy,hm,1),off=first.getDay(),dim=new Date(hy,hm+1,0).getDate();
       var grid='<div class="hc-dows">'+["日","月","火","水","木","金","土"].map(function(d,ix){return '<span'+(ix===0?' class="sun"':'')+'>'+d+'</span>';}).join("")+'</div><div class="hc-grid">';
@@ -2907,7 +3367,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       else{for(var f4=0;f4<farmers.length;f4++){var a2=CALD[key+"|"+farmers[f4]]||[];for(var z2=0;z2<a2.length;z2++)rows.push([farmers[f4],a2[z2].kg]);}}
       var box=document.createElement("div");   /* 毎回新規：古いboxのリスナー引き継ぎを防ぐ */
       box.id="hc-detail";box.className="scr-list";box.setAttribute("data-day",dd);
-      var html='<div class="scr-cap">'+(hm+1)+"月"+dd+"日の"+CALT.w+'<span class=\'ver-chip\'>v3.50</span></div>';
+      var html='<div class="scr-cap">'+(hm+1)+"月"+dd+"日の"+CALT.w+'<span class=\'ver-chip\'>v3.52</span></div>';
       html+='<div class="hc-addrow">'
           +'<input class="scr-cell" id="hcd-kg" type="number" step="0.1" placeholder="'+CALT.w+'量kg">'
           +'<select class="scr-cell" id="hcd-f"><option value="">農家を選択</option>'
@@ -3041,6 +3501,57 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     if(sk==="ledger"){buildLedger(scr);}
     body.appendChild(scr);
   }
+  /* ==== 全データの端末間共有（納入先・製品・受託・支払・歩留など localStorage 全ストア） ==== */
+  (function(){
+    var KEYS=["shiro.farm.dest","shiro.farm.destmst","shiro.farm.product","shiro.farm.contract",
+              "shiro.farm.payinfo","shiro.farm.payunit","shiro.farm.payunit.last","shiro.farm.paydest",
+              "shiro.farm.yld","shiro.farm.yldrng","shiro.farm.farmers","shiro.farm.farmerRecs",
+              "shiro.farm.farmerdel","shiro.farm.dcal","shiro.farm.hcal","shiro.farm.deliv"];
+    var LAST="shiro.sync.last",TS="shiro.sync.ts";
+    function rd(k){try{var s=localStorage.getItem(k);return s===null?undefined:JSON.parse(s);}catch(e){return undefined;}}
+    function wr(k,v){try{if(v===undefined||v===null)localStorage.removeItem(k);else localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+    function getJ(k){try{return JSON.parse(localStorage.getItem(k)||"{}");}catch(e){return {};}}
+    function setJ(k,o){try{localStorage.setItem(k,JSON.stringify(o));}catch(e){}}
+    window.__xlSnap=function(){   /* 変更のあったストアに時刻を付けて送信用スナップショットを作る */
+      var last=getJ(LAST),ts=getJ(TS),out={},now=Date.now(),dirty=false;
+      for(var i=0;i<KEYS.length;i++){
+        var k=KEYS[i],v=rd(k),sig=(v===undefined?null:JSON.stringify(v));
+        if(last[k]!==sig){ts[k]=now;last[k]=sig;dirty=true;}
+        if(v!==undefined&&v!==null)out[k]={t:ts[k]||0,v:v};
+      }
+      if(dirty){setJ(LAST,last);setJ(TS,ts);}
+      return out;
+    };
+    window.__xlMerge=function(remote){   /* サーバー側が新しければ手元へ反映 */
+      var r=remote&&remote.xl;if(!r||typeof r!=="object")return false;
+      var ts=getJ(TS),last=getJ(LAST),ch=false;
+      for(var k in r){
+        var e=r[k];if(!e||typeof e!=="object")continue;
+        if(KEYS.indexOf(k)<0)continue;
+        var rt=+(e.t||0),lt=+(ts[k]||0);
+        if(rt>lt){
+          wr(k,e.v);ts[k]=rt;last[k]=JSON.stringify(e.v===undefined?null:e.v);ch=true;
+        }
+      }
+      if(ch){setJ(TS,ts);setJ(LAST,last);window.__xlDirty=true;}
+      return ch;
+    };
+    /* 反映後の再読込（入力中は避ける／10秒に1回まで） */
+    setInterval(function(){
+      if(!window.__xlDirty)return;
+      window.__xlDirty=false;
+      try{
+        var a=document.activeElement;
+        if(a&&(a.tagName==="INPUT"||a.tagName==="TEXTAREA"||a.tagName==="SELECT"))return;
+      }catch(e){}
+      try{
+        var now=Date.now(),prev=+(sessionStorage.getItem("xl.reloadAt")||0);
+        if(now-prev<10000)return;
+        sessionStorage.setItem("xl.reloadAt",String(now));
+      }catch(e){return;}
+      try{location.reload();}catch(e){}
+    },1500);
+  })();
   setInterval(function(){   /* 同期が裏でデータを変えたら開いているカレンダーを再描画 */
     if(window.__hcDirty){window.__hcDirty=false;
       var p=document.getElementById("adm-panel");
@@ -3057,6 +3568,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     var mt=document.querySelector('meta[name="application-version"]');var v=mt?mt.getAttribute("content"):null;if(!v)return;
     var els=document.querySelectorAll(".ver-chip");for(var i=0;i<els.length;i++){var t="v"+v;if(els[i].textContent!==t)els[i].textContent=t;}
   },800);
+try{if(window.__normDestAll)window.__normDestAll();}catch(e){}
 if((function(){try{return localStorage.getItem("shiro.farm.name")===ADMIN_NAME;}catch(e){return false;}})()){open();var _ss=document.querySelectorAll(".namesel");for(var _i=0;_i<_ss.length;_i++){_ss[_i].value="";}}
 })();
 </script>

@@ -63,6 +63,7 @@ try{localStorage.setItem('shiro.farm.sync','https://script.google.com/macros/s/A
       try{cur=localStorage.getItem(k);}catch(e){continue;}
       var cv=null;try{cv=cur===null?null:JSON.parse(cur);}catch(e){cv=cur;}
       if(notEmpty(cv))continue;
+      if(k==="shiro.farm.wpaydate"&&cur!==null)continue;   /* v4.73: 受託支払日は全件削除でも復元しない（削除がよみがえる不具合対策） */
       var mir=null;try{mir=localStorage.getItem("shiroM."+k);}catch(e){continue;}
       if(mir===null)continue;
       try{localStorage.setItem(k,mir);out.push(k);}catch(e){}
@@ -71,7 +72,7 @@ try{localStorage.setItem('shiro.farm.sync','https://script.google.com/macros/s/A
   }catch(e){}
 })();</script>
 <!-- しろう農園スケジュール管理アプリ v4.55 (2026-11-08 誤流入したテストデータ（山田農園・平良農園とその名簿・旧入力表・支払い済み等の行）を起動時に自動一掃) -->
-<meta name="application-version" content="4.67" />
+<meta name="application-version" content="4.75" />
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
 <meta name="theme-color" content="#D8E8CC" />
@@ -1084,6 +1085,8 @@ body{
       try{cur=localStorage.getItem(k);}catch(e){continue;}
       var curv=null;try{curv=cur===null?null:JSON.parse(cur);}catch(e){curv=cur;}
       if(isNotEmpty(curv))continue;
+      if(k==="shiro.farm.payinfo"&&cur!==null)continue;   /* v4.71: 支払日は全件削除でも復元しない（削除がよみがえる不具合対策）。キー自体が消えた場合だけ復元 */
+      if(k==="shiro.farm.wpaydate"&&cur!==null)continue;   /* v4.73: 受託支払日も全件削除でも復元しない */
       var mir=null;try{mir=localStorage.getItem("shiroM."+k);}catch(e){continue;}
       if(mir===null)continue;
       try{localStorage.setItem(k,mir);restored.push(k);}catch(e){}
@@ -1874,7 +1877,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       return;
     }
     if(k==="contract-reg"||k==="contract-pay"){
-      var backC=document.createElement("button");backC.className="scr-dl";backC.textContent="← 農作業受託管理に戻る";
+      var backC=document.createElement("button");backC.className="scr-dl";backC.textContent="戻る";
       backC.addEventListener("click",function(){navBack();});
       body.appendChild(backC);
       var scrC=document.createElement("div");scrC.className="adm-screen";
@@ -2759,10 +2762,23 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
         if(!en2)c4b.style.color="#33502c";   /* 未入力の文字色。塗りは行単位（v4.50） */
         row.appendChild(c4b);
         var c4c=document.createElement("td");c4c.style.textAlign="center";   /* 支払日（v4.50新設） */
-        var din=document.createElement("input");din.type="date";din.className="wl-paydate2";din.setAttribute("data-nm",nm2);
-        din.value=payDateMap()[nm2]||"";
-        din.style.cssText="width:96%;min-width:0;padding:2px;font-size:11.5px";
-        c4c.appendChild(din);row.appendChild(c4c);
+        var cur0=payDateMap()[nm2]||"";
+        var dbtn2=document.createElement("button");dbtn2.type="button";dbtn2.className="wl-paydate2";dbtn2.setAttribute("data-nm",nm2);
+        dbtn2.textContent=cur0?cur0.replace(/-/g,"/"):"未設定";   /* v4.74: ネイティブdate入力は触るだけで日付が入り得るため、選択画面を開くボタンに変更（未選択のままでは保存されない） */
+        dbtn2.style.cssText="min-width:84px;min-height:28px;padding:3px 8px;border:1px solid "+(cur0?"#9cc08c":"#c9c9c1")+";border-radius:8px;background:"+(cur0?"#eef7e8":"#f7f7f3")+";color:"+(cur0?"#33502c":"#7d8676")+";font-size:11.5px;font-weight:700;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;touch-action:manipulation";
+        (function(btn,nmB){
+          btn.addEventListener("click",function(ev){
+            ev.stopPropagation();
+            var cur=payDateMap()[nmB]||"";
+            openDatePicker(cur,function(v){
+              var pd=payDateMap();
+              if(v)pd[nmB]=v;else delete pd[nmB];
+              wrJSON("shiro.farm.wpaydate",pd);
+              render();
+            });
+          });
+        })(dbtn2,nm2);
+        c4c.appendChild(dbtn2);row.appendChild(c4c);
         var c5=document.createElement("td");c5.style.textAlign="center";
         var pin=document.createElement("input");pin.type="checkbox";pin.className="wl-paid2";pin.setAttribute("data-nm",nm2);
         if(paidMap()[nm2])pin.checked=true;
@@ -2794,7 +2810,6 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
         if(ptr){var noEn2=ptr.children[4]&&ptr.children[4].textContent==="未入力";   /* 行全体を塗り直す（v4.50） */
           var fl2=tg.checked?(noEn2?"#a3c99e":""):"#f2e6cd",bd2=tg.checked?(noEn2?"#6f8f6a":""):"#ab9768";
           for(var cj0=0;cj0<ptr.children.length;cj0++){ptr.children[cj0].style.background=fl2;ptr.children[cj0].style.borderColor=bd2;}}}return;}
-      if(tg&&tg.classList&&tg.classList.contains("wl-paydate2")){var nm0b=tg.getAttribute("data-nm");if(nm0b){var pd=payDateMap();if(tg.value)pd[nm0b]=tg.value;else delete pd[nm0b];wrJSON("shiro.farm.wpaydate",pd);}return;}   /* 支払日の保存（v4.50新設） */
       var uin=ev.target;
       if(!uin||!uin.classList||!uin.classList.contains("wl-unit2"))return;
       var nm=uin.getAttribute("data-nm");if(!nm)return;
@@ -3057,6 +3072,36 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   }
   /* ---- 支払日・支払済の記録 { "y-m|農家名": {d:"YYYY-MM-DD", paid:true} } ---- */
   var PAYKEY="shiro.farm.payinfo",PAYKEYB="shiro.farm.payinfo.bak";
+  try{   /* v4.75: 支払日の完全リセット（アロエ用・受託用の両方）。消去時刻を paywipe に記録し、古い同期データがよみがえらないようにする（内容は pre475 に退避） */
+    if(!localStorage.getItem("shiro.farm.paywipe")){
+      var __W=String(Date.now());
+      ["shiro.farm.payinfo","shiro.farm.wpaydate"].forEach(function(kk){
+        var cu=null;try{cu=localStorage.getItem(kk);}catch(eQ){cu=null;}
+        if(cu&&cu!=="{}"&&cu!=="[]"){try{localStorage.setItem(kk+".pre475",cu);}catch(e1w){}}
+        try{localStorage.setItem(kk,"{}");}catch(e2w){}
+        try{localStorage.setItem("shiroM."+kk,"{}");}catch(e3w){}
+      });
+      try{localStorage.setItem("shiro.farm.paywipe",__W);}catch(e4w){}
+    }
+  }catch(e0w){}
+  try{   /* v4.73: 農作業受託管理の支払日(wpaydate)も旧データが残るため、初回起動時のみ全消去する（内容は pre473 に退避） */
+    if(!localStorage.getItem("shiro.farm.wpaydate.wiped")){
+      var __pw=localStorage.getItem("shiro.farm.wpaydate");
+      if(__pw&&__pw!=="{}"){try{localStorage.setItem("shiro.farm.wpaydate.pre473",__pw);}catch(e1p){}}
+      localStorage.setItem("shiro.farm.wpaydate","{}");
+      try{localStorage.setItem("shiroM.shiro.farm.wpaydate","{}");}catch(e2p){}
+      localStorage.setItem("shiro.farm.wpaydate.wiped","1");
+    }
+  }catch(e0p){}
+  try{   /* v4.72: 旧版で入力した覚えのない支払日が残っているため、初回起動時のみ全消去する（内容は pre472 に退避） */
+    if(!localStorage.getItem("shiro.farm.payinfo.wiped")){
+      var __pre=localStorage.getItem(PAYKEY);
+      if(__pre&&__pre!=="{}"&&__pre!=="{}"){try{localStorage.setItem("shiro.farm.payinfo.pre472",__pre);}catch(e1){}}
+      localStorage.setItem(PAYKEY,"{}");localStorage.setItem(PAYKEYB,"{}");
+      try{localStorage.setItem("shiroM."+PAYKEY,"{}");}catch(e2){}
+      localStorage.setItem("shiro.farm.payinfo.wiped","1");
+    }
+  }catch(e0){}
   var payInfo=rdJSON(PAYKEY);
   if(!payInfo||typeof payInfo!=="object"||payInfo instanceof Array)payInfo={};
   function savePayInfo(){wrJSON(PAYKEY,payInfo);wrJSON(PAYKEYB,payInfo);try{if(window.__syncPushNow)window.__syncPushNow();}catch(e){}}
@@ -3430,28 +3475,32 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   function openDatePicker(cur,cb){
     var old=document.getElementById("pay-dp");if(old&&old.parentNode)old.parentNode.removeChild(old);
     var sel=(cur||"").match(/^(\d{4})-(\d{2})-(\d{2})$/);
-    var now=new Date(),by=sel?+sel[1]:now.getFullYear(),bm=sel?+sel[2]:now.getMonth()+1,bd=sel?+sel[3]:now.getDate();
+    var now=new Date(),by=now.getFullYear(),bm=now.getMonth()+1,bd=now.getDate();   /* v4.71: 初期値は今日にしない（未選択のまま設定を押しても保存されない） */
     var ov=document.createElement("div");ov.id="pay-dp";
     ov.style.cssText="position:fixed;inset:0;z-index:10000;background:rgba(20,26,18,.55);display:flex;align-items:center;justify-content:center;padding:16px";
     var box=document.createElement("div");
     box.style.cssText="background:#fff;border-radius:12px;padding:16px;max-width:340px;width:100%;box-shadow:0 10px 30px rgba(0,0,0,.25);font-size:13px;color:#3f4b3a";
     var t=document.createElement("div");t.textContent="支払日を選ぶ";t.style.cssText="font-weight:800;font-size:14px;margin:0 0 10px;color:#33502c";
     box.appendChild(t);
+    if(!sel){var nt=document.createElement("div");nt.textContent="※日付を選んでから「設定」を押してください（未選択のままでは保存されません）";nt.style.cssText="font-size:11px;color:#7d8676;margin:-4px 0 8px";box.appendChild(nt);}
     var row=document.createElement("div");row.style.cssText="display:flex;gap:6px;align-items:center;";
     function mksel(id,from,to,val,suffix){
       var s=document.createElement("select");s.id=id;
       s.style.cssText="flex:1;padding:9px 6px;border:1px solid #acb9a3;border-radius:8px;font-size:14px;background:#fff;color:#3f4b3a";
-      for(var i=from;i<=to;i++){var o=document.createElement("option");o.value=String(i);o.textContent=i+suffix;if(i===val)o.selected=true;s.appendChild(o);}
+      if(!sel){var b0=document.createElement("option");b0.value="";b0.textContent="--";s.appendChild(b0);}   /* v4.71: 未設定のときは未選択で開く */
+      for(var i=from;i<=to;i++){var o=document.createElement("option");o.value=String(i);o.textContent=i+suffix;if(sel&&i===val)o.selected=true;s.appendChild(o);}
       return s;
     }
     var sy=mksel("dp-y",by-5,by+5,by,"年"),sm=mksel("dp-m",1,12,bm,"月");
     row.appendChild(sy);row.appendChild(sm);
     var sd=document.createElement("select");sd.id="dp-d";
     sd.style.cssText="flex:1;padding:9px 6px;border:1px solid #acb9a3;border-radius:8px;font-size:14px;background:#fff;color:#3f4b3a";
+    if(!sel){var bd0=document.createElement("option");bd0.value="";bd0.textContent="--日";sd.appendChild(bd0);}   /* v4.71: 未設定のときは未選択で開く */
     function fillDays(){
-      var y=+sy.value,m=+sm.value,last=new Date(y,m,0).getDate(),curv=+sd.value||bd;
+      var y=+sy.value,m=+sm.value,last=new Date(y,m,0).getDate(),blank=(sd.value===""),curv=+sd.value||bd;
       sd.innerHTML="";
-      for(var i=1;i<=last;i++){var o=document.createElement("option");o.value=String(i);o.textContent=i+"日";if(i===Math.min(curv,last))o.selected=true;sd.appendChild(o);}
+      if(blank){var b0=document.createElement("option");b0.value="";b0.textContent="--日";sd.appendChild(b0);}   /* v4.71: 未選択を保持 */
+      for(var i=1;i<=last;i++){var o=document.createElement("option");o.value=String(i);o.textContent=i+"日";if(sel&&!blank&&i===Math.min(curv,last))o.selected=true;sd.appendChild(o);}
     }
     fillDays();
     sy.addEventListener("change",fillDays);sm.addEventListener("change",fillDays);
@@ -3463,7 +3512,9 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     function close(){if(ov.parentNode)ov.parentNode.removeChild(ov);}
     bok.addEventListener("click",function(){
       var y=sy.value,m=("0"+sm.value).slice(-2),d=("0"+sd.value).slice(-2);
-      close();cb(y+"-"+m+"-"+d);
+      close();
+      if(!y||!m||!d)return;   /* v4.71: 日付未選択のまま「設定」を押しても保存しない（誤って今日の日付が入る不具合対策） */
+      cb(y+"-"+m+"-"+d);
     });
     bdel.addEventListener("click",function(){close();cb("");});
     bcls.addEventListener("click",close);
@@ -3597,12 +3648,13 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
         var td6=document.createElement("td");td6.style.textAlign="center";
         var ck=document.createElement("input");ck.type="checkbox";ck.checked=!!rec.paid;
         ck.setAttribute("data-pk2",pk);
-        ck.addEventListener("change",function(ev){
+        ck.addEventListener("change",function(ev){   /* v4.72: 最新の保存データにのみ書き込む（古い丸ごと保存で消した支払日がよみがえるのを防ぐ） */
           var kk=ev.target.getAttribute("data-pk2");
-          var o=payInfo[kk]||(payInfo[kk]={});
-          o.paid=ev.target.checked;
-          if(!o.d&&!o.paid)delete payInfo[kk];
-          savePayInfo();
+          var m=window.__payInfoFresh?window.__payInfoFresh():payInfo;
+          var o=m[kk]||{};
+          if(ev.target.checked){o.paid=true;}else{delete o.paid;}
+          var keep=(o.d||o.paid)?o:null;
+          if(window.__payInfoSet){window.__payInfoSet(kk,keep);}else{payInfo[kk]=o;savePayInfo();}
         });
         td6.appendChild(ck);row.appendChild(td6);
         t.appendChild(row);
@@ -3816,7 +3868,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     var body=document.getElementById("adm-pbody");
     body.innerHTML='';
     var back=document.createElement("button");back.className="scr-dl";
-    back.textContent=(calBackTo==="paytop")?"← アロエ収穫管理に戻る":(calBackTo==="contract")?"← 農作業受託管理に戻る":(calFromHome?"← データ管理メイン画面に戻る":"← アロエ農家管理に戻る");
+    back.textContent=(calBackTo==="paytop")?"← アロエ収穫管理に戻る":(calBackTo==="contract")?"戻る":(calFromHome?"← データ管理メイン画面に戻る":"← アロエ農家管理に戻る");
     back.addEventListener("click",function(){
       if(calBackTo==="paytop"){navBack();}
       else if(calFromHome){goAdminHome();}
@@ -4585,7 +4637,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     var KEYS=["shiro.farm.dest","shiro.farm.destlast","shiro.farm.destmst","shiro.farm.product","shiro.farm.contract",
               "shiro.farm.payinfo","shiro.farm.payunit","shiro.farm.payunit.last","shiro.farm.payunit.nama","shiro.farm.paydest",
               "shiro.farm.yld","shiro.farm.yldrng","shiro.farm.farmers","shiro.farm.farmerRecs",
-              "shiro.farm.farmerdel","shiro.farm.deliv","shiro.farm.clients","shiro.farm.payrng","shiro.farm.workitems","shiro.farm.wcal","shiro.farm.wcalend","shiro.farm.workledger","shiro.farm.wpaydate","shiro.farm.aloeledger","shiro.farm.aloeledger.nama","shiro.farm.aloeledger.bak","shiro.farm.aloeledger.nama.bak"];
+              "shiro.farm.farmerdel","shiro.farm.deliv","shiro.farm.clients","shiro.farm.payrng","shiro.farm.workitems","shiro.farm.wcal","shiro.farm.wcalend","shiro.farm.workledger","shiro.farm.wpaydate","shiro.farm.aloeledger","shiro.farm.aloeledger.nama","shiro.farm.aloeledger.bak","shiro.farm.aloeledger.nama.bak","shiro.farm.paywipe"];
     var LAST="shiro.sync.last",TS="shiro.sync.ts";
     function rd(k){try{var s=localStorage.getItem(k);return s===null?undefined:JSON.parse(s);}catch(e){return undefined;}}
     function wr(k,v){try{if(v===undefined||v===null)localStorage.removeItem(k);else localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
@@ -4604,13 +4656,23 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     window.__xlMerge=function(remote){   /* サーバー側が新しければ手元へ反映 */
       var r=remote&&remote.xl;if(!r||typeof r!=="object")return false;
       var ts=getJ(TS),last=getJ(LAST),ch=false;
+      var PWK="shiro.farm.paywipe",PKS=["shiro.farm.payinfo","shiro.farm.wpaydate"];
+      var pwR=(r[PWK]&&typeof r[PWK]==="object")?(+r[PWK].v||0):0;
+      var pwL=parseFloat(localStorage.getItem(PWK))||0;
+      if(pwR>pwL){   /* v4.75: より新しい「支払日リセット」が他端末にある場合はその内容をそのまま受ける（空データも消去として反映） */
+        for(var qi=0;qi<PKS.length;qi++){var qk=PKS[qi],qe=r[qk];
+          if(qe&&typeof qe==="object"&&qe.v!==undefined){wr(qk,qe.v);ts[qk]=+(qe.t||0);last[qk]=JSON.stringify(qe.v===null?null:qe.v);ch=true;}
+        }
+        wr(PWK,pwR);ts[PWK]=+((r[PWK]&&r[PWK].t)||0);last[PWK]=JSON.stringify(pwR);ch=true;pwL=pwR;
+      }
       for(var k in r){
         var e=r[k];if(!e||typeof e!=="object")continue;
         if(KEYS.indexOf(k)<0)continue;
+        if((k==="shiro.farm.payinfo"||k==="shiro.farm.wpaydate")&&pwR<pwL)continue;   /* v4.75: リセットより古い支払日データは受け取らない（よみがえり防止） */
         var rt=+(e.t||0),lt=+(ts[k]||0);
         var rv=e.v;
         var emptyV=(rv===null||rv===undefined||(rv instanceof Array&&!rv.length)||(rv&&typeof rv==="object"&&!(rv instanceof Array)&&!Object.keys(rv).length));
-        if(emptyV&&rt>lt){ts[k]=rt;last[k]=JSON.stringify(rv===undefined?null:rv);continue;}   /* 空では消さない */
+        if(emptyV&&rt>lt){if(k==="shiro.farm.payinfo"||k==="shiro.farm.wpaydate"){wr(k,rv);ch=true;}ts[k]=rt;last[k]=JSON.stringify(rv===undefined?null:rv);continue;}   /* v4.75: 支払日は空の削除も反映する（他は空では消さない） */
         if(rt>lt){
           if(k==="shiro.farm.destmst"&&rv instanceof Array){   /* 納入先は和集合 */
             var lv=rd(k);if(!(lv instanceof Array))lv=[];

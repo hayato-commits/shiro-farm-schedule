@@ -72,7 +72,7 @@ try{localStorage.setItem('shiro.farm.sync','https://script.google.com/macros/s/A
   }catch(e){}
 })();</script>
 <!-- しろう農園スケジュール管理アプリ v4.55 (2026-11-08 誤流入したテストデータ（山田農園・平良農園とその名簿・旧入力表・支払い済み等の行）を起動時に自動一掃) -->
-<meta name="application-version" content="4.75" />
+<meta name="application-version" content="4.76" />
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
 <meta name="theme-color" content="#D8E8CC" />
@@ -181,7 +181,7 @@ body{
   font-size:11px;letter-spacing:.14em;color:var(--sub)}
 .memo textarea{width:100%;border:0;outline:0;background:transparent;resize:none;
   font-family:inherit;font-size:13.5px;letter-spacing:.03em;color:var(--ink);
-  line-height:1.6;min-height:42px;display:block}
+  line-height:1.6;min-height:42px;display:block;margin:0;-webkit-appearance:none;appearance:none}
 .memo textarea::placeholder{color:var(--sub);opacity:.85}
 #syncfab,#syncpanel{display:none!important;visibility:hidden!important;pointer-events:none!important}
 
@@ -3072,7 +3072,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   }
   /* ---- 支払日・支払済の記録 { "y-m|農家名": {d:"YYYY-MM-DD", paid:true} } ---- */
   var PAYKEY="shiro.farm.payinfo",PAYKEYB="shiro.farm.payinfo.bak";
-  try{   /* v4.75: 支払日の完全リセット（アロエ用・受託用の両方）。消去時刻を paywipe に記録し、古い同期データがよみがえらないようにする（内容は pre475 に退避） */
+  try{   /* v4.76: 支払日の完全リセット（アロエ用・受託用の両方）。消去時刻を paywipe に記録し、古い同期データがよみがえらないようにする（内容は pre475 に退避） */
     if(!localStorage.getItem("shiro.farm.paywipe")){
       var __W=String(Date.now());
       ["shiro.farm.payinfo","shiro.farm.wpaydate"].forEach(function(kk){
@@ -4659,7 +4659,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       var PWK="shiro.farm.paywipe",PKS=["shiro.farm.payinfo","shiro.farm.wpaydate"];
       var pwR=(r[PWK]&&typeof r[PWK]==="object")?(+r[PWK].v||0):0;
       var pwL=parseFloat(localStorage.getItem(PWK))||0;
-      if(pwR>pwL){   /* v4.75: より新しい「支払日リセット」が他端末にある場合はその内容をそのまま受ける（空データも消去として反映） */
+      if(pwR>pwL){   /* v4.76: より新しい「支払日リセット」が他端末にある場合はその内容をそのまま受ける（空データも消去として反映） */
         for(var qi=0;qi<PKS.length;qi++){var qk=PKS[qi],qe=r[qk];
           if(qe&&typeof qe==="object"&&qe.v!==undefined){wr(qk,qe.v);ts[qk]=+(qe.t||0);last[qk]=JSON.stringify(qe.v===null?null:qe.v);ch=true;}
         }
@@ -4668,11 +4668,11 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       for(var k in r){
         var e=r[k];if(!e||typeof e!=="object")continue;
         if(KEYS.indexOf(k)<0)continue;
-        if((k==="shiro.farm.payinfo"||k==="shiro.farm.wpaydate")&&pwR<pwL)continue;   /* v4.75: リセットより古い支払日データは受け取らない（よみがえり防止） */
+        if((k==="shiro.farm.payinfo"||k==="shiro.farm.wpaydate")&&pwR<pwL)continue;   /* v4.76: リセットより古い支払日データは受け取らない（よみがえり防止） */
         var rt=+(e.t||0),lt=+(ts[k]||0);
         var rv=e.v;
         var emptyV=(rv===null||rv===undefined||(rv instanceof Array&&!rv.length)||(rv&&typeof rv==="object"&&!(rv instanceof Array)&&!Object.keys(rv).length));
-        if(emptyV&&rt>lt){if(k==="shiro.farm.payinfo"||k==="shiro.farm.wpaydate"){wr(k,rv);ch=true;}ts[k]=rt;last[k]=JSON.stringify(rv===undefined?null:rv);continue;}   /* v4.75: 支払日は空の削除も反映する（他は空では消さない） */
+        if(emptyV&&rt>lt){if(k==="shiro.farm.payinfo"||k==="shiro.farm.wpaydate"){wr(k,rv);ch=true;}ts[k]=rt;last[k]=JSON.stringify(rv===undefined?null:rv);continue;}   /* v4.76: 支払日は空の削除も反映する（他は空では消さない） */
         if(rt>lt){
           if(k==="shiro.farm.destmst"&&rv instanceof Array){   /* 納入先は和集合 */
             var lv=rd(k);if(!(lv instanceof Array))lv=[];
@@ -4722,6 +4722,51 @@ try{if(window.__setRestore)window.__setRestore();}catch(e){}
 setTimeout(function(){try{if(window.__setMirror)window.__setMirror();}catch(e){}},1200);
 setInterval(function(){try{if(window.__setMirror)window.__setMirror();}catch(e){}},4000);
 if((function(){try{return localStorage.getItem("shiro.farm.name")===ADMIN_NAME;}catch(e){return false;}})()){open();var _ss=document.querySelectorAll(".namesel");for(var _i=0;_i<_ss.length;_i++){_ss[_i].value="";}}
+})();
+</script>
+<script>
+/* v4.76 iPhone(iOS Safari) メモ入力欄はみ出し対策:
+   キーボード表示時に overflow:hidden の祖先まで勝手にスクロールされる
+   WebKit仕様への対処。visualViewport でアプリ枠の高さを可視領域に合わせ、
+   勝手スクロールをリセットする。Android は iOS 判定で除外し従来動作のまま。 */
+(function(){
+  var IS_IOS=/iP(hone|ad|od)/.test(navigator.userAgent)
+    ||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+  if(!IS_IOS)return;
+  var app=document.getElementById("app");
+  function resetScrolls(){
+    window.scrollTo(0,0);
+    document.documentElement.scrollTop=0;document.body.scrollTop=0;
+    if(app)app.scrollTop=0;
+    var pgs=document.querySelectorAll(".page");
+    for(var i=0;i<pgs.length;i++)pgs[i].scrollTop=0;
+  }
+  function fit(){
+    if(window.visualViewport&&app)app.style.height=window.visualViewport.height+"px";
+    resetScrolls();
+  }
+  function restore(){
+    if(app)app.style.height="";
+    resetScrolls();
+  }
+  function focused(){
+    var a=document.activeElement;
+    return !!a&&a.tagName!=="BODY"&&/^(TEXTAREA|INPUT|SELECT)$/.test(a.tagName);
+  }
+  document.addEventListener("focusin",function(e){
+    var t=e.target;if(!t||!t.tagName)return;
+    var tag=t.tagName;
+    if(tag!=="TEXTAREA"&&tag!=="INPUT"&&tag!=="SELECT")return;
+    setTimeout(fit,320);  /* キーボード展開後に合わせる */
+    setTimeout(fit,750);  /* 端末差分の追い込み */
+  },true);
+  document.addEventListener("focusout",function(){
+    setTimeout(function(){if(!focused())restore();},260);
+  },true);
+  if(window.visualViewport){
+    window.visualViewport.addEventListener("resize",function(){if(focused())fit();});
+    window.visualViewport.addEventListener("scroll",function(){if(focused())resetScrolls();});
+  }
 })();
 </script>
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","spa":2}' crossorigin="anonymous"></script>

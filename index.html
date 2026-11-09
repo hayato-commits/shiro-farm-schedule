@@ -3,14 +3,54 @@
      表記ルール：メタ application-version は数字のみ（例 3.12）、画面の ver-chip は v 付き（例 v4.50）。メタに v を付けると表示が vv4.50 になるため禁止（同期処理が "v"+値 で組み立てる） -->
 <html lang="ja">
 <head>
-<script>/* 同期先を自動設定 v4.50（本体スクリプトより前に常時適用） */
+<script>
+
+  /* --- v4.55（起動最序盤）: 誤流入テストデータ（山田農園・平良農園）を画面描画の前に一掃する --- */
+  (function(){
+    var FP=["山田農園","平良農園"];
+    function rdL(k){try{var v=localStorage.getItem(k);return v?JSON.parse(v):null;}catch(e){return null;}}
+    function wrL(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+    function has(n){return FP.indexOf(n)>=0;}
+    function nH(k){var p=k.indexOf("|");return p<0?k:k.slice(0,p);}
+    function nT(k){var p=k.indexOf("|");return p<0?k:k.slice(p+1);}
+    var fa=rdL("shiro.farm.farmers");
+    if(fa instanceof Array){var f2=fa.filter(function(n){return !has(n);});if(f2.length!==fa.length){wrL("shiro.farm.farmers",f2);wrL("shiro.farm.farmers.bak",f2);}}
+    ["shiro.farm.farmerRecs","shiro.farm.recsTs"].forEach(function(k){
+      var o=rdL(k);
+      if(o&&typeof o==="object"&&!(o instanceof Array)){var c=false;for(var kk in o)if(has(kk)){delete o[kk];c=true;}if(c){wrL(k,o);wrL(k+".bak",o);}}
+    });
+    var dv=rdL("shiro.farm.deliveries");
+    if(dv&&dv.rows instanceof Array){var d2=dv.rows.filter(function(o){return !(o&&has(o.n));});if(d2.length!==dv.rows.length){dv.rows=d2;wrL("shiro.farm.deliveries",dv);wrL("shiro.farm.deliveries.bak",dv);}}
+    ["shiro.farm.aloeledger","shiro.farm.aloeledger.nama"].forEach(function(k){
+      var a=rdL(k);
+      if(a instanceof Array){var a2=a.filter(function(r){return !(r&&has(String(r.name||"")));});if(a2.length!==a.length){wrL(k,a2);wrL(k+".bak",a2);}}
+    });
+    var pi=rdL("shiro.farm.payinfo");
+    if(pi&&typeof pi==="object"&&!(pi instanceof Array)){var c3=false;for(var k2 in pi)if(has(nT(k2))){delete pi[k2];c3=true;}if(c3){wrL("shiro.farm.payinfo",pi);wrL("shiro.farm.payinfo.bak",pi);}}
+    var de=rdL("shiro.farm.dest");
+    if(de&&typeof de==="object"&&!(de instanceof Array)){var c4=false;for(var k4 in de)if(has(nH(k4))){delete de[k4];c4=true;}if(c4){wrL("shiro.farm.dest",de);wrL("shiro.farm.dest.bak",de);}}
+    var dl=rdL("shiro.farm.destlast");
+    if(dl&&typeof dl==="object"&&!(dl instanceof Array)){var c5=false;for(var k5 in dl)if(has(nH(k5))){delete dl[k5];c5=true;}if(c5){wrL("shiro.farm.destlast",dl);wrL("shiro.farm.destlast.bak",dl);}}
+    var yl=rdL("shiro.farm.yld");
+    if(yl&&typeof yl==="object"&&!(yl instanceof Array)){var c6=false;for(var k6 in yl)if(has(nT(k6))){delete yl[k6];c6=true;}if(c6){wrL("shiro.farm.yld",yl);wrL("shiro.farm.yld.bak",yl);}}
+    var yr=rdL("shiro.farm.yldrng");
+    if(yr&&typeof yr==="object"&&!(yr instanceof Array)&&has(yr.farmer)){delete yr.farmer;wrL("shiro.farm.yldrng",yr);wrL("shiro.farm.yldrng.bak",yr);}
+    var le=rdL("shiro.farm.ledger");
+    if(le&&typeof le==="object"&&!(le instanceof Array)){var c7=false;
+      if(le.dst)for(var k7 in le.dst)if(has(nH(k7))){delete le.dst[k7];c7=true;}
+      if(le.yld)for(var k8 in le.yld)if(has(nT(k8))){delete le.yld[k8];c7=true;}
+      if(le.rng&&has(le.rng.farmer)){delete le.rng.farmer;c7=true;}
+      if(c7){wrL("shiro.farm.ledger",le);wrL("shiro.farm.ledger.bak",le);}}
+  })();
+/* 同期先を自動設定 v4.50（本体スクリプトより前に常時適用） */
 try{localStorage.setItem('shiro.farm.sync','https://script.google.com/macros/s/AKfycbyU5cTuDXhCSpBwDc44O2oVCLakPA2OeViwNljtXAZuxPLlA1aQ99p7OrGjMeVglHIkDA/exec');}catch(e){}</script><script>/* 設定データの早期復元（本体読込より前に実行：消えていれば控えから戻す） */
 (function(){
   try{
     var KEYS=["shiro.farm.payinfo","shiro.farm.payunit","shiro.farm.payunit.last","shiro.farm.payunit.nama","shiro.farm.paydest",
               "shiro.farm.destlast","shiro.farm.dest","shiro.farm.destmst","shiro.farm.yld","shiro.farm.yldrng",
-              "shiro.farm.product","shiro.farm.contract","shiro.farm.hcal","shiro.farm.dcal","shiro.farm.farmers",
+              "shiro.farm.product","shiro.farm.contract","shiro.farm.farmers",
               "shiro.farm.farmerRecs","shiro.farm.deliv","shiro.farm.clients","shiro.farm.payrng","shiro.farm.workitems","shiro.farm.wcal","shiro.farm.wcalend","shiro.farm.workledger","shiro.farm.wpaydate","shiro.farm.aloeledger","shiro.farm.aloeledger.nama","shiro.farm.aloeledger.bak","shiro.farm.aloeledger.nama.bak"];
+    ["shiro.farm.hcal","shiro.farm.hcal.bak","shiro.farm.dcal","shiro.farm.dcal.bak","shiro.farm.hcalTs","shiro.farm.recentH","shiro.farm.recentDC"].forEach(function(ck){try{localStorage.removeItem(ck);}catch(ce){}});   /* 削除済みの発注・納品カレンダーの残存データを掃除（v4.53） */
     function notEmpty(v){
       if(v===null||v===undefined||v==="")return false;
       if(v instanceof Array)return v.length>0;
@@ -30,8 +70,8 @@ try{localStorage.setItem('shiro.farm.sync','https://script.google.com/macros/s/A
     window.__earlyRestored=out;
   }catch(e){}
 })();</script>
-<!-- しろう農園スケジュール管理アプリ v4.52 (2026-11-08 農作業受託管理メニュー上部の「戻る」ボタンを削除) -->
-<meta name="application-version" content="4.52" />
+<!-- しろう農園スケジュール管理アプリ v4.55 (2026-11-08 誤流入したテストデータ（山田農園・平良農園とその名簿・旧入力表・支払い済み等の行）を起動時に自動一掃) -->
+<meta name="application-version" content="4.67" />
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
 <meta name="theme-color" content="#D8E8CC" />
@@ -320,7 +360,6 @@ body{
 .scr-add:active{background:rgba(255,255,255,.85)}
 
 .adm-subgrid{display:grid;grid-template-columns:repeat(2,minmax(0,285px));gap:14px;justify-content:center}
-.adm-subgrid .adm-card[data-sub="dcal"]{grid-column:2}
 .scr-calttl{font-size:15px;color:var(--sub);padding:8px 2px}
 
 .scr-reg{border:none;border-radius:999px;background:var(--accent);color:#fff;cursor:pointer;margin-bottom:0}
@@ -508,7 +547,7 @@ body{
     html+='<div class="hd">';
     html+='<div class="bouquet">'+BOUQUET+'</div>';
     html+='<div class="ym"><div class="y">'+y+'</div><div class="m">'+(m+1)+'</div>'
-        +'<div class="en">'+EN[m]+'<span class=\'ver-chip\'>v4.50</span></div></div>';
+        +'<div class="en">'+EN[m]+'<span class=\'ver-chip\'>v4.67</span></div></div>';
     html+='</div>';
     html+='<div class="title-wrap"><div class="title">しろう農園スケジュール管理表</div>'
         +'<div id="hd-syncrow"><button type="button" id="hd-sync" aria-label="同期">同期</button></div>'
@@ -1020,7 +1059,7 @@ body{
   /* ==== 設定データ全般のミラー保存／起動時復元（消えても戻す） ==== */
   var SETKEYS=["shiro.farm.payinfo","shiro.farm.payunit","shiro.farm.payunit.last","shiro.farm.payunit.nama","shiro.farm.paydest",
                "shiro.farm.destlast","shiro.farm.dest","shiro.farm.destmst","shiro.farm.yld","shiro.farm.yldrng",
-               "shiro.farm.product","shiro.farm.contract","shiro.farm.hcal","shiro.farm.dcal","shiro.farm.farmers",
+               "shiro.farm.product","shiro.farm.contract","shiro.farm.farmers",
                "shiro.farm.farmerRecs","shiro.farm.deliv","shiro.farm.farmers.bak","shiro.farm.clients","shiro.farm.payrng","shiro.farm.workitems","shiro.farm.workitems.bak","shiro.farm.wcal","shiro.farm.wcal.bak","shiro.farm.wcalend","shiro.farm.wcalend.bak","shiro.farm.workledger","shiro.farm.aloeledger","shiro.farm.aloeledger.nama","shiro.farm.aloeledger.bak","shiro.farm.aloeledger.nama.bak","shiro.farm.workledger.bak","shiro.farm.wpayunit","shiro.farm.wpaid","shiro.farm.wpaydate"];
   function isNotEmpty(v){
     if(v===null||v===undefined||v==="")return false;
@@ -1082,13 +1121,9 @@ body{
         prePushMerge().then(function(){return fetchT(syncURL,{method:"POST",body:JSON.stringify({sched:schedMem,tasks:taskMem,memo:memoMem,
           farmers:(window.__farmersRef?window.__farmersRef():[]),
           farmerRecs:(window.__recsRef?window.__recsRef():{}),
-          hcal:(window.__hcalRef?window.__hcalRef():{}),
-          hcalTs:(window.__hcalTsRef?window.__hcalTsRef():{}),
           recsTs:(window.__recsTsRef?window.__recsTsRef():{}),
         deliv:(window.__delivRef?window.__delivRef():{}),
         delivTs:(window.__delivTsRef?window.__delivTsRef():{}),
-        dcal:(window.__dcalRef?window.__dcalRef():{}),
-        dcalTs:(typeof recentDC!=="undefined"?recentDC:{}),
         destmst:(window.__destMstRef?window.__destMstRef():[]),
         farmerDel:(window.__farmDelRef?window.__farmDelRef():{}),
         payunit:(window.__payUnitRef?window.__payUnitRef():{}),
@@ -1320,7 +1355,7 @@ body{
 
   <div id="admin" aria-hidden="true">
     <div class="adm-home">
-      <div class="adm-top"><div class="adm-hd"><div class="adm-eyebrow">SHIRO FARM<span class="ver-chip">v4.50</span></div><div class="adm-title" style="font-size:23px;letter-spacing:0;white-space:nowrap">データ管理メイン画面</div></div>
+      <div class="adm-top"><div class="adm-hd"><div class="adm-eyebrow">SHIRO FARM<span class="ver-chip">v4.67</span></div><div class="adm-title" style="font-size:23px;letter-spacing:0;white-space:nowrap">データ管理メイン画面</div></div>
         <button class="adm-back" id="adm-close" aria-label="カレンダーに戻る"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
       <div class="adm-wrap"><div class="adm-grid">
         <button class="adm-card" data-panel="harvest-farm"><span class="adm-no">01</span><span class="adm-lb">アロエ農家管理</span><span class="adm-sub">農家の登録・一覧・支払い確認</span></button>
@@ -1331,7 +1366,7 @@ body{
       <button class="adm-home-back" id="adm-close2">カレンダーに戻る</button>
     </div>
     <div class="adm-panel" id="adm-panel" aria-hidden="true">
-      <div class="adm-top"><div class="adm-hd"><div class="adm-eyebrow">データー管理<span class="ver-chip">v4.50</span></div><div class="adm-title" id="adm-ptitle">-</div></div>
+      <div class="adm-top"><div class="adm-hd"><div class="adm-eyebrow">データー管理<span class="ver-chip">v4.67</span></div><div class="adm-title" id="adm-ptitle">-</div></div>
         <button class="adm-back" id="adm-pback" aria-label="戻る"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
       <div class="adm-body" id="adm-pbody"></div>
       <button class="adm-home-back" id="adm-pback2">戻る</button>
@@ -1793,7 +1828,11 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     body.innerHTML='';
     if(k==="harvest-farm"){   /* 農家登録：農家個別台帳の中にあった「農家登録」の中身をここへ移設 */
       var backH=document.createElement("button");backH.className="scr-dl";backH.textContent="戻る";
-      backH.addEventListener("click",function(){goAdminHome();});
+      window.__payFromLedger=false;   /* v4.67: 農家リスト表示中の戻る=データ管理メイン画面へ */
+      backH.addEventListener("click",function(){
+        if(window.__payFromLedger){window.__payFromLedger=false;openPanel("harvest-farm",null,true);return;}   /* 支払い確認のときは一つ手前（農家リスト）に戻る */
+        goAdminHome();
+      });
       body.appendChild(backH);
       var scrR=document.createElement("div");scrR.className="adm-screen";
       body.appendChild(scrR);
@@ -1895,7 +1934,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       body.appendChild(arow);
       var scrA=document.createElement("div");scrA.className="adm-screen";
       body.appendChild(scrA);
-      var capA=document.createElement("div");capA.className="scr-cap";capA.innerHTML='発注・納品管理<span id="aloe-booklb"></span><span class=\'ver-chip\'>v4.50</span>';
+      var capA=document.createElement("div");capA.className="scr-cap";capA.innerHTML='発注・納品管理<span id="aloe-booklb"></span><span class=\'ver-chip\'>v4.67</span>';
       scrA.appendChild(capA);
       buildAloeLedger(scrA);
       updBookUI();
@@ -1951,7 +1990,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     if(!(rows instanceof Array))rows=[];
     var cap=document.createElement("div");cap.className="scr-cap";
     cap.style.fontSize="13px";cap.style.letterSpacing="0";
-    cap.innerHTML=esc2(title)+'<span class=\'ver-chip\'>v4.50</span>';
+    cap.innerHTML=esc2(title)+'<span class=\'ver-chip\'>v4.67</span>';
     root.appendChild(cap);
     var t=document.createElement("table");t.className="scr-table";
     var tr=document.createElement("tr");
@@ -2034,15 +2073,13 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   function recsOf(n){if(!(recs[n]instanceof Array))recs[n]=[];return recs[n];}
   window.__farmersRef=function(){return farmers;};
   window.__recsRef=function(){return recs;};
-  window.__hcalRef=function(){return hcal;};
-  window.__hcalTsRef=function(){return hcalTs;};window.__recsTsRef=function(){return recsTs;};
+  window.__recsTsRef=function(){return recsTs;};
   window.__delivTsRef=function(){return recentD;};
   window.__hApply=function(f2,r2,h2){   /* サーバー状態を手元に取り込む（削除しない） */
     if(f2&&!(farmers instanceof Array))farmers=[];
     if(f2&&f2.length){for(var q=0;q<f2.length;q++){if(isFarmDel(f2[q]))continue;if(farmers.indexOf(f2[q])<0)farmers.push(f2[q]);}}
     if(r2&&typeof r2==="object"){var nk2={};for(var a2 in r2)nk2[a2]=r2[a2];recs=nk2;}
-    if(h2&&typeof h2==="object"){var nh={};for(var b2 in h2)nh[b2]=h2[b2];hcal=nh;}
-    saveFarmers();saveRecs();saveHCal();
+    saveFarmers();saveRecs();
   };
   window.__destMstRef=function(){return destMst;};
   window.__destMstMerge=function(list){   /* サーバーの納入先を手元へ取り込む（和集合） */
@@ -2064,7 +2101,6 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     var delivRef=window.__delivRef(),delivTsRef=window.__delivTsRef();
     var rf=remote&&remote.farmers instanceof Array?remote.farmers:[];
     var rr=remote&&remote.farmerRecs&&typeof remote.farmerRecs==="object"?remote.farmerRecs:{};
-    var rh=remote&&remote.hcal&&typeof remote.hcal==="object"?remote.hcal:{};
     var lf=window.__farmersRef()||[];
     /* サーバー側の削除記録を取り込み、手元からも除外する */
     var rfd=(remote&&(remote.farmerDel||remote.farmerdel))||null;
@@ -2096,21 +2132,6 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       }else if(JSON.stringify(lv||[])!==JSON.stringify(rvn)){needPush=true;}   /* 手元のほうが新しい：送り返す */
       if(ad2){lr[nm]=rvn.slice();lrt[nm]=rt2||Date.now();ch=true;}
     }
-    var lh=window.__hcalRef()||{};
-    var lht=window.__hcalTsRef()||{};
-    for(var k4 in rh){
-      if(recentH["h|"+k4]&&Date.now()-recentH["h|"+k4]<GUARD_MS)continue;   /* 自端末の変更を優先（復活防止） */
-      var lvh=lh[k4]instanceof Array?lh[k4]:null;
-      var rvh=rh[k4]instanceof Array?rh[k4]:[];
-      var rts=(remote.hcalTs&&typeof remote.hcalTs[k4]==="number")?remote.hcalTs[k4]:0;
-      var lts=(lht[k4]&&typeof lht[k4]==="number")?lht[k4]:0;
-      var ad4=false;
-      if(rts>0){ad4=(!lts||rts>lts);}   /* 新形式：時刻が新しいほうを採用（削除も伝わる） */
-      else if(!lts){
-        ad4=(JSON.stringify(lvh||[])!==JSON.stringify(rvh))&&(!lvh||!lvh.length||rvh.length>=lvh.length);   /* 旧形式：従来ルール */
-      }else if(JSON.stringify(lvh||[])!==JSON.stringify(rvh)){needPush=true;}   /* 手元のほうが新しい：送り返す */
-      if(ad4){lh[k4]=rvh.slice();lht[k4]=rts||Date.now();ch=true;window.__hcDirty=true;}
-    }
     var rd2=remote&&remote.deliv&&remote.deliv.rows instanceof Array?remote.deliv.rows:null;
     var rdt=(remote&&typeof remote.delivTs==="number")?remote.delivTs:0;
     var ldt=(delivTsRef&&typeof delivTsRef.d==="number")?delivTsRef.d:0;
@@ -2123,20 +2144,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
         else{needPush=true;}
       }
     }
-    var rdc=remote&&remote.dcal&&typeof remote.dcal==="object"?remote.dcal:null;
-    if(rdc&&JSON.stringify(delivCal)!==JSON.stringify(rdc)){
-      var rdt2=(remote&&typeof remote.dcalTs==="number")?remote.dcalTs:0;
-      var ldt2=(recentDC&&typeof recentDC.d==="number")?recentDC.d:0;
-      if(rdt2>0){
-        if(!ldt2||rdt2>ldt2){delivCal=rdc;recentDC.d=rdt2;saveDelivCal(false);ch=true;window.__hcDirty=true;}
-        else{needPush=true;}
-      }else if(!ldt2||Date.now()-ldt2>=GUARD_MS){
-        if(Object.keys(rdc).length>=Object.keys(delivCal).length){delivCal=rdc;saveDelivCal(false);ch=true;window.__hcDirty=true;}
-        else{needPush=true;}
-      }
-    }
     if(needPush&&!window.__merging&&window.__syncPushRef)window.__syncPushRef();   /* 未送信だった自端末の変更を送る */
-    if(ch){saveFarmers();saveRecs();saveHCal();saveTs();saveDeliv(false);}
+    if(ch){saveFarmers();saveRecs();saveTs();saveDeliv(false);}
     return ch;
   };
   var YKEY="shiro.farm.yld",YKEYB="shiro.farm.yld.bak";
@@ -2194,7 +2203,6 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     var delivRef=window.__delivRef(),delivTsRef=window.__delivTsRef();
     var rf=remote&&remote.farmers instanceof Array?remote.farmers:[];
     var rr=remote&&remote.farmerRecs&&typeof remote.farmerRecs==="object"?remote.farmerRecs:{};
-    var rh=remote&&remote.hcal&&typeof remote.hcal==="object"?remote.hcal:{};
     var lf=window.__farmersRef()||[];
     /* サーバー側の削除記録を取り込み、手元からも除外する */
     var rfd=(remote&&(remote.farmerDel||remote.farmerdel))||null;
@@ -2226,21 +2234,6 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       }else if(JSON.stringify(lv||[])!==JSON.stringify(rvn)){needPush=true;}   /* 手元のほうが新しい：送り返す */
       if(ad2){lr[nm]=rvn.slice();lrt[nm]=rt2||Date.now();ch=true;}
     }
-    var lh=window.__hcalRef()||{};
-    var lht=window.__hcalTsRef()||{};
-    for(var k4 in rh){
-      if(recentH["h|"+k4]&&Date.now()-recentH["h|"+k4]<GUARD_MS)continue;   /* 自端末の変更を優先（復活防止） */
-      var lvh=lh[k4]instanceof Array?lh[k4]:null;
-      var rvh=rh[k4]instanceof Array?rh[k4]:[];
-      var rts=(remote.hcalTs&&typeof remote.hcalTs[k4]==="number")?remote.hcalTs[k4]:0;
-      var lts=(lht[k4]&&typeof lht[k4]==="number")?lht[k4]:0;
-      var ad4=false;
-      if(rts>0){ad4=(!lts||rts>lts);}   /* 新形式：時刻が新しいほうを採用（削除も伝わる） */
-      else if(!lts){
-        ad4=(JSON.stringify(lvh||[])!==JSON.stringify(rvh))&&(!lvh||!lvh.length||rvh.length>=lvh.length);   /* 旧形式：従来ルール */
-      }else if(JSON.stringify(lvh||[])!==JSON.stringify(rvh)){needPush=true;}   /* 手元のほうが新しい：送り返す */
-      if(ad4){lh[k4]=rvh.slice();lht[k4]=rts||Date.now();ch=true;window.__hcDirty=true;}
-    }
     var rd2=remote&&remote.deliv&&remote.deliv.rows instanceof Array?remote.deliv.rows:null;
     var rdt=(remote&&typeof remote.delivTs==="number")?remote.delivTs:0;
     var ldt=(delivTsRef&&typeof delivTsRef.d==="number")?delivTsRef.d:0;
@@ -2253,20 +2246,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
         else{needPush=true;}
       }
     }
-    var rdc=remote&&remote.dcal&&typeof remote.dcal==="object"?remote.dcal:null;
-    if(rdc&&JSON.stringify(delivCal)!==JSON.stringify(rdc)){
-      var rdt2=(remote&&typeof remote.dcalTs==="number")?remote.dcalTs:0;
-      var ldt2=(recentDC&&typeof recentDC.d==="number")?recentDC.d:0;
-      if(rdt2>0){
-        if(!ldt2||rdt2>ldt2){delivCal=rdc;recentDC.d=rdt2;saveDelivCal(false);ch=true;window.__hcDirty=true;}
-        else{needPush=true;}
-      }else if(!ldt2||Date.now()-ldt2>=GUARD_MS){
-        if(Object.keys(rdc).length>=Object.keys(delivCal).length){delivCal=rdc;saveDelivCal(false);ch=true;window.__hcDirty=true;}
-        else{needPush=true;}
-      }
-    }
     if(needPush&&!window.__merging&&window.__syncPushRef)window.__syncPushRef();   /* 未送信だった自端末の変更を送る */
-    if(ch){saveFarmers();saveRecs();saveHCal();saveTs();saveDeliv(false);}
+    if(ch){saveFarmers();saveRecs();saveTs();saveDeliv(false);}
     return ch;
   };
   var YKEY="shiro.farm.yld",YKEYB="shiro.farm.yld.bak";
@@ -2324,7 +2305,6 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     var delivRef=window.__delivRef(),delivTsRef=window.__delivTsRef();
     var rf=remote&&remote.farmers instanceof Array?remote.farmers:[];
     var rr=remote&&remote.farmerRecs&&typeof remote.farmerRecs==="object"?remote.farmerRecs:{};
-    var rh=remote&&remote.hcal&&typeof remote.hcal==="object"?remote.hcal:{};
     var lf=window.__farmersRef()||[];
     /* サーバー側の削除記録を取り込み、手元からも除外する */
     var rfd=(remote&&(remote.farmerDel||remote.farmerdel))||null;
@@ -2356,21 +2336,6 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       }else if(JSON.stringify(lv||[])!==JSON.stringify(rvn)){needPush=true;}   /* 手元のほうが新しい：送り返す */
       if(ad2){lr[nm]=rvn.slice();lrt[nm]=rt2||Date.now();ch=true;}
     }
-    var lh=window.__hcalRef()||{};
-    var lht=window.__hcalTsRef()||{};
-    for(var k4 in rh){
-      if(recentH["h|"+k4]&&Date.now()-recentH["h|"+k4]<GUARD_MS)continue;   /* 自端末の変更を優先（復活防止） */
-      var lvh=lh[k4]instanceof Array?lh[k4]:null;
-      var rvh=rh[k4]instanceof Array?rh[k4]:[];
-      var rts=(remote.hcalTs&&typeof remote.hcalTs[k4]==="number")?remote.hcalTs[k4]:0;
-      var lts=(lht[k4]&&typeof lht[k4]==="number")?lht[k4]:0;
-      var ad4=false;
-      if(rts>0){ad4=(!lts||rts>lts);}   /* 新形式：時刻が新しいほうを採用（削除も伝わる） */
-      else if(!lts){
-        ad4=(JSON.stringify(lvh||[])!==JSON.stringify(rvh))&&(!lvh||!lvh.length||rvh.length>=lvh.length);   /* 旧形式：従来ルール */
-      }else if(JSON.stringify(lvh||[])!==JSON.stringify(rvh)){needPush=true;}   /* 手元のほうが新しい：送り返す */
-      if(ad4){lh[k4]=rvh.slice();lht[k4]=rts||Date.now();ch=true;window.__hcDirty=true;}
-    }
     var rd2=remote&&remote.deliv&&remote.deliv.rows instanceof Array?remote.deliv.rows:null;
     var rdt=(remote&&typeof remote.delivTs==="number")?remote.delivTs:0;
     var ldt=(delivTsRef&&typeof delivTsRef.d==="number")?delivTsRef.d:0;
@@ -2383,20 +2348,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
         else{needPush=true;}
       }
     }
-    var rdc=remote&&remote.dcal&&typeof remote.dcal==="object"?remote.dcal:null;
-    if(rdc&&JSON.stringify(delivCal)!==JSON.stringify(rdc)){
-      var rdt2=(remote&&typeof remote.dcalTs==="number")?remote.dcalTs:0;
-      var ldt2=(recentDC&&typeof recentDC.d==="number")?recentDC.d:0;
-      if(rdt2>0){
-        if(!ldt2||rdt2>ldt2){delivCal=rdc;recentDC.d=rdt2;saveDelivCal(false);ch=true;window.__hcDirty=true;}
-        else{needPush=true;}
-      }else if(!ldt2||Date.now()-ldt2>=GUARD_MS){
-        if(Object.keys(rdc).length>=Object.keys(delivCal).length){delivCal=rdc;saveDelivCal(false);ch=true;window.__hcDirty=true;}
-        else{needPush=true;}
-      }
-    }
     if(needPush&&!window.__merging&&window.__syncPushRef)window.__syncPushRef();   /* 未送信だった自端末の変更を送る */
-    if(ch){saveFarmers();saveRecs();saveHCal();saveTs();saveDeliv(false);}
+    if(ch){saveFarmers();saveRecs();saveTs();saveDeliv(false);}
     return ch;
   };
   var YKEY="shiro.farm.yld",YKEYB="shiro.farm.yld.bak";
@@ -2454,7 +2407,6 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     var delivRef=window.__delivRef(),delivTsRef=window.__delivTsRef();
     var rf=remote&&remote.farmers instanceof Array?remote.farmers:[];
     var rr=remote&&remote.farmerRecs&&typeof remote.farmerRecs==="object"?remote.farmerRecs:{};
-    var rh=remote&&remote.hcal&&typeof remote.hcal==="object"?remote.hcal:{};
     var lf=window.__farmersRef()||[];
     /* サーバー側の削除記録を取り込み、手元からも除外する */
     var rfd=(remote&&(remote.farmerDel||remote.farmerdel))||null;
@@ -2486,21 +2438,6 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       }else if(JSON.stringify(lv||[])!==JSON.stringify(rvn)){needPush=true;}   /* 手元のほうが新しい：送り返す */
       if(ad2){lr[nm]=rvn.slice();lrt[nm]=rt2||Date.now();ch=true;}
     }
-    var lh=window.__hcalRef()||{};
-    var lht=window.__hcalTsRef()||{};
-    for(var k4 in rh){
-      if(recentH["h|"+k4]&&Date.now()-recentH["h|"+k4]<GUARD_MS)continue;   /* 自端末の変更を優先（復活防止） */
-      var lvh=lh[k4]instanceof Array?lh[k4]:null;
-      var rvh=rh[k4]instanceof Array?rh[k4]:[];
-      var rts=(remote.hcalTs&&typeof remote.hcalTs[k4]==="number")?remote.hcalTs[k4]:0;
-      var lts=(lht[k4]&&typeof lht[k4]==="number")?lht[k4]:0;
-      var ad4=false;
-      if(rts>0){ad4=(!lts||rts>lts);}   /* 新形式：時刻が新しいほうを採用（削除も伝わる） */
-      else if(!lts){
-        ad4=(JSON.stringify(lvh||[])!==JSON.stringify(rvh))&&(!lvh||!lvh.length||rvh.length>=lvh.length);   /* 旧形式：従来ルール */
-      }else if(JSON.stringify(lvh||[])!==JSON.stringify(rvh)){needPush=true;}   /* 手元のほうが新しい：送り返す */
-      if(ad4){lh[k4]=rvh.slice();lht[k4]=rts||Date.now();ch=true;window.__hcDirty=true;}
-    }
     var rd2=remote&&remote.deliv&&remote.deliv.rows instanceof Array?remote.deliv.rows:null;
     var rdt=(remote&&typeof remote.delivTs==="number")?remote.delivTs:0;
     var ldt=(delivTsRef&&typeof delivTsRef.d==="number")?delivTsRef.d:0;
@@ -2513,20 +2450,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
         else{needPush=true;}
       }
     }
-    var rdc=remote&&remote.dcal&&typeof remote.dcal==="object"?remote.dcal:null;
-    if(rdc&&JSON.stringify(delivCal)!==JSON.stringify(rdc)){
-      var rdt2=(remote&&typeof remote.dcalTs==="number")?remote.dcalTs:0;
-      var ldt2=(recentDC&&typeof recentDC.d==="number")?recentDC.d:0;
-      if(rdt2>0){
-        if(!ldt2||rdt2>ldt2){delivCal=rdc;recentDC.d=rdt2;saveDelivCal(false);ch=true;window.__hcDirty=true;}
-        else{needPush=true;}
-      }else if(!ldt2||Date.now()-ldt2>=GUARD_MS){
-        if(Object.keys(rdc).length>=Object.keys(delivCal).length){delivCal=rdc;saveDelivCal(false);ch=true;window.__hcDirty=true;}
-        else{needPush=true;}
-      }
-    }
     if(needPush&&!window.__merging&&window.__syncPushRef)window.__syncPushRef();   /* 未送信だった自端末の変更を送る */
-    if(ch){saveFarmers();saveRecs();saveHCal();saveTs();saveDeliv(false);}
+    if(ch){saveFarmers();saveRecs();saveTs();saveDeliv(false);}
     return ch;
   };
   var YKEY="shiro.farm.yld",YKEYB="shiro.farm.yld.bak";
@@ -2672,7 +2597,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     try{if(window.__syncPushNow)window.__syncPushNow();}catch(e){}
   }
   function buildDestMst(root){
-    var ttl=document.createElement("div");ttl.className="scr-cap";ttl.innerHTML='納入先の登録<span class=\'ver-chip\'>v4.50</span>';
+    var ttl=document.createElement("div");ttl.className="scr-cap";ttl.innerHTML='納入先の登録<span class=\'ver-chip\'>v4.67</span>';
     root.appendChild(ttl);
     var cap=document.createElement("div");cap.className="scr-cap";cap.style.fontSize="13px";
     cap.textContent="よく使う納入先を登録しておくと便利です";
@@ -2755,7 +2680,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     render();
   }
   function buildClientWorkReg(root){
-    var ttl=document.createElement("div");ttl.className="scr-cap";ttl.innerHTML='依頼者登録と作業の登録<span class=\'ver-chip\'>v4.50</span>';
+    var ttl=document.createElement("div");ttl.className="scr-cap";ttl.innerHTML='依頼者登録と作業の登録<span class=\'ver-chip\'>v4.67</span>';
     root.appendChild(ttl);
     var cap=document.createElement("div");cap.className="scr-cap";cap.style.fontSize="13px";
     cap.textContent="依頼者と作業内容を登録すると、作業内容の画面で選択できるようになります";
@@ -2907,10 +2832,10 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   }
   function buildDeliv(root,mode){
     mode=mode||"menu";   /* "menu"=加工ゲル表示 / "dest"=納入先表示 / "ledger"=アロエ農家管理>納品データ確認 */
-    var ttl=document.createElement("div");ttl.className="scr-cap";if(mode!=='ledger'){ttl.style.fontSize='12px';ttl.style.letterSpacing='0';}ttl.innerHTML=(mode==='ledger'?'納品データ確認（アロエ農家管理）':(mode==='dest'?'納品数量と納品先の確認':'納品数量と加工ゲルの確認'))+'<span class=\'ver-chip\'>v4.50</span>';
+    var ttl=document.createElement("div");ttl.className="scr-cap";if(mode!=='ledger'){ttl.style.fontSize='12px';ttl.style.letterSpacing='0';}ttl.innerHTML=(mode==='ledger'?'納品データ確認（アロエ農家管理）':(mode==='dest'?'納品数量と納品先の確認':'納品数量と加工ゲルの確認'))+'<span class=\'ver-chip\'>v4.67</span>';
     root.appendChild(ttl);
     var cap=document.createElement("div");cap.className="scr-cap";cap.style.fontSize="13px";
-    cap.textContent=(mode==='ledger')?'アロエ農家管理の納品データ確認です。納品カレンダーに入力したデータを農家ごとに確認できます':(mode==='dest'?'納品カレンダーに入力した納品データを納入先とあわせて確認できます':'納品カレンダーに入力した納品データの一覧です');
+    cap.textContent=(mode==='ledger')?'アロエ農家管理の納品データ確認です。納品データを農家ごとに確認できます':(mode==='dest'?'納品データを納入先とあわせて確認できます':'納品データの一覧です');
     root.appendChild(cap);
     var cbox2=document.createElement("div");cbox2.className="hc-cbox";
     cbox2.innerHTML='<span>開始</span><input type="date" class="hc-d1"><span>終了</span><input type="date" class="hc-d2">';
@@ -2947,13 +2872,20 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       for(var f=0;f<farmers.length;f++){
         var nm=farmers[f];if(fOnly&&nm!==fOnly)continue;
         var mine=[];
-        for(var k in delivCal){
-          if(k.slice(-(nm.length+1))!=="|"+nm)continue;   /* 農家名は完全一致で判定 */
-          var p=k.split("|")[0].split("-");          /* y-m-d（mは0始まり） */
-          if(!p[0]||!p[1]||!p[2])continue;             /* 不完全なキーは無視 */
-          var arr=delivCal[k] instanceof Array?delivCal[k]:[];
-          for(var z=0;z<arr.length;z++){var kz=parseFloat(arr[z].kg)||0;if(kz<=0)continue;mine.push({y:+p[0],m:+p[1],d:+p[2],kg:kz,yr:(typeof arr[z].yr==="number")?arr[z].yr:0.45});}
-        }
+        if(mode==="dest"||mode==="menu"){
+          /* v4.56: 納品数量と納品先の確認・納品数量と加工ゲルの確認の両画面で、「発注・納品管理」（加工用・生葉用の名簿）で入力した納品数量を使う */
+          for(var ab2=0;ab2<1;ab2++){   /* v4.63: 生葉用の名簿は含めない（生葉の納入先はしろう農園のため・加工用だけを集計） */
+            var al2=rdJSON("shiro.farm.aloeledger");
+            if(!(al2 instanceof Array))continue;
+            for(var i7=0;i7<al2.length;i7++){
+              var r7=al2[i7]||{};
+              if(String(r7.name||"")!==nm)continue;
+              var ep2=String(r7.en||"").split("-");if(ep2.length!==3)continue;
+              var q7=parseFloat(r7.area)||0;if(!(q7>0))continue;   /* 納品数量のない行は読まない */
+              mine.push({y:+ep2[0],m:+ep2[1]-1,d:+ep2[2],kg:q7,yr:0.45});   /* 発注・納品管理の納品（納品日=1始まり） */
+            }
+          }
+        }else{
         var dv2=deliv instanceof Object&&deliv.rows instanceof Array?deliv.rows:[];
         for(var d3=0;d3<dv2.length;d3++){
           var o2=dv2[d3];
@@ -2963,6 +2895,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
           var yr3=(typeof o2.y==="number")?o2.y:(o2.y!==""&&o2.y!=null?(parseFloat(o2.y)/100):0.45);
           var q3=parseFloat(o2.q)||0;if(q3<=0)continue;   /* 数量のない旧記録は読まない */
           mine.push({y:+dp[0],m:+dp[1]-1,d:+dp[2],kg:q3,yr:yr3});   /* 旧入力表の記録(ISO日付=1始まり) */
+        }
         }
         for(var w5=0;w5<mine.length;w5++){var yk5=mine[w5].y+"-"+mine[w5].m+"-"+mine[w5].d+"|"+nm;
           var yUse=(mode==="ledger")?yldMapL:yldMap;if(typeof yUse[yk5]==="number")mine[w5].yr=yUse[yk5];}
@@ -2980,7 +2913,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       }
       if(!rows.length){
         var e0=document.createElement("div");e0.className="scr-empty";
-        e0.textContent=(inpC1.value&&inpC2.value)?"選択した期間・農家の納品データはありません":(fOnly?"この農家の納品データはありません":"納品データはまだありません（納品カレンダーで入力してください）");
+        e0.textContent=(inpC1.value&&inpC2.value)?"選択した期間・農家の納品データはありません":(fOnly?"この農家の納品データはありません":"納品データはまだありません");
         lst.appendChild(e0);return;
       }
       var t=document.createElement("table");t.className="scr-table";
@@ -3080,46 +3013,10 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       if(yr>1)yr=yr/100;                        /* 45 と入れたら 0.45 と解釈 */
       var p=dkey.split("-");
       if(mode==="ledger"){yldMapL[dkey+"|"+nm]=yr;saveYldL();}else{yldMap[dkey+"|"+nm]=yr;saveYld();}
-      var arr=(delivCal[p[0]+"-"+p[1]+"-"+p[2]+"|"+nm])||null;
-      if(arr){for(var z=0;z<arr.length;z++)arr[z].yr=yr;}
-      saveDelivCal();
       if(window.__syncPushNow)window.__syncPushNow();
       render();
     });
     render();
-  }
-  // 削除ガード: 発注・納品の実データが残っている農家は消さない（空データは数えない）
-  function itemHasData(x) {
-    if (x && typeof x === "object") { var kg = x.kg; return !(kg === undefined || kg === null || String(kg).trim() === ""); }
-    if (typeof x === "string") return x.trim() !== "";
-    return typeof x === "number";
-  }
-  function farmerHasCalData(n) {
-    var k;
-    for (k in hcal) {
-      if (k.indexOf("|") < 0) continue;
-      if (k.slice(k.indexOf("|") + 1) !== n) continue;
-      var a = hcal[k];
-      if (a instanceof Array) { for (var i3 = 0; i3 < a.length; i3++) if (itemHasData(a[i3])) return true; }
-    }
-    for (k in delivCal) {
-      if (k.indexOf("|") < 0) continue;
-      if (k.slice(k.indexOf("|") + 1) !== n) continue;
-      var b = delivCal[k];
-      if (b instanceof Array) { for (var i4 = 0; i4 < b.length; i4++) if (itemHasData(b[i4])) return true; }
-    }
-    return false;
-  }
-  function farmerDeleteBlocked(n) {
-    if (!farmerHasCalData(n)) return false;
-    var el = document.getElementById("scr-guardmsg");
-    if (el) {
-      el.textContent = "発注データか納品データが残っているので削除できません。";
-      el.style.display = "block";
-      if (window.__guardTimer) clearTimeout(window.__guardTimer);
-      window.__guardTimer = setTimeout(function(){ el.style.display = "none"; }, 5000);
-    }
-    return true;
   }
   var payYM=null;
   function payMonth(){if(!payYM){var n=new Date();payYM={y:n.getFullYear(),m:n.getMonth()};}return payYM;}
@@ -3129,23 +3026,19 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     for(var i=0;i<nl.length;i++){
       var r=nl[i]||{};
       if(String(r.name||"")!==nm)continue;
-      var pp=String(r.en||"").split("-");if(pp.length!==3)continue;
+      var pp=String(r.en||r.ap||"").split("-");if(pp.length!==3)continue;   /* v4.62: 納品日が未入力の行も発注日で月に割り当てて集計する（生葉用の納品数量の取りこぼし対策） */
       if(+pp[0]!==y||(+pp[1]-1)!==m)continue;
       var q=parseFloat(r.area)||0;if(!(q>0))continue;
-      out.push({y:y,m:m,d:+pp[2],kg:q,dest:(bk==="nama")?"生葉用":"加工用",bk:bk});
+      var dk3=(+pp[0])+"-"+(+pp[1]-1)+"-"+(+pp[2]);   /* 納入先マップのキー（月は0始まり） */
+      var dm3=(window.__destMapFresh?window.__destMapFresh():destMap);
+      var ds3=(bk==="nama")?"しろう農園":(dm3[nm+"|"+dk3]||"");   /* v4.63: 生葉の納入先はしろう農園固定 */
+      if(!ds3&&bk!=="nama"&&typeof destLastOf==="function")ds3=destLastOf(nm)||"";
+      out.push({y:y,m:m,d:+pp[2],kg:q,dest:ds3,destEmpty:!ds3,bk:bk});
     }
     return out;
   }
   function payKgLegacy(nm,y,m){
-    var kg=0,k,arr;
-    for(k in delivCal){
-      if(k.indexOf("|")<0)continue;
-      if(k.slice(k.indexOf("|")+1)!==nm)continue;
-      var pp=k.split("|")[0].split("-");
-      if(+pp[0]!==y||+pp[1]!==m)continue;
-      arr=delivCal[k] instanceof Array?delivCal[k]:[];
-      for(var i=0;i<arr.length;i++){var q=parseFloat(arr[i]&&arr[i].kg)||0;if(q>0)kg+=q;}
-    }
+    var kg=0;
     var dv=(typeof deliv!=="undefined"&&deliv&&deliv.rows instanceof Array)?deliv.rows:[];
     for(var d=0;d<dv.length;d++){
       var o=dv[d];if(!o||o.n!==nm)continue;
@@ -3156,8 +3049,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     return kg;
   }
   function payKgFor(nm,y,m){var sp=payKgSplit(nm,y,m);return sp.k+sp.n;}   /* 全体の納品量（加工用＋生葉用） */
-  function payKgSplit(nm,y,m){   /* 加工用（従来分＋加工用の名簿）と生葉用に分けて集計（v4.50） */
-    var sp={k:payKgLegacy(nm,y,m),n:0};
+  function payKgSplit(nm,y,m){   /* 加工用・生葉用の名簿から集計（v4.60: 古い入力表は読まない — 明細と支払額を一致させる） */
+    var sp={k:0,n:0};
     var ar1=aloeBookRows(nm,y,m,"kako");for(var z1=0;z1<ar1.length;z1++)sp.k+=ar1[z1].kg;
     var ar2=aloeBookRows(nm,y,m,"nama");for(var z2=0;z2<ar2.length;z2++)sp.n+=ar2[z2].kg;
     return sp;
@@ -3226,22 +3119,11 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   };
   /* ---- 支払明細 ---- */
   function payDetailRows(nm,y,m){
-    var out=[],k,arr;
+    var out=[];
     function destOf(y0,m0,d0){
       var a=destMap[nm+"|"+y0+"-"+m0+"-"+d0];
       if(a===undefined||a==="")a=destMap[nm+"|"+y0+"-"+(m0+1)+"-"+d0];
       return a||(typeof destLastOf==="function"?destLastOf(nm):"");
-    }
-    for(k in delivCal){
-      if(k.indexOf("|")<0)continue;
-      if(k.slice(k.indexOf("|")+1)!==nm)continue;
-      var pp=k.split("|")[0].split("-");
-      if(+pp[0]!==y||+pp[1]!==m)continue;
-      arr=delivCal[k] instanceof Array?delivCal[k]:[];
-      for(var i=0;i<arr.length;i++){
-        var q=parseFloat(arr[i]&&arr[i].kg)||0;
-        if(q>0)out.push({y:+pp[0],m:+pp[1],d:+pp[2],kg:q,dest:destOf(+pp[0],+pp[1],+pp[2])});
-      }
     }
     var dv=(typeof deliv!=="undefined"&&deliv&&deliv.rows instanceof Array)?deliv.rows:[];
     for(var j=0;j<dv.length;j++){
@@ -3271,7 +3153,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     return function(nm){
       var d0=orig(nm);
       var UN=payUnitNamaFor(d0.y,d0.m);d0.UNIT_N=UN;
-      var rows=payDetailRows(nm,d0.y,d0.m).concat(aloeBookRows(nm,d0.y,d0.m,"kako"),aloeBookRows(nm,d0.y,d0.m,"nama"));
+      var rows=aloeBookRows(nm,d0.y,d0.m,"kako").concat(aloeBookRows(nm,d0.y,d0.m,"nama"));   /* v4.60: 明細は「発注・納品管理」の名簿だけから（古い入力表の残りかすで二重計上しない） */
       rows.sort(function(a0,b0){return ((a0.y*10000+a0.m*100+a0.d)||0)-((b0.y*10000+b0.m*100+b0.d)||0);});
       var kg0=0,amt0=0;
       for(var i0=0;i0<rows.length;i0++){rows[i0].unit=(rows[i0].bk==="nama")?UN:d0.UNIT;rows[i0].amt=Math.round(rows[i0].kg*rows[i0].unit);kg0+=rows[i0].kg;amt0+=rows[i0].amt;}
@@ -3329,7 +3211,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       var o=d.rows[r2-1];if(!o)continue;
       var yb=ry+rh/2+8;
       x.fillStyle="#111111";x.font=font(21,"");x.textAlign="center";x.fillText(String(r2),left+cols[0]/2,yb);
-      x.textAlign="left";x.fillText(reiwa(new Date(o.y,o.m,o.d))+"（"+(o.dest||"未設定")+"）",left+cols[0]+12,yb);
+      x.textAlign="left";x.fillText(reiwa(new Date(o.y,o.m,o.d))+"（"+(o.bk==="nama"?"生葉用":"加工用")+"）",left+cols[0]+12,yb);   /* v4.64: 名簿の種類を行に表示 */
       var cx3=left+cols[0]+cols[1];
       x.textAlign="right";x.fillText(String(Math.round(o.kg*10)/10)+"kg",cx3+cols[2]-12,yb);
       x.fillText("\u00a5"+(o.unit!==undefined?o.unit:d.UNIT).toLocaleString("ja-JP"),cx3+cols[2]+cols[3]-12,yb);
@@ -3344,7 +3226,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     x.strokeStyle="#333333";x.lineWidth=1.6;x.strokeRect(left,top,tw2,th+rowsN*rh);
     /* 注記 */
     x.font=font(19,"");x.textAlign="left";x.fillStyle="#444444";
-    var note="対象月："+d.y+"年"+(d.m+1)+"月　単価（加工用）："+d.UNIT+"円/kg　単価（生葉用）："+d.UNIT_N+"円/kg　支払日："+(d.rec.d?d.rec.d.replace(/-/g,"/"):"未定")+"　支払状況："+(d.rec.paid?"支払い済":"未払い");
+    var note="対象月："+d.y+"年"+(d.m+1)+"月　単価（加工用）："+d.UNIT+"円/kg　単価（生葉用）："+d.UNIT_N+"円/kg";   /* v4.65: 支払日・支払状況は明細に表示しない */
     x.fillText(note,pad,ty+th+60);
     return cv;
   }
@@ -3451,7 +3333,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   function showPayDetail(nm){
     var old=document.getElementById("pay-detail");if(old)old.parentNode.removeChild(old);
     var y=payMonth().y,m=payMonth().m,UNIT=payUnitFor(y,m);
-    var rows2=payDetailRows(nm,y,m).concat(aloeBookRows(nm,y,m,"kako"),aloeBookRows(nm,y,m,"nama"));   /* 加工用・生葉用の納品数量を明細に反映（各行に出自を表示・v4.50） */
+    var rows2=aloeBookRows(nm,y,m,"kako").concat(aloeBookRows(nm,y,m,"nama"));   /* v4.60: 明細は「発注・納品管理」の名簿だけから（各行に出自=加工用/生葉用を表示） */
     rows2.sort(function(a0,b0){return ((a0.y*10000+a0.m*100+a0.d)||0)-((b0.y*10000+b0.m*100+b0.d)||0);});
     var UNIT_N=payUnitNamaFor(y,m);   /* 生葉用の単価（v4.50） */
     var kg=0,amt=0;
@@ -3477,7 +3359,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     for(var r3=0;r3<fill;r3++){
       var o=rows2[r3],rr=document.createElement("tr");
       var c1=document.createElement("td");c1.className="idx";c1.textContent=o?String(r3+1):"";rr.appendChild(c1);
-      var c2=document.createElement("td");c2.textContent=o?(reiwa(new Date(o.y,o.m,o.d))+"（"+(o.dest||"未設定")+"）"):"";rr.appendChild(c2);
+      var c2=document.createElement("td");c2.textContent=o?(reiwa(new Date(o.y,o.m,o.d))+"（"+(o.bk==="nama"?"生葉用":"加工用")+"）"):"";rr.appendChild(c2);   /* v4.64: 名簿の種類を行に表示 */
       var c3=document.createElement("td");c3.className="num";c3.textContent=o?(String(Math.round(o.kg*10)/10)+"kg"):"";rr.appendChild(c3);
       var c4=document.createElement("td");c4.className="num";c4.textContent=o?("\u00a5"+o.unit.toLocaleString("ja-JP")):"";rr.appendChild(c4);
       var c5=document.createElement("td");c5.className="num";c5.textContent=o?("\u00a5"+o.amt.toLocaleString("ja-JP")):"";rr.appendChild(c5);
@@ -3492,7 +3374,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     tb.appendChild(tr2);
     card.appendChild(tb);
     var nt=document.createElement("div");nt.className="ms-note";
-    nt.textContent="対象月："+y+"年"+(m+1)+"月　単価（加工用）："+UNIT+"円/kg　単価（生葉用）："+UNIT_N+"円/kg　支払日："+(rec.d?rec.d.replace(/-/g,"/"):"未定")+"　支払状況："+(rec.paid?"支払い済":"未払い");
+    nt.textContent="対象月："+y+"年"+(m+1)+"月　単価（加工用）："+UNIT+"円/kg　単価（生葉用）："+UNIT_N+"円/kg";   /* v4.65: 支払日・支払状況は明細に表示しない */
     card.appendChild(nt);
     function closeDetail(ev){if(ev&&ev.cancelable){try{ev.preventDefault();}catch(e){}}if(ov.parentNode)ov.parentNode.removeChild(ov);try{document.removeEventListener("keydown",escH);}catch(e){}}
     function escH(e){if(e.key==="Escape"||e.keyCode===27)closeDetail(e);}
@@ -3592,7 +3474,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   function buildPayContent(root){
     var ym=payMonth(),UNIT=100;
     var ttl=document.createElement("div");ttl.className="scr-cap";ttl.style.fontSize="13px";ttl.style.letterSpacing="0";
-    ttl.innerHTML='支払い確認（月別・全農家）<span class=\'ver-chip\'>v4.50</span>';
+    ttl.innerHTML='支払い確認（月別・全農家）<span class=\'ver-chip\'>v4.67</span>';
     root.appendChild(ttl);
     var note=document.createElement("div");note.className="scr-cap";note.style.fontSize="12px";note.style.letterSpacing="0";
     note.textContent="発注・納品管理の名簿（加工用・生葉用）と納品受注カレンダーに登録された納品量 × それぞれの単価（下の欄で一括変更できます）";
@@ -3633,19 +3515,12 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     root.appendChild(ubar2);
     var wrap=document.createElement("div");root.appendChild(wrap);
     function render(){
-      lbl.innerHTML=ym.y+"年"+(ym.m+1)+"月<span class=\'ver-chip\'>v4.50</span>";
+      lbl.innerHTML=ym.y+"年"+(ym.m+1)+"月<span class=\'ver-chip\'>v4.67</span>";
       wrap.innerHTML="";
       var UNIT=payUnitFor(ym.y,ym.m),UNIT_N=payUnitNamaFor(ym.y,ym.m);
       if(document.activeElement!==uinp)uinp.value=String(UNIT);
       if(document.activeElement!==uinpN)uinpN.value=String(UNIT_N);
       var names=farmers.slice();
-      for(var k in delivCal){
-        if(k.indexOf("|")<0)continue;
-        var pp=k.split("|")[0].split("-");
-        if(+pp[0]!==ym.y||+pp[1]!==ym.m)continue;
-        var nmz=k.slice(k.indexOf("|")+1);
-        if(nmz&&names.indexOf(nmz)<0)names.push(nmz);
-      }
       (function(){   /* 加工用・生葉用の名簿だけで入力された農家も表示する（v4.50） */
         ["shiro.farm.aloeledger","shiro.farm.aloeledger.nama"].forEach(function(kk0){
           var nl=rdJSON(kk0);if(!(nl instanceof Array))return;
@@ -3765,7 +3640,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     var ok=document.createElement("button");ok.className="scr-regok";ok.textContent="登録";
     ok.addEventListener("click",function(){commit();});
     box.appendChild(inp);box.appendChild(ok);root.appendChild(box);
-    var cap=document.createElement("div");cap.className="scr-cap";cap.innerHTML='アロエベラ栽培農家リスト<span class=\'ver-chip\'>v4.50</span>';
+    var cap=document.createElement("div");cap.className="scr-cap";cap.innerHTML='アロエベラ栽培農家リスト<span class=\'ver-chip\'>v4.67</span>';
     root.appendChild(cap);
     var gmsg=document.createElement("div");gmsg.className="scr-guardmsg";gmsg.id="scr-guardmsg";root.appendChild(gmsg);
     var lst=document.createElement("div");lst.className="scr-list";lst.id="farmer-list";root.appendChild(lst);
@@ -3798,14 +3673,13 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     lst.addEventListener("click",function(e){
       var d=e.target.closest?e.target.closest(".scr-del"):null;
       if(d){var di=+d.getAttribute("data-i"),dn=farmers[di];
-        if(farmerDeleteBlocked(dn))return;
         var gm=document.getElementById("scr-guardmsg");if(gm)gm.style.display="none";
         markFarmDel(dn);farmers.splice(di,1);saveFarmers();render();try{if(window.__syncPushNow)window.__syncPushNow();}catch(e){}return;}
     });
     function openFarmer(name){
       var back=document.createElement("button");back.className="scr-dl";back.textContent="← 農家リストに戻る";
       root.innerHTML="";root.appendChild(back);
-      var ttl=document.createElement("div");ttl.className="scr-cap";ttl.innerHTML=esc2(name)+" の収穫記録<span class=\'ver-chip\'>v4.50</span>";
+      var ttl=document.createElement("div");ttl.className="scr-cap";ttl.innerHTML=esc2(name)+" の収穫記録<span class=\'ver-chip\'>v4.67</span>";
       root.appendChild(ttl);
       var t=document.createElement("table");t.className="scr-table";
       var fields=["日付","作物","収穫量(kg)","メモ"];
@@ -3846,25 +3720,14 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     }
     pbtn.addEventListener("click",function(){
       /* 支払い確認だけを表示する（農家リストは出さない） */
-      root.innerHTML="";
-      var back=document.createElement("button");back.className="scr-dl";back.textContent="← アロエ農家管理に戻る";
-      back.addEventListener("click",function(ev){ev.stopPropagation();openPanel("harvest-farm",null,true);});
-      root.appendChild(back);
+      document.getElementById("adm-ptitle").textContent="支払い確認";   /* v4.66: この画面のときだけタイトルを支払い確認に（戻ると自動で元に戻る） */
+      root.innerHTML="";   /* v4.67: 「← アロエ農家管理に戻る」ボタンは削除（上の「戻る」で一つ手前に戻る） */
+      window.__payFromLedger=true;   /* 支払い確認表示中の印 */
       var wrap=document.createElement("div");wrap.id="pay-wrap";
       root.appendChild(wrap);
       buildPayContent(wrap);
     });
     render();
-  }
-  var HCKEY="shiro.farm.hcal",HCKEYB="shiro.farm.hcal.bak";
-  var hcal=rdJSON(HCKEY);
-  if(!hcal||typeof hcal!=="object"||hcal instanceof Array){
-    var hb=rdJSON(HCKEYB);
-    hcal=(hb&&typeof hb==="object"&&!(hb instanceof Array))?hb:{};
-  }
-  function saveHCal(push){
-    wrJSON(HCKEY,hcal);wrJSON(HCKEYB,hcal);
-    if(push!==false&&window.__syncPushRef)window.__syncPushRef();
   }
   /* ---- 収穫データ管理（納品データ）: {DKEY} ---- */
   var DKEY="shiro.farm.deliveries",DKEYB="shiro.farm.deliveries.bak";
@@ -3879,19 +3742,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     if(push!==false&&window.__syncPushRef)window.__syncPushRef();
   }
   window.__delivRef=function(){return deliv;};
-  /* ---- 納品カレンダー ---- */
-  var DCKEY="shiro.farm.dcal",DCKEYB="shiro.farm.dcal.bak";
-  var delivCal=rdJSON(DCKEY);
-  if(!delivCal||typeof delivCal!=="object"||delivCal instanceof Array){
-    var dcb=rdJSON(DCKEYB);
-    delivCal=(dcb&&typeof dcb==="object"&&!(dcb instanceof Array))?dcb:{};
-  }
-  function saveDelivCal(push){
-    wrJSON(DCKEY,delivCal);wrJSON(DCKEYB,delivCal);
-    if(push!==false&&window.__syncPushRef)window.__syncPushRef();
-  }
-  window.__dcalRef=function(){return delivCal;};
-  /* ---- 農作業受託カレンダー（発注カレンダーと同じUI・データは完全に独立） ---- */
+  /* ---- 農作業受託カレンダー ---- */
   var WCKEY="shiro.farm.wcal",WCKEYB="shiro.farm.wcal.bak";
   var wcal=rdJSON(WCKEY);
   if(!wcal||typeof wcal!=="object"||wcal instanceof Array){
@@ -3902,7 +3753,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     wrJSON(WCKEY,wcal);wrJSON(WCKEYB,wcal);
     if(push!==false&&window.__syncPushRef)window.__syncPushRef();
   }
-  /* ---- 作業終了カレンダー（同じUI・データは作業申し込みカレンダーとも発注カレンダーとも独立） ---- */
+  /* ---- 作業終了カレンダー（同じUI・データは作業申し込みカレンダーとも独立） ---- */
   var WCEKEY="shiro.farm.wcalend",WCEKEYB="shiro.farm.wcalend.bak";
   var wcalEnd=rdJSON(WCEKEY);
   if(!wcalEnd||typeof wcalEnd!=="object"||wcalEnd instanceof Array){
@@ -3940,32 +3791,24 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     if(ch)saveWCalEnd(false);   /* 端末内の保存のみ（サーバー同期は従来の同期処理に任せる） */
     try{localStorage.setItem(CK,"1");}catch(e){}
   })();
-  var recentDC={};
-  try{recentDC=JSON.parse(localStorage.getItem("shiro.farm.recentDC")||"{}")||{};}catch(e){recentDC={};}
-  function markDC(){recentDC.d=Date.now();try{localStorage.setItem("shiro.farm.recentDC",JSON.stringify(recentDC));}catch(e){}}
   var recentD={};
   try{recentD=JSON.parse(localStorage.getItem("shiro.farm.recentD")||"{}")||{};}catch(e){recentD={};}
   function markD(){recentD.d=Date.now();try{localStorage.setItem("shiro.farm.recentD",JSON.stringify(recentD));}catch(e){}}
-  var recentH={},recentR={};   /* 直近の自端末変更の記録（復活防止・端末に保存して開き直し後も有効） */
-  try{recentH=JSON.parse(localStorage.getItem("shiro.farm.recentH")||"{}")||{};}catch(e){recentH={};}
+  var recentR={};   /* 直近の自端末変更の記録（復活防止・端末に保存して開き直し後も有効） */
   try{recentR=JSON.parse(localStorage.getItem("shiro.farm.recentR")||"{}")||{};}catch(e){recentR={};}
-  function markH(k){recentH["h|"+k]=Date.now();try{localStorage.setItem("shiro.farm.recentH",JSON.stringify(recentH));}catch(e){}}
   function markR(n){recentR["r|"+n]=Date.now();try{localStorage.setItem("shiro.farm.recentR",JSON.stringify(recentR));}catch(e){}}
   var GUARD_MS=15000;   /* 保護は15秒（送信飛行中の 古いデータ書き戻しのみ防ぐ。以後は時刻の新しいほうが勝つ） */
   /* ---- 端末間で削除も同期するための最終変更時刻（新しい変更を優先） ---- */
-  var HTKEY="shiro.farm.hcalTs",RTKEY2="shiro.farm.recsTs";
-  var hcalTs=rdJSON(HTKEY);
-  if(!hcalTs||typeof hcalTs!=="object"||hcalTs instanceof Array)hcalTs={};
+  var RTKEY2="shiro.farm.recsTs";
   var recsTs=rdJSON(RTKEY2);
   if(!recsTs||typeof recsTs!=="object"||recsTs instanceof Array)recsTs={};
-  function saveTs(){try{localStorage.setItem(HTKEY,JSON.stringify(hcalTs));localStorage.setItem(RTKEY2,JSON.stringify(recsTs));}catch(e){}}
-  function markT(k){hcalTs[k]=Date.now();saveTs();}
+  function saveTs(){try{localStorage.setItem(RTKEY2,JSON.stringify(recsTs));}catch(e){}}
   function markRecT(n){recsTs[n]=Date.now();saveTs();}
-  var CALT={title:"発注カレンダー",w:"発注"},CALD=null,saveCalD=null;
+  var CALT={title:"農作業受託カレンダー",w:"作業"},CALD=null,saveCalD=null;
   var calFromHome=false;   /* データ管理メイン画面のトップから開いたか */
   var calBackTo="home";    /* カレンダーから戻る先: home / paytop / farm */
   function openOrderCal(){
-    if(!CALD){CALD=hcal;saveCalD=saveHCal;}
+    if(!CALD){CALD=wcal;saveCalD=saveWCal;}
     var isWorkCal=(CALT.title==="作業申し込みカレンダー"||CALT.title==="作業終了カレンダー"||CALT.title==="農作業受託カレンダー");
     var calPeople=isWorkCal?clientMst():farmers;   /* 作業系カレンダーは「依頼者登録と作業の登録」の依頼者リスト */
     var pplLbl=isWorkCal?"依頼者":"農家";
@@ -4038,7 +3881,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       return set;
     }
     function draw(){
-      lbl.innerHTML=hy+"年"+(hm+1)+"月<span class=\'ver-chip\'>v4.50</span>";
+      lbl.innerHTML=hy+"年"+(hm+1)+"月<span class=\'ver-chip\'>v4.67</span>";
       var hol=holidaySet(hy,hm);
       var first=new Date(hy,hm,1),off=first.getDay(),dim=new Date(hy,hm+1,0).getDate();
       var grid='<div class="hc-dows">'+["日","月","火","水","木","金","土"].map(function(d,ix){return '<span'+(ix===0?' class="sun"':'')+'>'+d+'</span>';}).join("")+'</div><div class="hc-grid">';
@@ -4095,7 +3938,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       else{for(var f4=0;f4<calPeople.length;f4++){var a2=CALD[key+"|"+calPeople[f4]]||[];for(var z2=0;z2<a2.length;z2++)rows.push([calPeople[f4],a2[z2]]);}}
       var box=document.createElement("div");   /* 毎回新規：古いboxのリスナー引き継ぎを防ぐ */
       box.id="hc-detail";box.className="scr-list";box.setAttribute("data-day",dd);
-      var html='<div class="scr-cap">'+(hm+1)+"月"+dd+"日の"+CALT.w+'<span class=\'ver-chip\'>v4.50</span></div>';
+      var html='<div class="scr-cap">'+(hm+1)+"月"+dd+"日の"+CALT.w+'<span class=\'ver-chip\'>v4.67</span></div>';
       var isAppli=(isWorkCal&&CALT.title==="作業申し込みカレンダー");
       var isEnd=(isWorkCal&&CALT.title==="作業終了カレンダー");
       var isBoth=(isWorkCal&&CALT.title==="農作業受託カレンダー");
@@ -4238,7 +4081,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
           if(hit>=0)exA.splice(hit,1);   /* 登録済みカードをタップ→解除 */
           else exA.push({kg:kg2,a:a2v,p:p2v,t:t2v});   /* 未登録カードをタップ→登録（二重登録なし） */
           wcalEnd[key2]=exA;
-          markH(key2);markT(key2);saveWCalEnd();
+          saveWCalEnd();
           if(window.__syncPushNow)window.__syncPushNow();
           var tapd=document.querySelector(".hc-cell.tap"),tapDay=tapd?+tapd.getAttribute("data-day"):null;
           draw();   /* 日付マスに作業内容タグを反映 */
@@ -4254,11 +4097,11 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
         var key3=hy+"-"+hm+"-"+dd;
         if(sel.value){
           var aS=CALD[key3+"|"+sel.value]||[];
-          if(ri>=0&&ri<aS.length){aS.splice(ri,1);markH(key3+"|"+sel.value);markT(key3+"|"+sel.value);if(CALT.title==="納品カレンダー")markDC();}
+          if(ri>=0&&ri<aS.length){aS.splice(ri,1);}
         }else{
           var cum=0;
           for(var f6=0;f6<calPeople.length;f6++){var a4=CALD[key3+"|"+calPeople[f6]]||[];
-            if(ri>=cum&&ri<cum+a4.length){a4.splice(ri-cum,1);markH(key3+"|"+calPeople[f6]);markT(key3+"|"+calPeople[f6]);if(CALT.title==="納品カレンダー")markDC();break;}
+            if(ri>=cum&&ri<cum+a4.length){a4.splice(ri-cum,1);break;}
             cum+=a4.length;}
         }
         saveCalD();
@@ -4293,7 +4136,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
           entry.a=av;entry.p=pv;entry.t=(av>0&&pv>0)?Math.round((av*pv)/10*10)/10:0;
         }
         var arr=CALD[key2+"|"+ff]||(CALD[key2+"|"+ff]=[]);
-        arr.push(entry);markH(key2+"|"+ff);markT(key2+"|"+ff);if(CALT.title==="納品カレンダー")markDC();saveCalD();
+        arr.push(entry);saveCalD();
         box.remove();
         var tps=document.querySelectorAll(".hc-cell.tap");
         for(var ti=0;ti<tps.length;ti++)tps[ti].classList.remove("tap");
@@ -4420,7 +4263,22 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   }
     var ALKEY="shiro.farm.aloeledger",ALKEYB="shiro.farm.aloeledger.bak";   /* 加工用の名簿（従来のデータは加工用に入ります・v4.50） */
     var NKEY2="shiro.farm.aloeledger.nama",NKEY2B="shiro.farm.aloeledger.nama.bak";   /* 生葉用の名簿（v4.50新設） */
-    function loadBook2(k,kb){var a=rdJSON(k);if(!(a instanceof Array)){var b=rdJSON(kb);a=(b instanceof Array)?b:[];}return a;}
+    function loadBook2(k,kb){
+      function rdL(kk){try{var v=localStorage.getItem(kk);return v===null?null:JSON.parse(v);}catch(e){return null;}}
+      function wrL(kk,v){try{localStorage.setItem(kk,JSON.stringify(v));}catch(e){}}
+      function ok(a){return a instanceof Array&&a.length>0;}
+      var a=rdJSON(k);
+      if(!(a instanceof Array)){   /* 本体が壊れている・未作成のときは従来どおり控えにフォールバック */
+        var b=rdJSON(kb);return (b instanceof Array)?b:[];
+      }
+      if(!a.length){   /* v4.57: 本体が空のときは控え→ミラーの順に自動復元（データがあるのに表示されない問題の対策） */
+        var b2=rdJSON(kb);
+        if(ok(b2)){wrL(k,b2);wrL(kb,b2);return b2;}
+        var m3=rdL("shiroM."+k);
+        if(ok(m3)){wrL(k,m3);wrL(kb,m3);return m3;}
+      }
+      return a;
+    }
     var aloeLedgerKako=loadBook2(ALKEY,ALKEYB),aloeLedgerNama=loadBook2(NKEY2,NKEY2B);
     var aloeBook="kako";   /* 「加工用」「生葉用」ボタンで切り替える名簿（v4.50: 初期は加工用） */
     var aloeLedger=aloeLedgerKako;
@@ -4428,6 +4286,69 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       if(!aloeLedgerNama.length&&aloeLedgerKako.length){aloeLedgerNama=JSON.parse(JSON.stringify(aloeLedgerKako));wrJSON(NKEY2,aloeLedgerNama);wrJSON(NKEY2B,aloeLedgerNama);}
       localStorage.setItem("shiro.farm.aloeledger.nama.copied","1");
     }}catch(e){}
+  /* --- v4.55: 誤流入したテストデータ（山田農園・平良農園）の自動一掃。起動のたびに指紋一致の行だけを取り除く --- */
+  (function(){
+    var FP=["山田農園","平良農園"],hit=false;
+    function rdL(k){try{var v=localStorage.getItem(k);return v?JSON.parse(v):null;}catch(e9){return null;}}
+    function wrL(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e9){}}
+    function has(n){return FP.indexOf(n)>=0;}
+    function nmHead(k){var p=k.indexOf("|");return p<0?k:k.slice(0,p);}
+    function nmTail(k){var p=k.indexOf("|");return p<0?k:k.slice(p+1);}
+    function cleanMem(map,side){
+      if(!(map&&typeof map==="object")||map instanceof Array)return false;
+      var c=false;
+      for(var k3 in map){var nm=(side==="head")?nmHead(k3):nmTail(k3);if(has(nm)){delete map[k3];c=true;}}
+      if(c)hit=true;return c;
+    }
+    try{   /* 登録農家 */
+      if(typeof farmers!=="undefined"&&farmers instanceof Array){
+        for(var z0=farmers.length-1;z0>=0;z0--)if(has(farmers[z0]))farmers.splice(z0,1);
+        if(typeof saveFarmers==="function")saveFarmers(false);
+      }
+    }catch(e0){}
+    try{   /* 農家別の収穫記録・時刻（メモリと保存の両方を直接書き換える） */
+      var rc0=(window.__recsRef?window.__recsRef():rdL("shiro.farm.farmerRecs"));
+      var ts0=(window.__recsTsRef?window.__recsTsRef():rdL("shiro.farm.recsTs"))||{};
+      var c1=false;
+      if(rc0)for(var rn in rc0)if(has(rn)){delete rc0[rn];c1=true;}
+      if(ts0)for(var rn2 in ts0)if(has(rn2)){delete ts0[rn2];c1=true;}
+      if(c1){wrL("shiro.farm.farmerRecs",rc0||{});wrL("shiro.farm.farmerRecs.bak",rc0||{});wrL("shiro.farm.recsTs",ts0);wrL("shiro.farm.recsTs.bak",ts0);hit=true;}
+    }catch(e1){}
+    try{   /* 旧入力表（納品データ）: 画面から消せない999kg行などをここで除去 */
+      if(typeof deliv!=="undefined"&&deliv&&deliv.rows instanceof Array){
+        for(var z1=deliv.rows.length-1;z1>=0;z1--){var o9=deliv.rows[z1];if(o9&&has(o9.n))deliv.rows.splice(z1,1);}
+        if(typeof saveDeliv==="function")saveDeliv(false);
+      }
+    }catch(e2){}
+    try{   /* 加工用・生葉用の名簿 */
+      [[aloeLedgerKako,"shiro.farm.aloeledger"],[aloeLedgerNama,"shiro.farm.aloeledger.nama"]].forEach(function(pr){
+        var arr=pr[0];if(!(arr instanceof Array))return;
+        var before=arr.length;
+        for(var z2=arr.length-1;z2>=0;z2--){var r9=arr[z2]||{};if(has(String(r9.name||"")))arr.splice(z2,1);}
+        if(arr.length!==before){wrL(pr[1],arr);wrL(pr[1]+".bak",arr);hit=true;}
+      });
+    }catch(e3){}
+    try{   /* 支払い済み・納入先・歩留まりなどのマップ系（メモリを掃除してから専用の保存関数で書き戻す） */
+      cleanMem(payInfo,"tail");if(typeof savePayInfo==="function")savePayInfo();
+      cleanMem(destMap,"head");if(typeof saveDest==="function")saveDest();
+      cleanMem(yldMap,"tail");if(typeof saveYld==="function")saveYld();
+      if(typeof led==="object"&&led){
+        var c2=cleanMem(led.dst,"head");c2=cleanMem(led.yld,"tail")||c2;
+        if(led.rng&&has(led.rng.farmer)){delete led.rng.farmer;c2=true;}
+        if(c2)saveLed();
+      }
+      if(typeof yldRng==="object"&&yldRng&&has(yldRng.farmer)){delete yldRng.farmer;if(typeof saveRng==="function")saveRng();hit=true;}
+      /* 最終納入先・範囲系は保存実体を直接掃除 */
+      var dl=rdL("shiro.farm.destlast");
+      if(dl&&typeof dl==="object"&&!(dl instanceof Array)){var c3=false;for(var k9 in dl)if(has(nmHead(k9))){delete dl[k9];c3=true;}if(c3){wrL("shiro.farm.destlast",dl);wrL("shiro.farm.destlast.bak",dl);hit=true;}}
+    }catch(e4){}
+    try{   /* 同期での復活防止：この2名は削除済みとして記録しておく */
+      if(typeof farmDel==="object"&&farmDel){var c8=false;
+        for(var z5=0;z5<FP.length;z5++)if(!farmDel[FP[z5]]){farmDel[FP[z5]]=Date.now();c8=true;}
+        if(c8&&typeof saveFarmDel==="function")saveFarmDel();}
+    }catch(e6){}
+    if(hit&&window.__syncPushRef)try{window.__syncPushRef();}catch(e5){}
+  })();
   function saveALedger(push){
     if(aloeBook==="nama"){wrJSON(NKEY2,aloeLedger);wrJSON(NKEY2B,aloeLedger);}
     else{wrJSON(ALKEY,aloeLedger);wrJSON(ALKEYB,aloeLedger);}
@@ -4496,8 +4417,20 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
         wrap.querySelector("#awl-sum-kg").textContent=(Math.round(skg*100)/100)+"kg";
         wrap.querySelector("#awl-sum-av").textContent=(Math.round(sav*100)/100)+"kg";
       }
-      if(infoEl)infoEl.textContent=n+"件 / 全"+aloeLedger.length+"件";
+      if(infoEl)infoEl.textContent=(n?(n+"件 / "):"")+"全"+aloeLedger.length+"件";
     }
+    function refreshAloeBooks(){   /* v4.59: 開くたび・名簿切替のたびに保存から最新を読み直す（納品確認2画面と同じ鮮度・同期で届いた行も出す） */
+      function rdL2(kk){try{var v=localStorage.getItem(kk);return v===null?null:JSON.parse(v);}catch(e){return null;}}
+      [[aloeLedgerKako,"shiro.farm.aloeledger","shiro.farm.aloeledger.bak"],[aloeLedgerNama,"shiro.farm.aloeledger.nama","shiro.farm.aloeledger.nama.bak"]].forEach(function(pr){
+        var fr=rdL2(pr[1]);
+        if(!(fr instanceof Array))fr=rdL2(pr[2]);
+        if(!(fr instanceof Array))return;   /* 保存が空・壊れているときは起動時の復元結果をそのまま使う */
+        pr[0].length=0;
+        for(var ri=0;ri<fr.length;ri++)pr[0].push(fr[ri]);
+      });
+      aloeLedger=(aloeBook==="nama")?aloeLedgerNama:aloeLedgerKako;
+    }
+    refreshAloeBooks();
     function render(){   /* 表示期間内の行を発注日が若い順に表示（同日は追加順・日付未入力は最後）。フッターに数量合計 */
       var fEl=wrap.querySelector("#awl-from"),tEl=wrap.querySelector("#awl-to"),f=fEl?fEl.value:"",tv=tEl?tEl.value:"";
       var h="",idx=[],vis=[],skg=0,sav=0;
@@ -4579,7 +4512,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     wrap.querySelector("#awl-ap").value=(function(){var n=new Date();return n.getFullYear()+"-"+("0"+(n.getMonth()+1)).slice(-2)+"-"+("0"+n.getDate()).slice(-2);})();   /* 初期値=本日 */
     window.__aloeSetBook=function(bk){   /* 「加工用」「生葉用」の名簿を切り替える（v4.50） */
       if(aloeBook===bk)return;
-      aloeBook=bk;aloeLedger=(bk==="nama")?aloeLedgerNama:aloeLedgerKako;
+      aloeBook=bk;refreshAloeBooks();
       wrap.querySelector("#awl-name").value="";wrap.querySelector("#awl-kg").value="";wrap.querySelector("#awl-area").value="";wrap.querySelector("#awl-en").value="";
       wrap.querySelector("#awl-ap").value=(function(){var n2=new Date();return n2.getFullYear()+"-"+("0"+(n2.getMonth()+1)).slice(-2)+"-"+("0"+n2.getDate()).slice(-2);})();
       render();
@@ -4611,14 +4544,12 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     var sb0=e.target.closest?e.target.closest(".adm-card[data-sub]"):null;
     if(sb0){
       var sk0=sb0.getAttribute("data-sub");
-      if(sk0==="cal2"||sk0==="dcal2"||sk0==="wcal2"||sk0==="wcalend2"||sk0==="wcalboth"){   /* トップは直接、パネル内はサブメニューから開く */
+      if(sk0==="wcal2"||sk0==="wcalend2"||sk0==="wcalboth"){   /* トップは直接、パネル内はサブメニューから開く */
         var body0=document.getElementById("adm-pbody");body0.innerHTML="";
         var inHome=!!(sb0.closest&&sb0.closest(".adm-home"));
-        calFromHome=inHome;calBackTo=inHome?"home":((sk0==="wcal2"||sk0==="wcalend2"||sk0==="wcalboth")?"contract":"paytop");
+        calFromHome=inHome;calBackTo=inHome?"home":"contract";
         if(!inHome&&curPanel){navStack.push({k:curPanel,extra:curExtra});}
-        if(sk0==="cal2"){CALD=hcal;saveCalD=saveHCal;CALT.title="発注カレンダー";CALT.w="発注";}
-        else if(sk0==="dcal2"){CALD=delivCal;saveCalD=saveDelivCal;CALT.title="納品カレンダー";CALT.w="納品";}
-        else if(sk0==="wcal2"){CALD=wcal;saveCalD=saveWCal;CALT.title="作業申し込みカレンダー";CALT.w="作業申し込み";}
+        if(sk0==="wcal2"){CALD=wcal;saveCalD=saveWCal;CALT.title="作業申し込みカレンダー";CALT.w="作業申し込み";}
         else if(sk0==="wcalboth"){CALD=wcal;saveCalD=saveWCal;CALT.title="農作業受託カレンダー";CALT.w="作業";}
         else{CALD=wcalEnd;saveCalD=saveWCalEnd;CALT.title="作業終了カレンダー";CALT.w="作業終了";}
         openOrderCal();
@@ -4643,8 +4574,6 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     }
   });
   function openSub(sk){
-    if(sk==="cal"){calFromHome=false;CALD=hcal;saveCalD=saveHCal;CALT.title="発注カレンダー";CALT.w="発注";openOrderCal();return;}
-    if(sk==="dcal"){calFromHome=false;CALD=delivCal;saveCalD=saveDelivCal;CALT.title="納品カレンダー";CALT.w="納品";openOrderCal();return;}
     var body=document.getElementById("adm-pbody");
     body.innerHTML='';
     var scr=document.createElement("div");scr.className="adm-screen";
@@ -4656,7 +4585,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     var KEYS=["shiro.farm.dest","shiro.farm.destlast","shiro.farm.destmst","shiro.farm.product","shiro.farm.contract",
               "shiro.farm.payinfo","shiro.farm.payunit","shiro.farm.payunit.last","shiro.farm.payunit.nama","shiro.farm.paydest",
               "shiro.farm.yld","shiro.farm.yldrng","shiro.farm.farmers","shiro.farm.farmerRecs",
-              "shiro.farm.farmerdel","shiro.farm.dcal","shiro.farm.hcal","shiro.farm.deliv","shiro.farm.clients","shiro.farm.payrng","shiro.farm.workitems","shiro.farm.wcal","shiro.farm.wcalend","shiro.farm.workledger","shiro.farm.wpaydate","shiro.farm.aloeledger","shiro.farm.aloeledger.nama","shiro.farm.aloeledger.bak","shiro.farm.aloeledger.nama.bak"];
+              "shiro.farm.farmerdel","shiro.farm.deliv","shiro.farm.clients","shiro.farm.payrng","shiro.farm.workitems","shiro.farm.wcal","shiro.farm.wcalend","shiro.farm.workledger","shiro.farm.wpaydate","shiro.farm.aloeledger","shiro.farm.aloeledger.nama","shiro.farm.aloeledger.bak","shiro.farm.aloeledger.nama.bak"];
     var LAST="shiro.sync.last",TS="shiro.sync.ts";
     function rd(k){try{var s=localStorage.getItem(k);return s===null?undefined:JSON.parse(s);}catch(e){return undefined;}}
     function wr(k,v){try{if(v===undefined||v===null)localStorage.removeItem(k);else localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
@@ -4715,12 +4644,6 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       try{location.reload();}catch(e){}
     },1500);
   })();
-  setInterval(function(){   /* 同期が裏でデータを変えたら開いているカレンダーを再描画 */
-    if(window.__hcDirty){window.__hcDirty=false;
-      var p=document.getElementById("adm-panel");
-      if(p&&p.classList.contains("on")&&document.getElementById("hc-gridwrap")&&window.__hcRedraw)window.__hcRedraw();
-    }
-  },1000);
     (function(){   /* 起動直後にバージョン表記を meta の値へ即時反映 */
       function syncVer(){var mt=document.querySelector('meta[name="application-version"]');var v=mt?mt.getAttribute("content"):null;if(!v)return;
         var els=document.querySelectorAll(".ver-chip");for(var i=0;i<els.length;i++){var t="v"+v;if(els[i].textContent!==t)els[i].textContent=t;}}

@@ -72,7 +72,7 @@ try{localStorage.setItem('shiro.farm.sync','https://script.google.com/macros/s/A
   }catch(e){}
 })();</script>
 <!-- しろう農園スケジュール管理アプリ v4.55 (2026-11-08 誤流入したテストデータ（山田農園・平良農園とその名簿・旧入力表・支払い済み等の行）を起動時に自動一掃) -->
-<meta name="application-version" content="4.76" />
+<meta name="application-version" content="4.81" />
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
 <meta name="theme-color" content="#D8E8CC" />
@@ -1131,7 +1131,7 @@ body{
         farmerDel:(window.__farmDelRef?window.__farmDelRef():{}),
         payunit:(window.__payUnitRef?window.__payUnitRef():{}),
         paylast:String(window.__payLastRef?window.__payLastRef():""),
-        xl:(window.__xlSnap?window.__xlSnap():{})}),
+        xl:(window.__xlSnap?window.__xlSnap():{}),wcal:(function(){try{return JSON.parse(JSON.stringify(window.__wcalRef?window.__wcalRef():{}));}catch(e9){return{};}})(),wcalend:(function(){try{return JSON.parse(JSON.stringify(window.__wcalEndRef?window.__wcalEndRef():{}));}catch(e9){return{};}})(),workledger:(function(){try{return JSON.parse(JSON.stringify(window.__wlRef?window.__wlRef():[]));}catch(e9){return[];}})(),wdel:(function(){try{return JSON.parse(JSON.stringify(window.__wDelRef?window.__wDelRef():{}));}catch(e9){return{};}})()}),
           headers:{"Content-Type":"text/plain;charset=utf-8"}});}).then(function(r){return r.text();}).then(function(){
             for(var i=0;i<dk.length;i++)delete dirty[dk[i]];
             syncEver=true;
@@ -1227,7 +1227,66 @@ body{
     /* ---- 収穫管理データの共有（農家リスト・記録・収穫カレンダー） ---- */
     if(window.__hMerge)ch=window.__hMerge(remote,syncEver)||ch;
     if(window.__xlMerge)ch=window.__xlMerge(remote)||ch;
-    return ch;
+    (function(){   /* v4.81: カレンダー3種(申し込み/終了/名簿)を取り込む。削除済み(墓石)の項目は復活させない */
+    try{
+      var rd9=remote&&remote.wdel;
+      var wD8=window.__wDelRef?window.__wDelRef():{};
+      var anyCh=false;
+      if(rd9&&typeof rd9==="object"&&!(rd9 instanceof Array)){
+        var ch9=false;
+        for(var k9 in rd9){var v9=rd9[k9];if(typeof v9!=="number")continue;
+          if(!wD8[k9]||wD8[k9]<v9){wD8[k9]=v9;ch9=true;}}
+        if(ch9&&window.__wDelSaveRef)window.__wDelSaveRef();
+      }
+      function purge10(arr){var out=[],c10=false;
+        for(var i10=0;i10<arr.length;i10++){if(window.__wDelHit(arr[i10])){c10=true;continue;}out.push(arr[i10]);}
+        return {a:out,c:c10};}
+      function unDel(o){try{var k10="d|"+JSON.stringify(o);var wD8b=window.__wDelRef?window.__wDelRef():{};if(wD8b[k10]){delete wD8b[k10];if(window.__wDelSaveRef)window.__wDelSaveRef();}}catch(e10){}}
+      var rw8=remote&&remote.workledger;
+      if(rw8 instanceof Array){
+        var wl8=(window.__wlRef?window.__wlRef():[]);
+        var pr=purge10(wl8);
+        if(pr.c){wl8.length=0;for(var i7=0;i7<pr.a.length;i7++)wl8.push(pr.a[i7]);ch=true;}anyCh=true;
+        var sg8={},ad8=false;
+        for(var i8=0;i8<wl8.length;i8++){try{sg8[JSON.stringify(wl8[i8])]=1;}catch(e6){}}
+        for(var j8=0;j8<rw8.length;j8++){
+          var r8=rw8[j8];
+          if(!r8||typeof r8!=="object")continue;
+          try{var s8=JSON.stringify(r8);
+            if(sg8[s8]){if(window.__wDelHit(r8))unDel(r8);}
+            else if(!window.__wDelHit(r8)){wl8.push(r8);sg8[s8]=1;ad8=true;}
+          }catch(e8){}
+        }
+        if(ad8){if(window.__wlSaveRef)window.__wlSaveRef(false);ch=true;}anyCh=true;
+      }
+      var mp8=[["wcal","__wcalRef","__wcalSaveRef"],["wcalend","__wcalEndRef","__wcalEndSaveRef"]];
+      for(var m8=0;m8<mp8.length;m8++){
+        var rk8=remote&&remote[mp8[m8][0]];
+        if(!rk8||typeof rk8!=="object"||rk8 instanceof Array)continue;
+        var lo8=(window[mp8[m8][1]]?window[mp8[m8][1]]():{}),ch8=false;
+        for(var k8 in rk8){
+          var ra8=rk8[k8];
+          if(!(ra8 instanceof Array))continue;
+          if(!(lo8[k8] instanceof Array))lo8[k8]=[];
+          var pr2=purge10(lo8[k8]);
+          if(pr2.c){lo8[k8].length=0;for(var i6=0;i6<pr2.a.length;i6++)lo8[k8].push(pr2.a[i6]);ch8=true;}
+          var sb8={};
+          for(var l8=0;l8<lo8[k8].length;l8++){try{sb8[JSON.stringify(lo8[k8][l8])]=1;}catch(e5){}}
+          for(var q8=0;q8<ra8.length;q8++){
+            if(!ra8[q8]||typeof ra8[q8]!=="object")continue;
+            try{var t8=JSON.stringify(ra8[q8]);
+              if(sb8[t8]){if(window.__wDelHit(ra8[q8]))unDel(ra8[q8]);}
+              else if(!window.__wDelHit(ra8[q8])){lo8[k8].push(ra8[q8]);sb8[t8]=1;ch8=true;}
+            }catch(e4){}
+          }
+        }
+        if(ch8){if(window[mp8[m8][2]])window[mp8[m8][2]](false);ch=true;}anyCh=true;
+      if(anyCh){if(window.__wlRefreshUi)window.__wlRefreshUi();if(window.__hcRedraw)window.__hcRedraw();}   /* v4.81: 開いている画面へ即反映 */
+      }
+    }catch(e7){}
+  })();
+
+  return ch;
   }
   function applyMerged(){
     try{localStorage.setItem(SCHED_KEY,JSON.stringify(schedMem));}catch(e){}
@@ -1828,7 +1887,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
 
     document.getElementById("adm-ptitle").textContent=o.t;
     var body=document.getElementById("adm-pbody");
-    body.innerHTML='';
+    body.innerHTML='';    var pbR=document.getElementById("adm-pback2");if(pbR)pbR.style.display="";   /* v4.81: 描画のたびに下部戻るを既定表示へ(非表示画面は改めて隠す) */
     if(k==="harvest-farm"){   /* 農家登録：農家個別台帳の中にあった「農家登録」の中身をここへ移設 */
       var backH=document.createElement("button");backH.className="scr-dl";backH.textContent="戻る";
       window.__payFromLedger=false;   /* v4.67: 農家リスト表示中の戻る=データ管理メイン画面へ */
@@ -1945,9 +2004,10 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       return;
     }
     if(k==="deliv-dest"||k==="deliv-yld"){   /* 03/04 は一覧画面を直接表示 */
-      var backD=document.createElement("button");backD.className="scr-dl";backD.textContent="← アロエ収穫管理に戻る";
+      var backD=document.createElement("button");backD.className="scr-dl";backD.textContent="戻る";
       backD.addEventListener("click",function(){navBack();});
       body.appendChild(backD);
+      if(k==="deliv-dest"){var pbD=document.getElementById("adm-pback2");if(pbD)pbD.style.display="none";}   /* v4.81: この画面では下部の戻るを非表示 */
       if(k==="deliv-dest"){
         var mbtn=document.createElement("button");mbtn.className="scr-btn2";mbtn.textContent="＋ 納入先の登録";mbtn.style.marginBottom="10px";
         mbtn.addEventListener("click",function(){openPanel("destreg");});
@@ -3072,7 +3132,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   }
   /* ---- 支払日・支払済の記録 { "y-m|農家名": {d:"YYYY-MM-DD", paid:true} } ---- */
   var PAYKEY="shiro.farm.payinfo",PAYKEYB="shiro.farm.payinfo.bak";
-  try{   /* v4.76: 支払日の完全リセット（アロエ用・受託用の両方）。消去時刻を paywipe に記録し、古い同期データがよみがえらないようにする（内容は pre475 に退避） */
+  try{   /* v4.81: 支払日の完全リセット（アロエ用・受託用の両方）。消去時刻を paywipe に記録し、古い同期データがよみがえらないようにする（内容は pre475 に退避） */
     if(!localStorage.getItem("shiro.farm.paywipe")){
       var __W=String(Date.now());
       ["shiro.farm.payinfo","shiro.farm.wpaydate"].forEach(function(kk){
@@ -3823,7 +3883,21 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   function saveWLedger(push){
     wrJSON(WLKEY,workLedger);wrJSON(WLKEYB,workLedger);
     if(push!==false&&window.__syncPushRef)window.__syncPushRef();
-  }
+  };
+  window.__wcalRef=function(){return wcal;};window.__wcalSaveRef=function(p){saveWCal(p);};
+  window.__wcalEndRef=function(){return wcalEnd;};window.__wcalEndSaveRef=function(p){saveWCalEnd(p);};
+  window.__wlRef=function(){return workLedger;};window.__wlSaveRef=function(p){saveWLedger(p);};
+  /* v4.81: 削除したカレンダーデータを記憶する墓石(復活防止・削除の端末間伝播) */
+  var WDELKEY="shiro.farm.wcalDel",WDELKEYB="shiro.farm.wcalDel.bak";
+  var wDel=rdJSON(WDELKEY);
+  if(!wDel||typeof wDel!=="object"||wDel instanceof Array)wDel={};
+  function wDelSave(){wrJSON(WDELKEY,wDel);wrJSON(WDELKEYB,wDel);}
+  function wDelMark(o){try{var kd="d|"+JSON.stringify(o);if(kd){wDel[kd]=Date.now();wDelSave();}}catch(e8){}}
+  function wDelHit(o){try{return !!wDel["d|"+JSON.stringify(o)];}catch(e7){return false;}}
+  function wDelClear(o){try{var k6="d|"+JSON.stringify(o);if(wDel[k6]){delete wDel[k6];wDelSave();}}catch(e5){}}
+  window.__wDelRef=function(){return wDel;};
+  window.__wDelSaveRef=wDelSave;
+  window.__wDelMark=wDelMark;window.__wDelHit=wDelHit;window.__wDelClear=wDelClear;
   (function(){   /* 作業申し込みカレンダーの内容を作業終了カレンダーへ1回だけコピー（重複は付けない・削除復活も起こさない） */
     var CK="shiro.farm.wcalCopy",done=false;
     try{done=localStorage.getItem(CK)==="1";}catch(e){}
@@ -4130,8 +4204,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
           var key2=hy+"-"+hm+"-"+dd+"|"+nm,exA=wcalEnd[key2]||[],hit=-1;
           for(var z9=0;z9<exA.length;z9++){var ez9=(typeof exA[z9]==="object"&&exA[z9])?exA[z9]:{kg:exA[z9]};
             if((ez9.kg||"")===kg2&&(Number(ez9.a)||0)===a2v&&(Number(ez9.p)||0)===p2v&&(Number(ez9.t)||0)===t2v){hit=z9;break;}}
-          if(hit>=0)exA.splice(hit,1);   /* 登録済みカードをタップ→解除 */
-          else exA.push({kg:kg2,a:a2v,p:p2v,t:t2v});   /* 未登録カードをタップ→登録（二重登録なし） */
+          if(hit>=0){if(window.__wDelMark)window.__wDelMark(exA[hit]);exA.splice(hit,1);}   /* 登録済みカードをタップ→解除 */
+          else{var nw9={kg:kg2,a:a2v,p:p2v,t:t2v};exA.push(nw9);if(window.__wDelClear)window.__wDelClear(nw9);}   /* 未登録カードをタップ→登録（二重登録なし） */
           wcalEnd[key2]=exA;
           saveWCalEnd();
           if(window.__syncPushNow)window.__syncPushNow();
@@ -4149,11 +4223,11 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
         var key3=hy+"-"+hm+"-"+dd;
         if(sel.value){
           var aS=CALD[key3+"|"+sel.value]||[];
-          if(ri>=0&&ri<aS.length){aS.splice(ri,1);}
+          if(ri>=0&&ri<aS.length){var rm8=aS[ri];aS.splice(ri,1);if(window.__wDelMark)window.__wDelMark(rm8);}
         }else{
           var cum=0;
           for(var f6=0;f6<calPeople.length;f6++){var a4=CALD[key3+"|"+calPeople[f6]]||[];
-            if(ri>=cum&&ri<cum+a4.length){a4.splice(ri-cum,1);break;}
+            if(ri>=cum&&ri<cum+a4.length){var rm8b=a4[ri-cum];a4.splice(ri-cum,1);if(window.__wDelMark)window.__wDelMark(rm8b);break;}
             cum+=a4.length;}
         }
         saveCalD();
@@ -4188,7 +4262,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
           entry.a=av;entry.p=pv;entry.t=(av>0&&pv>0)?Math.round((av*pv)/10*10)/10:0;
         }
         var arr=CALD[key2+"|"+ff]||(CALD[key2+"|"+ff]=[]);
-        arr.push(entry);saveCalD();
+        arr.push(entry);if(window.__wDelClear)window.__wDelClear(entry);saveCalD();
         box.remove();
         var tps=document.querySelectorAll(".hc-cell.tap");
         for(var ti=0;ti<tps.length;ti++)tps[ti].classList.remove("tap");
@@ -4250,6 +4324,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       +'</table></div>';
     wrap.innerHTML=html;
     body.appendChild(wrap);
+    window.__wlRefreshUi=function(){var wp2=wrap.parentNode;if(wp2){wrap.parentNode.removeChild(wrap);buildWorkLedger(wp2);}};   /* v4.81: 同期取り込み後の即再描画用 */
     var listEl=wrap.querySelector("#wl-list"),emptyEl=wrap.querySelector("#wl-emptyrow");
     function fmtD(v){var m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(v||"");return m?m[1]+"/"+m[2]+"/"+m[3]:"未入力";}
     function td(v,muted,txt){return '<td style="border:1px solid #b7c0b1;padding:5px 6px;font-size:12.5px;font-weight:700;color:'+(muted?"#9aa394":"#33502c")+'">'+txt+'</td>';}
@@ -4285,7 +4360,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       var db=ev.target.closest?ev.target.closest(".hc-delbtn"):null;
       if(!db||!listEl.contains(db))return;
       var i=+db.getAttribute("data-i");
-      workLedger.splice(i,1);saveWLedger();render();
+      var rm7=workLedger[i];if(rm7&&window.__wDelMark)window.__wDelMark(rm7);workLedger.splice(i,1);saveWLedger();render();
     });
     wrap.addEventListener("change",function(ev){   /* データ行の面積・作業終了日を後から編集（即保存・フォーカス維持のため再描画なし） */
       var t=ev.target;
@@ -4304,7 +4379,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       if(!ap){blink("申し込み日を選択");return;}
       if(!nm){blink("農家名を選択");return;}
       if(!kg){blink("作業内容を選択");return;}
-      workLedger.push({ap:ap,name:nm,kg:kg,area:av,en:en});
+      var nw8={ap:ap,name:nm,kg:kg,area:av,en:en};workLedger.push(nw8);if(window.__wDelClear)window.__wDelClear(nw8);
       saveWLedger();render();
       wrap.querySelector("#wl-name").value="";   /* 連続入力用に申し込み日を維持し他をクリア */
       wrap.querySelector("#wl-kg").value="";
@@ -4659,7 +4734,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       var PWK="shiro.farm.paywipe",PKS=["shiro.farm.payinfo","shiro.farm.wpaydate"];
       var pwR=(r[PWK]&&typeof r[PWK]==="object")?(+r[PWK].v||0):0;
       var pwL=parseFloat(localStorage.getItem(PWK))||0;
-      if(pwR>pwL){   /* v4.76: より新しい「支払日リセット」が他端末にある場合はその内容をそのまま受ける（空データも消去として反映） */
+      if(pwR>pwL){   /* v4.81: より新しい「支払日リセット」が他端末にある場合はその内容をそのまま受ける（空データも消去として反映） */
         for(var qi=0;qi<PKS.length;qi++){var qk=PKS[qi],qe=r[qk];
           if(qe&&typeof qe==="object"&&qe.v!==undefined){wr(qk,qe.v);ts[qk]=+(qe.t||0);last[qk]=JSON.stringify(qe.v===null?null:qe.v);ch=true;}
         }
@@ -4668,11 +4743,11 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       for(var k in r){
         var e=r[k];if(!e||typeof e!=="object")continue;
         if(KEYS.indexOf(k)<0)continue;
-        if((k==="shiro.farm.payinfo"||k==="shiro.farm.wpaydate")&&pwR<pwL)continue;   /* v4.76: リセットより古い支払日データは受け取らない（よみがえり防止） */
+        if((k==="shiro.farm.payinfo"||k==="shiro.farm.wpaydate")&&pwR<pwL)continue;   /* v4.81: リセットより古い支払日データは受け取らない（よみがえり防止） */
         var rt=+(e.t||0),lt=+(ts[k]||0);
         var rv=e.v;
         var emptyV=(rv===null||rv===undefined||(rv instanceof Array&&!rv.length)||(rv&&typeof rv==="object"&&!(rv instanceof Array)&&!Object.keys(rv).length));
-        if(emptyV&&rt>lt){if(k==="shiro.farm.payinfo"||k==="shiro.farm.wpaydate"){wr(k,rv);ch=true;}ts[k]=rt;last[k]=JSON.stringify(rv===undefined?null:rv);continue;}   /* v4.76: 支払日は空の削除も反映する（他は空では消さない） */
+        if(emptyV&&rt>lt){if(k==="shiro.farm.payinfo"||k==="shiro.farm.wpaydate"){wr(k,rv);ch=true;}ts[k]=rt;last[k]=JSON.stringify(rv===undefined?null:rv);continue;}   /* v4.81: 支払日は空の削除も反映する（他は空では消さない） */
         if(rt>lt){
           if(k==="shiro.farm.destmst"&&rv instanceof Array){   /* 納入先は和集合 */
             var lv=rd(k);if(!(lv instanceof Array))lv=[];
@@ -4725,7 +4800,7 @@ if((function(){try{return localStorage.getItem("shiro.farm.name")===ADMIN_NAME;}
 })();
 </script>
 <script>
-/* v4.76 iPhone(iOS Safari) メモ入力欄はみ出し対策:
+/* v4.81 iPhone(iOS Safari) メモ入力欄はみ出し対策:
    キーボード表示時に overflow:hidden の祖先まで勝手にスクロールされる
    WebKit仕様への対処。visualViewport でアプリ枠の高さを可視領域に合わせ、
    勝手スクロールをリセットする。Android は iOS 判定で除外し従来動作のまま。 */

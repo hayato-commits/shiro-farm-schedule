@@ -48,7 +48,7 @@ try{localStorage.setItem('shiro.farm.sync','https://script.google.com/macros/s/A
   try{
     var KEYS=["shiro.farm.payinfo","shiro.farm.payunit","shiro.farm.payunit.last","shiro.farm.payunit.nama","shiro.farm.paydest",
               "shiro.farm.destlast","shiro.farm.dest","shiro.farm.destmst","shiro.farm.yld","shiro.farm.yldrng",
-              "shiro.farm.product","shiro.farm.contract","shiro.farm.farmers",
+              "shiro.farm.product","shiro.farm.material","shiro.farm.material.bak","shiro.farm.material.schema","shiro.farm.material.inlog","shiro.farm.material.inlog.bak","shiro.farm.material.reorder","shiro.farm.material.reorderItem","shiro.farm.products","shiro.farm.pcal","shiro.farm.pcal.bak","shiro.farm.contract","shiro.farm.farmers",
               "shiro.farm.farmerRecs","shiro.farm.deliv","shiro.farm.clients","shiro.farm.payrng","shiro.farm.workitems","shiro.farm.wcal","shiro.farm.wcalend","shiro.farm.workledger","shiro.farm.wpaydate","shiro.farm.aloeledger","shiro.farm.aloeledger.nama","shiro.farm.aloeledger.bak","shiro.farm.aloeledger.nama.bak"];
     ["shiro.farm.hcal","shiro.farm.hcal.bak","shiro.farm.dcal","shiro.farm.dcal.bak","shiro.farm.hcalTs","shiro.farm.recentH","shiro.farm.recentDC"].forEach(function(ck){try{localStorage.removeItem(ck);}catch(ce){}});   /* 削除済みの発注・納品カレンダーの残存データを掃除（v4.53） */
     function notEmpty(v){
@@ -72,7 +72,7 @@ try{localStorage.setItem('shiro.farm.sync','https://script.google.com/macros/s/A
   }catch(e){}
 })();</script>
 <!-- しろう農園スケジュール管理アプリ v4.55 (2026-11-08 誤流入したテストデータ（山田農園・平良農園とその名簿・旧入力表・支払い済み等の行）を起動時に自動一掃) -->
-<meta name="application-version" content="4.81" />
+<meta name="application-version" content="5.39" />
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
 <meta name="theme-color" content="#D8E8CC" />
@@ -395,6 +395,7 @@ body{
 .scr-cnt{flex:0 0 auto;font-size:11px;color:var(--accent);min-width:18px;text-align:right}
 .scr-cell{width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:6px;
   background:#fff;padding:6px;font-size:13px;color:var(--ink)}
+.scr-cell.low-stock{color:#c0392b;font-weight:700;background:rgba(220,60,40,.08);border-color:#e0a296}
 
 .scr-btn2{border:none;border-radius:999px;background:var(--accent);color:#fff;cursor:pointer}
 .scr-btn2:active{opacity:.85}
@@ -508,7 +509,7 @@ body{
   "use strict";
   var DOW=["日","月","火","水","木","金","土"];
   var EN=["January","February","March","April","May","June","July","August","September","October","November","December"];
-  var START_Y=2024,START_M=0,COUNT=60;     // 2024-01 〜 2028-12
+  var START_Y=2024,START_M=0,COUNT=324;    // v5.24: 2024-01 〜 2050-12（27年分）
   var CURRENT={y:2026,m:10};               // 2026年11月
   var HOL={"2024-0-1":1,"2024-0-8":1,"2024-1-11":1,"2024-1-23":1,"2024-2-20":1,"2024-3-29":1,"2024-4-3":1,"2024-4-4":1,"2024-4-5":1,"2024-6-15":1,"2024-7-11":1,"2024-8-16":1,"2024-8-22":1,"2024-9-14":1,"2024-10-3":1,"2024-10-23":1,"2024-1-12":1,"2024-4-6":1,"2024-7-12":1,"2024-8-23":1,"2024-10-4":1,"2025-0-1":1,"2025-0-13":1,"2025-1-11":1,"2025-1-23":1,"2025-2-20":1,"2025-3-29":1,"2025-4-3":1,"2025-4-4":1,"2025-4-5":1,"2025-6-21":1,"2025-7-11":1,"2025-8-15":1,"2025-8-23":1,"2025-9-13":1,"2025-10-3":1,"2025-10-23":1,"2025-1-24":1,"2025-4-6":1,"2025-10-24":1,"2026-0-1":1,"2026-0-12":1,"2026-1-11":1,"2026-1-23":1,"2026-2-20":1,"2026-3-29":1,"2026-4-3":1,"2026-4-4":1,"2026-4-5":1,"2026-6-20":1,"2026-7-11":1,"2026-8-21":1,"2026-8-23":1,"2026-9-12":1,"2026-10-3":1,"2026-10-23":1,"2026-4-6":1,"2027-0-1":1,"2027-0-11":1,"2027-1-11":1,"2027-1-23":1,"2027-2-21":1,"2027-3-29":1,"2027-4-3":1,"2027-4-4":1,"2027-4-5":1,"2027-6-19":1,"2027-7-11":1,"2027-8-20":1,"2027-8-23":1,"2027-9-11":1,"2027-10-3":1,"2027-10-23":1,"2027-2-22":1,"2028-0-1":1,"2028-0-10":1,"2028-1-11":1,"2028-1-23":1,"2028-2-20":1,"2028-3-29":1,"2028-4-3":1,"2028-4-4":1,"2028-4-5":1,"2028-6-17":1,"2028-7-11":1,"2028-8-18":1,"2028-8-22":1,"2028-9-9":1,"2028-10-3":1,"2028-10-23":1};   /* 日本の祝日 2024-2028（月は0始まり） */
 
@@ -546,7 +547,7 @@ body{
 
     var html="";
     html+='<div class="hd">';
-    html+='<div class="bouquet">'+BOUQUET+'</div>';
+    html+='<div class="bouquet"></div>';   /* v5.24: 画像はCSSで1回だけ読み込む（軽量化） */
     html+='<div class="ym"><div class="y">'+y+'</div><div class="m">'+(m+1)+'</div>'
         +'<div class="en">'+EN[m]+'<span class=\'ver-chip\'>v4.67</span></div></div>';
     html+='</div>';
@@ -568,7 +569,7 @@ body{
       var cls="cell";
       if(out)cls+=" out";
       if(col===0)cls+=" sun";
-      if(!out&&HOL[key])cls+=" hol";
+      if(!out&&(HOL[key]||isHolY(d.getFullYear(),d.getMonth(),d.getDate())))cls+=" hol";   /* v5.24 */
       if(key===TODAY)cls+=" today";
       html+='<div class="'+cls+'" data-key="'+key+'">'+d.getDate()+tagHtml(key)+'</div>';
     }
@@ -581,6 +582,38 @@ body{
   }
 
   var BOUQUET='<img src="data:image/jpeg;base64,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AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf/Z" alt="しろう農園" style="width:100%;height:auto;display:block;border-radius:9px">';
+
+  /* v5.24: 2029年以降の祝日を動的計算（固定日・ハッピーマンデー・春分/秋分・振替休日） */
+  var HOLCACHE={};
+  function holYear(y){
+    if(HOLCACHE[y])return HOLCACHE[y];
+    var set={},i;
+    function add(m,d){set[m+"-"+d]=1;}
+    [ [0,1],[1,11],[3,29],[4,3],[4,4],[4,5],[7,11],[10,3],[10,23] ].forEach(function(p){add(p[0],p[1]);});
+    function nthMon(m,n){var c=0;for(var d=1;d<=31;d++){var dt=new Date(y,m,d);if(dt.getMonth()!==m)break;if(dt.getDay()===1){c++;if(c===n)return d;}}return 0;}
+    add(0,nthMon(0,2));add(6,nthMon(6,3));add(8,nthMon(8,3));add(9,nthMon(9,2));
+    var eq1=Math.floor(20.8431+0.242194*(y-1980))-Math.floor((y-1980)/4);
+    var eq2=Math.floor(23.2488+0.242194*(y-1980))-Math.floor((y-1980)/4);
+    add(2,eq1);add(8,eq2);
+    for(var k in set){   /* 振替休日（日曜の祝日→翌日以降で最初の平日） */
+      var p=k.split("-"),m2=+p[0],d2=+p[1];
+      if(new Date(y,m2,d2).getDay()!==0)continue;
+      var nd2=d2+1;while(set[m2+"-"+nd2])nd2++;
+      var ndt=new Date(y,m2,nd2);
+      if(ndt.getMonth()===m2)set[m2+"-"+nd2]=1;
+    }
+    if(new Date(y,4,3).getDay()===0||new Date(y,4,4).getDay()===0){set["4-6"]=1;}
+    HOLCACHE[y]=set;return set;
+  }
+  function isHolY(y,m,d){var t=holYear(y);return !!(t[m+"-"+d]);}
+  /* v5.24: ヘッダー画像をCSS背景として1度だけ読み込み、324ページ分のimg要素を作らない */
+  (function(){
+    var mt=BOUQUET.match(/src="([^"]+)"/);
+    if(!mt)return;
+    var st=document.createElement("style");
+    st.textContent=".bouquet{background-image:url('"+mt[1]+"');background-size:100% auto;background-repeat:no-repeat;background-position:top center;}";
+    document.head.appendChild(st);
+  })();
 
   /* ページ生成 */
   var frag=document.createDocumentFragment();
@@ -1060,7 +1093,7 @@ body{
   /* ==== 設定データ全般のミラー保存／起動時復元（消えても戻す） ==== */
   var SETKEYS=["shiro.farm.payinfo","shiro.farm.payunit","shiro.farm.payunit.last","shiro.farm.payunit.nama","shiro.farm.paydest",
                "shiro.farm.destlast","shiro.farm.dest","shiro.farm.destmst","shiro.farm.yld","shiro.farm.yldrng",
-               "shiro.farm.product","shiro.farm.contract","shiro.farm.farmers",
+               "shiro.farm.product","shiro.farm.material","shiro.farm.material.bak","shiro.farm.material.schema","shiro.farm.material.inlog","shiro.farm.material.inlog.bak","shiro.farm.material.reorder","shiro.farm.material.reorderItem","shiro.farm.products","shiro.farm.pcal","shiro.farm.pcal.bak","shiro.farm.contract","shiro.farm.farmers",
                "shiro.farm.farmerRecs","shiro.farm.deliv","shiro.farm.farmers.bak","shiro.farm.clients","shiro.farm.payrng","shiro.farm.workitems","shiro.farm.workitems.bak","shiro.farm.wcal","shiro.farm.wcal.bak","shiro.farm.wcalend","shiro.farm.wcalend.bak","shiro.farm.workledger","shiro.farm.aloeledger","shiro.farm.aloeledger.nama","shiro.farm.aloeledger.bak","shiro.farm.aloeledger.nama.bak","shiro.farm.workledger.bak","shiro.farm.wpayunit","shiro.farm.wpaid","shiro.farm.wpaydate"];
   function isNotEmpty(v){
     if(v===null||v===undefined||v==="")return false;
@@ -1847,6 +1880,11 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     "aloe":{t:"発注・納品管理"},
     "destreg":{t:"納入先の登録"},
     "product":{t:"製造製品管理"},
+    "product-reg":{t:"製品登録"},
+    "material-reg":{t:"資材登録"},
+    "material-check":{t:"資材確認"},
+    "material-thresh":{t:"資材ごとのしきい値設定"},
+    "material-log":{t:"入庫ログ"},
     "contract":{t:"農作業受託管理"},
     "contract-reg":{t:"依頼者登録と作業の登録"},
     "contract-pay":{t:"支払い確認"}
@@ -1913,14 +1951,130 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       panel.classList.add("on");panel.setAttribute("aria-hidden","false");
       return;
     }
-    if(k==="product"){   /* 製造製品管理 */
-      var backP=document.createElement("button");backP.className="scr-dl";backP.textContent="← データ管理メイン画面に戻る";
-      backP.addEventListener("click",function(){goAdminHome();});
-      body.appendChild(backP);
-      var scrP=document.createElement("div");scrP.className="adm-screen";
-      body.appendChild(scrP);
-      if(k==="product")buildSheet(scrP,"shiro.farm.product","製造製品管理",["日付","製品名","製造量","在庫数","担当者","備考"]);
-      else buildSheet(scrP,"shiro.farm.contract","農作業受託管理",["日付","依頼主","作業内容","作業日","担当者","報酬(円)","状態"]);
+    if(k==="product"){   /* 製造製品管理のメニュー（v4.88：カレンダー・製品登録・資材登録・資材確認） */
+      var mnu4=document.createElement("div");mnu4.className="adm-subwrap";
+      mnu4.innerHTML='<div class="adm-subgrid">'
+        +'<button class="adm-card" data-sub="pcal"><span class="adm-no">01</span><span class="adm-lb" style="font-size:16px;line-height:1.2">製造カレンダー</span><span class="adm-sub">製品ごとの製造予定と実績</span></button>'
+        +'<button class="adm-card" data-panel="product-reg"><span class="adm-no">02</span><span class="adm-lb" style="font-size:16px;line-height:1.2">製品登録</span><span class="adm-sub">製品名・規格・単価の登録</span></button>'
+        +'<button class="adm-card" data-panel="material-check"><span class="adm-no">03</span><span class="adm-lb" style="font-size:16px;line-height:1.2">資材確認</span><span class="adm-sub">資材ごとの在庫としきい値を一覧</span></button>'
+        +'<button class="adm-card" data-panel="material-reg"><span class="adm-no">04</span><span class="adm-lb" style="font-size:16px;line-height:1.2">資材登録</span><span class="adm-sub">資材の仕入れ・在庫の記録</span></button>'
+        +'</div>';
+      body.appendChild(mnu4);
+      panel.classList.add("on");panel.setAttribute("aria-hidden","false");
+      return;
+    }
+    if(k==="product-reg"){   /* 製品登録（v4.87新設） */
+      var backPR=document.createElement("button");backPR.className="scr-dl";backPR.textContent="戻る";
+      backPR.addEventListener("click",function(){navBack();});
+      body.appendChild(backPR);
+      var scrPR=document.createElement("div");scrPR.className="adm-screen";
+      body.appendChild(scrPR);
+      buildSheet(scrPR,"shiro.farm.products","製品登録",["製品名","使用資材名","備考"]);   /* v5.00: 使用資材名は資材登録から選択 */
+      /* v4.97: 製品データの書き出し／読み込み（URLが変わっても引き継げるようにする） */
+      (function(){
+        var PK="shiro.farm.products",PKB="shiro.farm.products.bak";
+        function readRows(){
+          var a=null;try{a=JSON.parse(localStorage.getItem(PK)||"[]");}catch(e){a=null;}
+          if(!(a instanceof Array)||!a.length){try{a=JSON.parse(localStorage.getItem(PKB)||"[]");}catch(e2){a=[];}}
+          if(!(a instanceof Array))a=[];
+          return a;
+        }
+        function saveRows(a){
+          try{localStorage.setItem(PK,JSON.stringify(a));localStorage.setItem(PKB,JSON.stringify(a));}catch(e){}
+          if(window.__syncPushRef)window.__syncPushRef();
+        }
+        var info=document.createElement("div");
+        info.style.cssText="font-size:12px;color:#666;margin:6px 0 8px;line-height:1.6";
+        info.textContent="登録済み製品： "+readRows().length+" 件（起動時に自動で読み込みます）";
+        scrPR.appendChild(info);
+
+        var exBtn=document.createElement("button");exBtn.className="scr-dl";exBtn.textContent="製品データを書き出す";
+        exBtn.style.margin="2px 0";
+        exBtn.addEventListener("click",function(){
+          var txt=JSON.stringify(readRows(),null,1);
+          try{
+            var blob=new Blob([txt],{type:"application/json"});
+            var url=URL.createObjectURL(blob);
+            var a=document.createElement("a");
+            var d=new Date(),pad=function(n){return (n<10?"0":"")+n;};
+            a.href=url;a.download="製品登録_"+d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate())+".json";
+            document.body.appendChild(a);a.click();document.body.removeChild(a);
+            setTimeout(function(){URL.revokeObjectURL(url);},2000);
+            info.textContent="書き出しました（"+readRows().length+" 件）";
+          }catch(e){info.textContent="書き出しに失敗しました。下の読み込み欄からコピーしてください。";}
+        });
+        scrPR.appendChild(exBtn);
+
+        var details=document.createElement("details");
+        details.style.cssText="margin:6px 0 10px;border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:#fff";
+        var summary=document.createElement("summary");
+        summary.style.cssText="cursor:pointer;font-size:13px;color:var(--ink)";
+        summary.textContent="製品データを読み込む（貼り付け）";
+        details.appendChild(summary);
+        var ta=document.createElement("textarea");
+        ta.style.cssText="width:100%;min-height:110px;box-sizing:border-box;margin:6px 0;border:1px solid var(--line);border-radius:6px;padding:6px;font-size:12px;color:var(--ink);background:#fff";
+        ta.placeholder='ここに書き出したJSONを貼り付け';
+        details.appendChild(ta);
+        var imBtn=document.createElement("button");imBtn.className="scr-dl";imBtn.textContent="読み込む";
+        imBtn.style.margin="0 0 6px";
+        imBtn.addEventListener("click",function(){
+          var v=(ta.value||"").trim();
+          if(!v){info.textContent="貼り付け欄が空です。";return;}
+          var a=null;
+          try{a=JSON.parse(v);}catch(e){a=null;}
+          if(!(a instanceof Array)||!a.length){info.textContent="読み込めませんでした（書き出したJSONをそのまま貼り付けてください）。";return;}
+          saveRows(a);
+          ta.value="";
+          info.textContent="読み込みました（"+a.length+" 件）。再読み込みします…";
+          setTimeout(function(){try{location.reload();}catch(e){}},700);
+        });
+        details.appendChild(imBtn);
+        var note=document.createElement("div");
+        note.style.cssText="font-size:11px;color:#888;line-height:1.6";
+        note.textContent="※ 読み込みは登録済みの内容を置き換えます。他端末と共有する場合は、読み込み後に共有ボタンで同期してください。";
+        details.appendChild(note);
+        scrPR.appendChild(details);
+      })();
+      panel.classList.add("on");panel.setAttribute("aria-hidden","false");
+      return;
+    }
+    if(k==="material-reg"){   /* 資材登録：v4.82新設・v4.88で名称変更 */
+      var backM=document.createElement("button");backM.className="scr-dl";backM.textContent="戻る";
+      backM.addEventListener("click",function(){navBack();});
+      body.appendChild(backM);
+      var scrM=document.createElement("div");scrM.className="adm-screen";
+      body.appendChild(scrM);
+      buildSheet(scrM,"shiro.farm.material","資材登録",["使用資材名","使用製品名","在庫数","入庫数","入庫日","確定","入庫ログ"]);   /* v5.31: 登録日を削除し入庫ログを追加 */
+      panel.classList.add("on");panel.setAttribute("aria-hidden","false");
+      return;
+    }
+    if(k==="material-log"){   /* v5.35: 資材ごとの入庫ログファイルを表示 */
+      var backLG=document.createElement("button");backLG.className="scr-dl";backLG.textContent="戻る";
+      backLG.addEventListener("click",function(){navBack();});
+      body.appendChild(backLG);
+      var scrLG=document.createElement("div");scrLG.className="adm-screen";
+      body.appendChild(scrLG);
+      buildMatLogPanel(scrLG,extra);
+      panel.classList.add("on");panel.setAttribute("aria-hidden","false");
+      return;
+    }
+    if(k==="material-thresh"){   /* v5.33: しきい値設定は独立メニュー／戻るは一つ手前へ */
+      var backTH=document.createElement("button");backTH.className="scr-dl";backTH.textContent="戻る";
+      backTH.addEventListener("click",function(){navBack();});
+      body.appendChild(backTH);
+      var scrTH=document.createElement("div");scrTH.className="adm-screen";
+      body.appendChild(scrTH);
+      buildThreshPanel(scrTH);
+      panel.classList.add("on");panel.setAttribute("aria-hidden","false");
+      return;
+    }
+    if(k==="material-check"){   /* 資材確認：v4.88新設（資材ごとの在庫としきい値の一覧） */
+      var backMC=document.createElement("button");backMC.className="scr-dl";backMC.textContent="戻る";
+      backMC.addEventListener("click",function(){navBack();});
+      body.appendChild(backMC);
+      var scrMC=document.createElement("div");scrMC.className="adm-screen";
+      body.appendChild(scrMC);
+      buildMaterialCheck(scrMC);
       panel.classList.add("on");panel.setAttribute("aria-hidden","false");
       return;
     }
@@ -2049,59 +2203,730 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   }
   /* ---- 製造製品管理 / 農作業受託管理：入力・保存つき一覧画面 ---- */
   function buildSheet(root,key,title,fields){
-    var rows=rdJSON(key);
+    var rows=(key==="shiro.farm.material")?matRows():rdJSON2(key);   /* v5.31: 資材は新スキーマで読む */
     if(!(rows instanceof Array))rows=[];
-    var cap=document.createElement("div");cap.className="scr-cap";
-    cap.style.fontSize="13px";cap.style.letterSpacing="0";
-    cap.innerHTML=esc2(title)+'<span class=\'ver-chip\'>v4.67</span>';
-    root.appendChild(cap);
+    if(key!=="shiro.farm.material"){   /* v5.05: 資材登録の見出しは非表示 */
+      var cap=document.createElement("div");cap.className="scr-cap";
+      cap.style.fontSize="13px";cap.style.letterSpacing="0";
+      cap.innerHTML=esc2(title)+'<span class=\'ver-chip\'>v4.67</span>';
+      root.appendChild(cap);
+    }
     var t=document.createElement("table");t.className="scr-table";
     var tr=document.createElement("tr");
     for(var i=0;i<fields.length;i++){var th=document.createElement("th");th.textContent=fields[i];tr.appendChild(th);}
     tr.appendChild(document.createElement("th"));
     t.appendChild(tr);
+    /* v4.85: 資材管理は発注点（しきい値）未満の数量を赤字表示。資材ごとの個別設定にも対応（未設定は共通値） */
+    var isMat=(key==="shiro.farm.material");
+    var lowN=5,lowMap={};
+    if(isMat){
+      var lv=rdJSON("shiro.farm.material.reorder");lv=parseInt(lv,10);if(!isNaN(lv)&&lv>=0)lowN=lv;
+      var lm=rdJSON("shiro.farm.material.reorderItem");
+      if(lm&&typeof lm==="object"&&!(lm instanceof Array))lowMap=lm;
+    }
+    var ci=(fields.indexOf("在庫数")>=0?fields.indexOf("在庫数"):fields.indexOf("数量")),ni=(fields.indexOf("使用資材名")>=0?fields.indexOf("使用資材名"):fields.indexOf("資材名"));   /* v4.99: 列名変更に追随 */
+    function threshFor(name){return (name&&lowMap[name]!=null&&lowMap[name]!=="")?parseFloat(lowMap[name]):lowN;}
+    function colorRow(r){
+      if(!isMat||ci<0)return;
+      var ips=r.querySelectorAll("input:not(.tg-helper),select");var ip=ips[ci];if(!ip)return;
+      var name=(ni>=0&&ips[ni])?ips[ni].value.trim():"";
+      var th=threshFor(name);
+      var n=parseFloat(ip.value);
+      ip.classList.toggle("low-stock",ip.value!==""&&!isNaN(n)&&n<th);
+    }
+    function applyAll(){var trs=t.querySelectorAll("tr");for(var i=1;i<trs.length;i++)colorRow(trs[i]);}
+    if(isMat){
+      /* v4.86: しきい値未満の資材を画面バナー＋システム通知で知らせる */
+      var NBAN="shiro.farm.material.alert",NTS="shiro.farm.material.notified";
+      function lowItems(){
+        var out=[],trs=t.querySelectorAll("tr");
+        for(var i=1;i<trs.length;i++){
+          var ips=trs[i].querySelectorAll("input:not(.tg-helper),select");
+          var ip=ips[ci];if(!ip)continue;
+          var nm=(ni>=0&&ips[ni])?ips[ni].value.trim():"（使用資材名なし）";
+          var n=parseFloat(ip.value);
+          if(ip.value!==""&&!isNaN(n)&&n<threshFor(nm))out.push(nm);
+        }
+        return out;
+      }
+      function showBanner(list){
+        var b=document.getElementById(NBAN);
+        if(!b){
+          b=document.createElement("div");b.id=NBAN;
+          b.style.cssText="display:none;margin:0 0 8px;padding:10px 12px;border-radius:10px;background:rgba(220,60,40,.12);border:1px solid #e0a296;color:#c0392b;font-size:13px;font-weight:700;line-height:1.5";
+          root.parentNode.insertBefore(b,root);
+        }
+        if(list.length){b.style.display="";b.textContent="⚠ 在庫がしきい値を下回っています： "+list.join("、");}
+        else b.style.display="none";
+      }
+      function pushNotify(list){
+        try{
+          if(!window.Notification||Notification.permission!=="granted"||!list.length)return;
+          var today=new Date().toISOString().slice(0,10);
+          var last=rdJSON(NTS);
+          if(last===today)return;   /* 同じ内容は1日1回だけ通知 */
+          wrJSON(NTS,today);
+          new Notification("しろう農園アプリ：在庫警報",{body:"しきい値を下回りました： "+list.join("、")});
+        }catch(e){}
+      }
+      function checkStock(){var l=lowItems();showBanner(l);pushNotify(l);}
+      checkStock();
+      var thBtn=document.createElement("button");thBtn.className="scr-dl";thBtn.textContent="資材ごとのしきい値を設定…";thBtn.style.margin="2px 0 8px";
+      thBtn.addEventListener("click",function(){openPanel("material-thresh");});   /* v5.33: 独立画面へ（戻るは一つ手前） */
+      root.appendChild(thBtn);
+    }
     function collect(){
       var out=[],trs=t.querySelectorAll("tr");
       for(var r=1;r<trs.length;r++){
-        var ips=trs[r].querySelectorAll("input"),vals=[],has=false;
-        for(var q=0;q<ips.length;q++){var v=ips[q].value.trim();vals.push(v);if(v)has=true;}
+        var ips=trs[r].querySelectorAll("input,select"),vals=[],has=false;
+        for(var q=0;q<ips.length;q++){if(ips[q].classList&&ips[q].classList.contains("tg-helper"))continue;var v=ips[q].value.trim();vals.push(v);if(v)has=true;}
         if(has)out.push(vals);
       }
-      rows=out;wrJSON(key,rows);wrJSON(key+"​.bak",rows);
+      rows=out;wrJSON(key,rows);wrJSON(key+BKSFX,rows);
       if(window.__syncPushRef)window.__syncPushRef();
     }
     function addRow(vals){
-      var r=document.createElement("tr");
+      var r=document.createElement("tr"),rowRef={};
       for(var q=0;q<fields.length;q++){
         var td=document.createElement("td");var ip=document.createElement("input");
         ip.className="scr-cell";ip.style.width="100%";ip.style.minWidth="70px";
-        if(fields[q]==="日付"||fields[q]==="作業日")ip.type="date";
+        if(fields[q]==="日付"||fields[q]==="作業日"||fields[q]==="登録日"||fields[q]==="入庫日")ip.type="date";   /* v5.30: 入庫日はカレンダーから選択 */
         ip.value=(vals&&vals[q])?vals[q]:"";
-        td.appendChild(ip);r.appendChild(td);
+        if(fields[q]==="使用資材名"||fields[q]==="在庫数"||fields[q]==="入庫数"||fields[q]==="入庫日")rowRef[fields[q]]=ip;
+        if(fields[q]==="使用製品名"){   /* v4.94: 製品登録からチェック式で複数選択 */
+          (function(cell,stored){
+            var opts=rdJSON("shiro.farm.products"),plist=[];
+            if(opts instanceof Array){opts.forEach(function(row){var name=String(row&&row[0]||"").trim();if(name&&plist.indexOf(name)<0)plist.push(name);});}
+            var selected=[];
+            try{var parsed=JSON.parse(stored.value);if(parsed instanceof Array)selected=parsed.map(String);}catch(e){}
+            if(!selected.length&&stored.value){selected=plist.indexOf(stored.value)>=0?[stored.value]:stored.value.split(/[、,\n]/).map(function(v){return v.trim();}).filter(Boolean);}
+            var registered=plist.slice();
+            selected.forEach(function(name){if(plist.indexOf(name)<0)plist.push(name);});
+            stored.type="hidden";cell.appendChild(stored);
+            var details=document.createElement("details"),heading=document.createElement("summary");
+            details.style.cssText="position:relative;min-width:120px;text-align:left";
+            heading.className="scr-cell";
+            heading.style.cssText="display:flex;align-items:center;gap:8px;cursor:pointer;list-style:none;width:100%;min-width:120px;padding:5px 6px;font-size:12.5px;font-weight:400;letter-spacing:normal";
+            heading.setAttribute("aria-label","使用製品名を選択（複数選択可）");
+            var summary=document.createElement("span");summary.style.cssText="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap";
+            var arrow=document.createElement("span");arrow.textContent="▾";arrow.setAttribute("aria-hidden","true");
+            heading.appendChild(summary);heading.appendChild(arrow);
+            details.appendChild(heading);cell.appendChild(details);
+            var choices=document.createElement("div");
+            choices.style.cssText="position:absolute;z-index:100;top:100%;left:0;min-width:100%;width:max-content;max-width:280px;max-height:260px;overflow:auto;box-sizing:border-box;background:#fff;border:1px solid var(--line);border-radius:6px;padding:6px 10px;box-shadow:0 4px 12px rgba(0,0,0,.15);color:var(--ink)";
+            details.appendChild(choices);
+            var checks=[];
+            function update(save){
+              var names=checks.filter(function(c){return c.checked;}).map(function(c){return c.value;});
+              summary.textContent=names.length?names[0]:"（選択してください）";
+              heading.title=names.length?names.join("、"):"使用製品名を選択（複数選択可）";
+              if(save){stored.value=names.length?JSON.stringify(names):"";collect();}
+            }
+            plist.forEach(function(name){
+              var label=document.createElement("label");label.style.cssText="display:flex;align-items:center;gap:8px;min-height:40px;font-size:13px";
+              var cb=document.createElement("input");cb.type="checkbox";cb.className="tg-helper";cb.value=name;cb.checked=selected.indexOf(name)>=0;
+              cb.style.cssText="width:18px;height:18px;flex:none";
+              cb.addEventListener("change",function(){update(true);});checks.push(cb);
+              var text=document.createElement("span");text.textContent=name+(registered.indexOf(name)<0?"（登録外・既存値）":"");
+              label.appendChild(cb);label.appendChild(text);choices.appendChild(label);
+            });
+            if(!plist.length){var empty=document.createElement("div");empty.textContent="先に「製品登録」で製品名を登録してください。";choices.appendChild(empty);}
+            var done=document.createElement("button");done.type="button";done.className="scr-dl";done.textContent="完了";done.style.cssText="margin:6px 0 0;width:100%;min-height:36px";
+            done.addEventListener("click",function(){details.open=false;heading.focus();});choices.appendChild(done);
+            details.addEventListener("keydown",function(e){if(e.key==="Escape"){details.open=false;heading.focus();}});
+            document.addEventListener("click",function outside(e){
+              if(!details.isConnected){document.removeEventListener("click",outside);return;}
+              if(!details.contains(e.target))details.open=false;
+            });
+            update(false);
+          })(td,ip);
+          r.appendChild(td);continue;
+        }
+        if(fields[q]==="確定"){   /* v5.33: 入庫日をキーに確定 → 押された入庫数だけが有効 */
+          (function(cell,ref){
+            cell.style.cssText="text-align:center;padding:4px;white-space:nowrap";
+            var btn=document.createElement("button");btn.type="button";btn.className="scr-dl";
+            btn.style.cssText="margin:0;min-height:30px;padding:0 10px;font-size:11.5px;font-weight:700;white-space:nowrap";
+            var st=document.createElement("div");st.style.cssText="font-size:10px;color:#8a9484;margin-top:2px;line-height:1.3";
+            cell.appendChild(btn);cell.appendChild(st);
+            function vals(){
+              var ni2=ref["使用資材名"],qi2=ref["入庫数"],di2=ref["入庫日"];
+              var si2=ref["在庫数"];
+              return {nm:ni2?ni2.value.trim():"",d:di2?di2.value:"",q:parseFloat(qi2?qi2.value:""),s:parseFloat(si2?si2.value:"")};
+            }
+            function doneNow(){
+              var v=vals();if(!v.nm||!v.d)return false;
+              var a=matConfirmedOf(v.nm);
+              for(var i=0;i<a.length;i++){if(a[i].d===v.d&&Math.round(a[i].q*10)===Math.round((v.q||0)*10))return true;}
+              return false;
+            }
+            function paint(){
+              var v=vals(),ok=!!(v.nm&&v.d&&!isNaN(v.q)&&v.q>0),dn=doneNow();
+              if(dn){
+                btn.textContent="確定済";btn.disabled=true;btn.style.opacity="1";
+                btn.style.background="#e6efe2";btn.style.color="#3b6b34";btn.style.borderColor="#bcd2b4";
+                st.textContent="有効";st.style.color="#3b6b34";
+              }else{
+                btn.textContent="確定";btn.disabled=!ok;btn.style.opacity=ok?"1":".45";
+                btn.style.background="";btn.style.color="";btn.style.borderColor="";
+                st.textContent=ok?"未確定":(!v.nm?"資材名なし":(!v.d?"入庫日なし":"入庫数なし"));
+                st.style.color="#8a9484";
+              }
+            }
+            btn.addEventListener("click",function(){
+              var v=vals();if(!v.nm||!v.d||isNaN(v.q)||v.q<=0){paint();return;}
+              var nst=matConfirmIn(v.nm,v.d,v.q,v.s);
+              if(nst!==null&&ref["在庫数"]){ref["在庫数"].value=nst;collect();colorRow(r);}   /* v5.39: 在庫数へ反映 */
+              var tb=cell.closest("table"),trs=tb?tb.querySelectorAll("tr"):[];
+              for(var z=0;z<trs.length;z++){var cds=trs[z].querySelectorAll("td");
+                for(var k3=0;k3<cds.length;k3++){
+                  if(cds[k3].__syncConfirm)cds[k3].__syncConfirm();
+                  else if(cds[k3].__refresh)cds[k3].__refresh();
+                }
+              }
+            });
+            paint();
+            cell.__syncConfirm=paint;
+          })(td,rowRef);
+          r.appendChild(td);continue;
+        }
+        if(fields[q]==="入庫ログ"){   /* v5.35: 資材ごとの入庫ログファイル（入庫日/入庫数/在庫合計） */
+          (function(cell){
+            var nmNow="";
+            cell.style.cssText="padding:4px;white-space:nowrap";
+            var box=document.createElement("div");
+            box.style.cssText="display:inline-flex;align-items:center;gap:6px;max-width:100%";
+            cell.appendChild(box);
+            function render(){
+              var nm2=nmNow||"";
+              box.innerHTML="";
+              if(!nm2){
+                var ph=document.createElement("span");ph.style.cssText="font-size:11px;color:#a6b0a0";
+                ph.textContent="資材名を入力すると作成";box.appendChild(ph);return;
+              }
+              var log=matConfirmedOf(nm2),pend=matPendingOf(rows,nm2),tot=0;
+              for(var li=0;li<log.length;li++)tot+=log[li].q;
+              var a=document.createElement("button");a.type="button";a.className="scr-dl";
+              a.style.cssText="margin:0;min-height:30px;padding:0 8px;font-size:11.5px;font-weight:700;white-space:nowrap;text-align:left";
+              a.title="入庫ログを開く";
+              a.textContent="📄 入庫ログ_"+nm2;
+              a.addEventListener("click",function(){openPanel("material-log",nm2);});
+              box.appendChild(a);
+              var st=document.createElement("span");st.style.cssText="font-size:10.5px;color:#6d7c66;line-height:1.35";
+              st.innerHTML=log.length?("確定 "+log.length+" 件<br>入庫計 "+Math.round(tot*10)/10):'<span style="color:#a6b0a0">確定なし</span>';
+              if(pend.length)st.innerHTML+='<br><span style="color:#b08a2e">未確定 '+pend.length+' 件</span>';
+              box.appendChild(st);
+            }
+            render();
+            cell.__setName=function(n){nmNow=n;render();};
+            cell.__refresh=function(){render();};
+          })(td);
+          r.appendChild(td);continue;
+        }
+        if(fields[q]==="使用資材名"&&key!=="shiro.farm.material"){   /* v5.04: 選択UIは参照側のみ。資材登録は入力元なので通常入力 */
+          (function(cell,stored){
+            stored.type="hidden";cell.appendChild(stored);
+            var details=document.createElement("details"),heading=document.createElement("summary");
+            details.style.cssText="position:relative;min-width:130px;text-align:left";
+            heading.className="scr-cell";
+            heading.style.cssText="display:flex;align-items:center;gap:8px;cursor:pointer;list-style:none;width:100%;min-width:130px;padding:5px 6px;font-size:12.5px;font-weight:400;letter-spacing:normal";
+            heading.setAttribute("aria-label","使用資材名を選択（複数選択可）");
+            var summary=document.createElement("span");summary.style.cssText="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap";
+            var arrow=document.createElement("span");arrow.textContent="▾";arrow.setAttribute("aria-hidden","true");
+            heading.appendChild(summary);heading.appendChild(arrow);
+            details.appendChild(heading);cell.appendChild(details);
+            var choices=document.createElement("div");
+            choices.style.cssText="position:fixed;z-index:9999;display:none;min-width:230px;max-width:330px;max-height:290px;overflow:auto;box-sizing:border-box;background:#fff;border:1px solid var(--line);border-radius:8px;padding:6px 10px;box-shadow:0 6px 18px rgba(0,0,0,.18);color:var(--ink)";
+            details.appendChild(choices);
+            var checks=[];
+            function picked(){return checks.filter(function(c){return c.checked;}).map(function(c){return c.value;});}
+            function refreshSummary(){
+              var names=picked();
+              summary.textContent=names.length?(names.length>1?names[0]+" 他"+(names.length-1)+"件":names[0]):"（選択してください）";
+              heading.title=names.length?names.join("、"):"使用資材名を選択（複数選択可）";
+            }
+            function syncStored(){
+              stored.value=picked().join("、");
+              refreshSummary();collect();
+            }
+            function place(){
+              var r=heading.getBoundingClientRect();
+              var h=Math.min(290,window.innerHeight-24);
+              var top=r.bottom+4;if(top+h>window.innerHeight-8){top=Math.max(8,r.top-h-4);}
+              choices.style.left=Math.max(8,Math.min(r.left,window.innerWidth-340))+"px";
+              choices.style.top=top+"px";
+            }
+            function build(){
+              choices.innerHTML="";checks=[];
+              var mats=matRows(),mlist=[];
+              if(mats instanceof Array){mats.forEach(function(row){var nm=String((row&&row[1])||"").trim();if(nm&&mlist.indexOf(nm)<0)mlist.push(nm);});}
+              var registered=mlist.slice();
+              var selected=String(stored.value||"").split(/[、,]/).map(function(v){return v.trim();}).filter(Boolean);
+              selected.forEach(function(nm){if(mlist.indexOf(nm)<0)mlist.push(nm);});
+              var hd=document.createElement("div");
+              hd.style.cssText="font-size:11px;color:#888;padding:2px 0 6px;border-bottom:1px solid var(--line);margin-bottom:2px;line-height:1.5";
+              hd.textContent="資材登録の「使用資材名」から選択（登録 "+registered.length+" 件）";
+              choices.appendChild(hd);
+              if(!mlist.length){
+                var empty=document.createElement("div");
+                empty.style.cssText="font-size:12.5px;color:#888;padding:8px 0;line-height:1.6";
+                empty.textContent="まだ資材が登録されていません。「製造製品管理 → 資材登録」の「使用資材名」を入力したあと、この欄を開き直してください。";
+                choices.appendChild(empty);
+              }
+              mlist.forEach(function(nm){
+                var label=document.createElement("label");label.style.cssText="display:flex;align-items:center;gap:8px;min-height:40px;font-size:13px";
+                var cb=document.createElement("input");cb.type="checkbox";cb.className="tg-helper";cb.value=nm;cb.checked=selected.indexOf(nm)>=0;
+                cb.style.cssText="width:18px;height:18px;flex:none";
+                cb.addEventListener("change",function(){syncStored();});checks.push(cb);
+                var text=document.createElement("span");text.textContent=nm+(registered.indexOf(nm)<0?"（登録外・既存値）":"");
+                label.appendChild(cb);label.appendChild(text);choices.appendChild(label);
+              });
+              var done=document.createElement("button");done.type="button";done.className="scr-dl";done.textContent="完了";done.style.cssText="margin:6px 0 0;width:100%;min-height:36px";
+              done.addEventListener("click",function(){details.open=false;heading.focus();});choices.appendChild(done);
+              refreshSummary();
+            }
+            details.addEventListener("toggle",function(){
+              if(details.open){build();choices.style.display="";place();}
+              else{choices.style.display="none";}
+            });
+            details.addEventListener("keydown",function(e){if(e.key==="Escape"){details.open=false;heading.focus();}});
+            function reflow(){if(details.open)place();}
+            window.addEventListener("scroll",reflow,true);
+            window.addEventListener("resize",reflow);
+            document.addEventListener("click",function outside(e){
+              if(!details.isConnected){document.removeEventListener("click",outside);return;}
+              if(!details.contains(e.target))details.open=false;
+            });
+            (function(){   /* v5.04: 起動時から保存済みの使用資材名を表示 */
+              var initNames=String(stored.value||"").split(/[、,]/).map(function(v){return v.trim();}).filter(Boolean);
+              summary.textContent=initNames.length?(initNames.length>1?initNames[0]+" 他"+(initNames.length-1)+"件":initNames[0]):"（選択してください）";
+              heading.title=initNames.length?initNames.join("、"):"使用資材名を選択（複数選択可）";
+            })();
+          })(td,ip);
+        }
+        else td.appendChild(ip);
+        r.appendChild(td);
       }
       var tdD=document.createElement("td");tdD.innerHTML='<span class="scr-del">×</span>';r.appendChild(tdD);
       t.appendChild(r);
-      r.addEventListener("input",collect);
+      r.addEventListener("input",function(){collect();colorRow(r);if(isMat)checkStock();});
+      if(isMat){   /* v5.32: 入庫ログ／v5.33: 確定ボタンを行の入力に追随させる */
+        var syncLogs=function(){
+          var trs=t.querySelectorAll("tr");
+          for(var z=1;z<trs.length;z++){
+            var cds=trs[z].querySelectorAll("td");
+            var c0=cds[0],nmI=c0?c0.querySelector("input"):null,nm=(nmI?nmI.value.trim():"");
+            for(var k2=0;k2<cds.length;k2++){
+              if(cds[k2].__setName)cds[k2].__setName(nm);
+              else if(cds[k2].__syncConfirm)cds[k2].__syncConfirm();
+            }
+          }
+        };
+        r.addEventListener("input",syncLogs);
+        syncLogs();
+      }
+      colorRow(r);
       return r;
     }
     for(var r0=0;r0<rows.length;r0++)addRow(rows[r0]);
+    if(isMat)applyAll();
     root.appendChild(t);
     var add=document.createElement("button");add.className="scr-add";add.textContent="＋ 行を追加";
     add.addEventListener("click",function(){var r=addRow();var ip=r.querySelector("input");if(ip)ip.focus();});
     root.appendChild(add);
+
     t.addEventListener("click",function(e){
       var d=e.target.closest?e.target.closest(".scr-del"):null;
       if(!d)return;
-      var row=d.closest("tr");if(row){row.parentNode.removeChild(row);collect();}
+      var row=d.closest("tr");      if(row){row.parentNode.removeChild(row);collect();if(isMat)checkStock();}
     });
   }
   function esc2(x){return String(x).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+  /* ---- 資材確認（v4.88新設）：資材名ごとの在庫合計としきい値を一覧表示 ---- */
+  var MAT_SCHEMA="shiro.farm.material.schema",MAT_VER="4";   /* v5.33: 入庫は確定ボタンで有効化 */
+  /* v5.31: 列 = [使用資材名, 使用製品名, 在庫数, 入庫数, 入庫日, 入庫ログ] */
+  function matRows(){   /* v5.34: 列構成は内容から判定（スキーマ印が無くてもズレない） */
+    var raw=rdJSON2("shiro.farm.material");
+    if(!(raw instanceof Array))raw=[];
+    function isDate(v){return /^\d{4}-\d{1,2}-\d{1,2}$/.test(String(v==null?"":v).trim());}
+    function norm(r){   /* どの形式でも [使用資材名,使用製品名,在庫数,入庫数,入庫日,ログ] に揃える */
+      if(!(r instanceof Array))return null;
+      if(isDate(r[0]))return [r[1]||"",r[2]||"",r[3]||"",r[4]||"",r[5]||"",""];
+      if(isDate(r[4]))return [r[0]||"",r[1]||"",r[2]||"",r[3]||"",r[4]||"",r[5]||""];
+      if(isDate(r[3]))return ["",r[0]||"",r[1]||"",r[2]||"",r[3]||"",""];
+      return [r[0]||"",r[1]||"",r[2]||"",r[3]||"",r[4]||"",r[5]||""];
+    }
+    function keyOf(r){return normPN(String(r[1]||""))+"|"+String(r[2]||"").trim()+"|"+String(r[3]||"").trim()+"|"+String(r[4]||"").trim();}
+    var bak=rdJSON2("shiro.farm.material.bak"),idx={};
+    if(bak instanceof Array){for(var b=0;b<bak.length;b++){var nb=norm(bak[b]);if(!nb)continue;var nmB=String(nb[0]||"").trim();if(nmB)idx[keyOf(nb)]=nmB;}}
+    var out=[],changed=false;
+    for(var i=0;i<raw.length;i++){
+      var r=raw[i];
+      if(!r||!r.length){continue;}
+      var o=norm(r);
+      if(!String(o[0]||"").trim()){var nmR=idx[keyOf(o)];if(nmR)o[0]=nmR;}
+      if(o.length!==r.length)changed=true;
+      for(var z=0;z<o.length;z++){if(String(o[z])!==String(r[z]==null?"":r[z])){changed=true;break;}}
+      out.push(o);
+    }
+    try{
+      if(changed){
+        if(!localStorage.getItem("shiro.farm.material.raw"))localStorage.setItem("shiro.farm.material.raw",JSON.stringify(raw));
+        localStorage.setItem("shiro.farm.material",JSON.stringify(out));
+        localStorage.setItem("shiro.farm.material.bak",JSON.stringify(out));
+      }
+      localStorage.setItem(MAT_SCHEMA,MAT_VER);
+      matBootstrapInlog(out);
+    }catch(e2){}
+    return out;
+  }
+  function matBootstrapInlog(rows){   /* v5.36: 確定ログが空なら、既存の入庫（日付＋数量）を確定済みとして引き継ぐ */
+    var o=matInLog();
+    if(Object.keys(o).length)return;
+    var seed={},n=0;
+    for(var i=0;i<rows.length;i++){
+      var r=rows[i];if(!r)continue;
+      var nm=String(r[0]||"").trim(),d=String(r[4]||"").trim(),q=parseFloat(r[3]),st=parseFloat(r[2]);
+      if(!nm||!d||isNaN(q)||q<=0)continue;
+      if(!seed[nm])seed[nm]=[];
+      seed[nm].push({d:d,q:q,s:isNaN(st)?0:st,at:new Date().toISOString()});n++;
+    }
+    if(n)matInLogSave(seed);
+  }
+  function matNameOf(row){   /* v5.31: 1列目＝「使用資材名」 */
+    if(!row||!row.length)return "";
+    return String(row[0]||"").trim();
+  }
+  function matQtyOf(row){var q=parseFloat(row&&row[2]);return isNaN(q)?0:q;}   /* 在庫数 */
+  function matInQtyOf(row){var q=parseFloat(row&&row[3]);return isNaN(q)?0:q;}  /* 入庫数 */
+  function matInDateOf(row){return String((row&&row[4])||"").trim();}           /* 入庫日 */
+  var INLOG_KEY="shiro.farm.material.inlog";
+  function matInLog(){   /* v5.33: 確定済み入庫 {資材名:[{d,q}]} */
+    var o=rdJSON(INLOG_KEY);
+    if(!o||typeof o!=="object"||o instanceof Array)o={};
+    return o;
+  }
+  function matInLogSave(o){
+    wrJSON(INLOG_KEY,o);wrJSON(INLOG_KEY+".bak",o);
+    try{if(window.__syncPushRef)window.__syncPushRef();}catch(e){}
+  }
+  function matConfirmedOf(nm){   /* v5.33: 確定済みの入庫（新しい順） */
+    if(!nm)return [];
+    var o=matInLog(),a=o[nm];
+    if(!(a instanceof Array)){
+      var t=normPN(nm);
+      for(var k in o){if(normPN(k)===t&&o[k] instanceof Array){a=o[k];break;}}
+    }
+    if(!(a instanceof Array))return [];
+    var out=[];
+    for(var i=0;i<a.length;i++){var e=a[i];if(!e||!e.d)continue;out.push({d:String(e.d),q:parseFloat(e.q)||0,s:parseFloat(e.s)||0});}
+    out.sort(function(x,y){return (x.d<y.d)?1:((x.d>y.d)?-1:0);});
+    return out;
+  }
+  function matConfirmIn(nm,d,q,st){   /* v5.39: 確定で「在庫数＋入庫数」を現在の在庫数へ反映 */
+    if(!nm||!d||isNaN(q)||q<=0)return null;
+    var cur=isNaN(parseFloat(st))?0:parseFloat(st);
+    var o=matInLog(),a=(o[nm] instanceof Array)?o[nm]:[],hit=false,base=cur;
+    for(var i=0;i<a.length;i++){
+      if(a[i]&&String(a[i].d)===String(d)){
+        var s0=parseFloat(a[i].s);if(isNaN(s0))s0=cur-(parseFloat(a[i].q)||0);   /* 入庫前の在庫数 */
+        if(isNaN(s0))s0=0;
+        base=s0;
+        a[i].q=q;a[i].s=s0;a[i].at=new Date().toISOString();hit=true;
+      }
+    }
+    if(!hit)a.push({d:String(d),q:q,s:base,at:new Date().toISOString()});
+    o[nm]=a;matInLogSave(o);
+    return Math.round((base+q)*10)/10;
+  }
+  function matUnconfirm(nm,d){   /* v5.38: 入庫ログの1日分を削除（確定ログ＋資材登録の入庫数・入庫日） */
+    if(!nm||!d)return false;
+    var o=matInLog(),k=null;
+    if(o[nm] instanceof Array)k=nm;
+    else{var t=normPN(nm);for(var kk in o){if(normPN(kk)===t&&o[kk] instanceof Array){k=kk;break;}}}
+    var hit=false;
+    if(k){
+      var a=o[k],nx=[];
+      for(var i=0;i<a.length;i++){if(a[i]&&String(a[i].d)===String(d)){hit=true;continue;}nx.push(a[i]);}
+      if(nx.length)o[k]=nx;else delete o[k];
+      matInLogSave(o);
+    }
+    /* 資材登録側の同じ日付の入庫数・入庫日も消す（未確定として残らないように） */
+    var rows=matRows(),ch=false;
+    for(var r2=0;r2<rows.length;r2++){
+      var r=rows[r2];if(!r)continue;
+      if(normPN(String(r[0]||""))!==normPN(nm))continue;
+      if(String(r[4]||"").trim()!==String(d))continue;
+      r[3]="";r[4]="";ch=true;
+    }
+    if(ch){
+      try{localStorage.setItem("shiro.farm.material",JSON.stringify(rows));localStorage.setItem("shiro.farm.material.bak",JSON.stringify(rows));}catch(e){}
+      try{if(window.__syncPushRef)window.__syncPushRef();}catch(e2){}
+    }
+    return hit||ch;
+  }
+  function matPendingOf(rows,nm){   /* 確定待ち（入庫日と入庫数はあるが未確定） */
+    var out=[],cf=matConfirmedOf(nm),key=normPN(nm);
+    if(!(rows instanceof Array))return out;
+    for(var i=0;i<rows.length;i++){
+      var r=rows[i];if(!r||!r.length)continue;
+      if(normPN(String(r[0]||"").trim())!==key)continue;
+      var d=matInDateOf(r),q=matInQtyOf(r);
+      if(!d||!(q>0))continue;
+      var done=false;
+      for(var c=0;c<cf.length;c++){if(cf[c].d===d&&Math.round(cf[c].q*10)===Math.round(q*10)){done=true;break;}}
+      if(!done)out.push({d:d,q:q});
+    }
+    out.sort(function(a,b){return (a.d<b.d)?1:((a.d>b.d)?-1:0);});
+    return out;
+  }
+  function matLogOf(rows,nm){   /* 入庫ログ＝確定ボタンが押された入庫のみ */
+    return matConfirmedOf(nm);
+  }
+  function buildMaterialCheck(root){
+    var cap=document.createElement("div");cap.className="scr-cap";
+    cap.style.fontSize="13px";cap.style.letterSpacing="0";
+    cap.innerHTML='資材確認<span class=\'ver-chip\'>v5.33</span>';
+    root.appendChild(cap);
+    var thBtnC=document.createElement("button");thBtnC.className="scr-dl";thBtnC.textContent="資材ごとのしきい値を設定…";thBtnC.style.margin="2px 0 8px";
+    thBtnC.addEventListener("click",function(){openPanel("material-thresh");});
+    root.appendChild(thBtnC);
+    var rows=matRows();
+    if(!(rows instanceof Array))rows=[];
+    var lowN=5;
+    var lv=rdJSON("shiro.farm.material.reorder");lv=parseInt(lv,10);if(!isNaN(lv)&&lv>=0)lowN=lv;
+    var lowMap=rdJSON("shiro.farm.material.reorderItem");
+    if(!lowMap||typeof lowMap!=="object"||lowMap instanceof Array)lowMap={};
+    function threshFor(nm){return (nm&&lowMap[nm]!=null&&lowMap[nm]!=="")?parseFloat(lowMap[nm]):lowN;}
+    var agg={},order=[];
+    for(var i=0;i<rows.length;i++){
+      var r=rows[i];if(!r||!r.length)continue;
+      var nm=matNameOf(r);if(!nm)continue;   /* v5.31: 1列目＝使用資材名 */
+      var q=matQtyOf(r);if(isNaN(q))q=parseFloat(r[2]);   /* v5.02: 数量は4列目（旧データは3列目で救済） */
+      if(isNaN(q))continue;
+      if(!agg[nm]){agg[nm]={qty:0,n:0,latest:"",inSum:0,prods:{}};order.push(nm);}
+      agg[nm].qty+=q;agg[nm].n++;
+      var cfL=matConfirmedOf(nm),inS=0,ltD="";   /* v5.33: 確定した入庫のみ有効 */
+      for(var cf=0;cf<cfL.length;cf++){inS+=cfL[cf].q;if(cfL[cf].d>ltD)ltD=cfL[cf].d;}
+      agg[nm].inSum=inS;agg[nm].latest=ltD;
+      var pr=String(r[1]||"").trim(),prNames=[];
+      try{var pa=JSON.parse(pr);if(pa instanceof Array)prNames=pa;}catch(e){}
+      if(!prNames.length&&pr)prNames=[pr];
+      prNames.forEach(function(name){agg[nm].prods[String(name)]=1;});
+    }
+    var t=document.createElement("table");t.className="scr-table";
+    var tr=document.createElement("tr");
+    ["資材名（使用資材名）","在庫合計","しきい値","状態","使用製品名","直近の入庫日","入庫合計"].forEach(function(h){var th=document.createElement("th");th.textContent=h;tr.appendChild(th);});
+    t.appendChild(tr);
+    if(!order.length){
+      var tr0=document.createElement("tr");var td0=document.createElement("td");      td0.colSpan=7;
+      td0.style.cssText="text-align:center;color:#888;padding:14px 6px;font-size:13px";
+      td0.textContent="資材登録にデータがありません。「04 資材登録」の「使用資材名」を入力してください。";
+      tr0.appendChild(td0);t.appendChild(tr0);
+    }
+    for(var k2=0;k2<order.length;k2++){
+      var nm2=order[k2],a=agg[nm2],th=threshFor(nm2);
+      var low=a.qty<th;
+      var tr2=document.createElement("tr");if(low)tr2.style.background="rgba(220,60,40,.07)";
+      function td(v,st){var td=document.createElement("td");td.style.cssText=st||"padding:6px;font-size:13px";td.textContent=v;tr2.appendChild(td);return td;}
+      td(nm2);
+      td(a.qty,low?"padding:6px;font-size:13px;color:#c0392b;font-weight:700":"padding:6px;font-size:13px");
+      td(th,"padding:6px;font-size:13px;color:#888");
+      td(low?"⚠ 不足":"OK",low?"padding:6px;font-size:13px;color:#c0392b;font-weight:700":"padding:6px;font-size:13px;color:#2e7d32");
+      var pl=Object.keys(a.prods);td(pl.length?pl.join("、"):"—","padding:6px;font-size:13px;color:#666");
+      td(a.latest||"—","padding:6px;font-size:13px;color:#666");
+      td((a.inSum?Math.round(a.inSum*10)/10:"—"),"padding:6px;font-size:13px;color:#666");
+      t.appendChild(tr2);
+    }
+    root.appendChild(t);
+    var note=document.createElement("div");note.style.cssText="font-size:12px;color:#888;margin-top:8px;line-height:1.6";
+    note.textContent="※ 資材名＝資材登録の「使用資材名」をそのまま表示しています。在庫合計＝資材登録の「在庫数」を使用資材名ごとに合計した値（確定した入庫数は在庫数に加算済み）。しきい値は資材登録画面の「資材ごとのしきい値を設定…」で個別に変更できます（共通しきい値："+lowN+"）。入庫合計・直近の入庫日は「確定」した入庫だけを数えます";
+    root.appendChild(note);
+  }
+  function logDateFmt(d){   /* 2026-11-02 → 2026.11.2（テンプレート表記） */
+    var m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(String(d||""));
+    if(!m)return String(d||"");
+    return m[1]+"."+parseInt(m[2],10)+"."+parseInt(m[3],10);
+  }
+  function buildMatLogPanel(root,sel){   /* v5.37: 資材ごとの入庫ログファイル（テンプレート: 入庫日/入庫数/在庫合計） */
+    matRows();   /* 既存データの確定ログ引き継ぎを先に走らせる */
+    var cap=document.createElement("div");cap.className="scr-cap";
+    cap.style.cssText="font-size:13px;letter-spacing:0";
+    cap.innerHTML="入庫ログ<span class=\'ver-chip\'>v5.39</span>";
+    root.appendChild(cap);
+    var o=matInLog(),names=[];
+    for(var k in o){if(o[k] instanceof Array&&o[k].length&&names.indexOf(k)<0)names.push(k);}
+    names.sort();
+    if(!names.length){
+      var e0=document.createElement("div");e0.style.cssText="font-size:12.5px;color:#888;padding:2px 0 8px;line-height:1.6";
+      e0.textContent="まだ入庫ログがありません。「資材登録」で入庫日と入庫数を入れて「確定」を押すと、資材ごとのファイルが作られます。";
+      root.appendChild(e0);
+    }
+    var cur=(sel&&names.indexOf(sel)>=0)?sel:(names[0]||"");
+    if(cur){
+      var tabs=document.createElement("div");
+      tabs.style.cssText="display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 8px";
+      names.forEach(function(nm){
+        var b=document.createElement("button");b.type="button";b.className="scr-dl";
+        var on2=(nm===cur);
+        b.style.cssText="margin:0;min-height:32px;padding:0 10px;font-size:12px;white-space:nowrap"
+          +(on2?";font-weight:800;background:#e6efe2;border-color:#bcd2b4;color:#2f5a29":"");
+        b.textContent="入庫ログ_"+nm+".xlsx";
+        b.addEventListener("click",function(){renderPanel("material-log",nm);});
+        tabs.appendChild(b);
+      });
+      root.appendChild(tabs);
+      var fname=document.createElement("div");
+      fname.style.cssText="display:flex;align-items:center;gap:8px;font-size:12px;color:#42513c;margin:0 0 6px";
+      fname.innerHTML='<span style="font-weight:800">📄 入庫ログ_'+esc2(cur)+'.xlsx</span><span style="color:#8a9484">使用資材ごとのファイル</span>';
+      root.appendChild(fname);
+      var log=matConfirmedOf(cur),pend=matPendingOf(rdJSON2("shiro.farm.material"),cur);
+      var wrap=document.createElement("div");
+      wrap.style.cssText="display:inline-block;max-width:100%;overflow:auto;border:1px solid #b9c3b2;border-radius:3px;background:#fff";
+      var t=document.createElement("table");
+      t.style.cssText="border-collapse:collapse;font-size:13px;min-width:300px";
+      function hd(txt,w){var th=document.createElement("th");th.textContent=txt;
+        th.style.cssText="border:1px solid #b9c3b2;background:#eef1ea;font-weight:700;padding:6px 10px;font-size:12.5px;text-align:center;min-width:"+w+"px;white-space:nowrap";return th;}
+      var htr=document.createElement("tr");
+      htr.appendChild(hd("入庫日",100));htr.appendChild(hd("在庫数",80));htr.appendChild(hd("入庫数",80));htr.appendChild(hd("在庫合計",100));htr.appendChild(hd("削除",60));
+      t.appendChild(htr);
+      var sumQ=0,sumT=0;
+      if(!log.length){
+        var tr0=document.createElement("tr"),td0=document.createElement("td");td0.colSpan=5;
+        td0.style.cssText="border:1px solid #b9c3b2;padding:12px;text-align:center;color:#999;font-size:12.5px";
+        td0.textContent="確定した入庫はまだありません";tr0.appendChild(td0);t.appendChild(tr0);
+      }
+      var rowS=function(nm,d){   /* v5.36: 在庫数が未保存の古い確定分は資材登録の行から補完 */
+        var rs=rdJSON2("shiro.farm.material");
+        if(!(rs instanceof Array))return 0;
+        for(var z=0;z<rs.length;z++){
+          var r2=rs[z];if(!r2)continue;
+          if(normPN(String(r2[0]||""))!==normPN(nm))continue;
+          if(String(r2[4]||"").trim()===String(d)){var v=parseFloat(r2[2]);return isNaN(v)?0:v;}
+        }
+        return 0;
+      };
+      for(var i=0;i<log.length;i++){
+        var e=log[i];if(!e.s)e.s=rowS(cur,e.d);
+        var tot=Math.round(((e.s||0)+(e.q||0))*10)/10;   /* v5.39: 在庫合計＝在庫数＋入庫数 */
+        sumQ+=e.q;sumT+=tot;
+        var tr=document.createElement("tr");
+        function cd(v,al){var td=document.createElement("td");td.textContent=v;
+          td.style.cssText="border:1px solid #cdd5c8;padding:6px 10px;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums";return td;}
+        var c1=cd(logDateFmt(e.d),"left");c1.style.textAlign="center";
+        var cs=cd(Math.round((e.s||0)*10)/10);
+        var c2=cd(Math.round(e.q*10)/10);var c3=cd(tot);
+        var c4=document.createElement("td");   /* v5.38: 1日分の削除 */
+        c4.style.cssText="border:1px solid #cdd5c8;padding:2px 4px;text-align:center;white-space:nowrap";
+        (function(td,dt,qv){
+          var x=document.createElement("button");x.type="button";x.className="scr-dl";
+          x.textContent="✕";x.title="この日の入庫を削除";
+          x.style.cssText="margin:0;min-height:26px;min-width:30px;padding:0 6px;font-size:12px;font-weight:800;color:#b03a2e;border-color:#e0b8b2";
+          x.addEventListener("click",function(){
+            td.innerHTML="";
+            var ask=document.createElement("span");ask.textContent="削除?";ask.style.cssText="font-size:10.5px;color:#b03a2e;font-weight:700;margin-right:3px";
+            var y=document.createElement("button");y.type="button";y.className="scr-dl";y.textContent="はい";
+            y.style.cssText="margin:0;min-height:24px;padding:0 5px;font-size:10.5px;font-weight:800;background:#f7e3df;border-color:#e0b8b2;color:#8f2f23";
+            var n2=document.createElement("button");n2.type="button";n2.className="scr-dl";n2.textContent="やめる";
+            n2.style.cssText="margin:0 0 0 3px;min-height:24px;padding:0 5px;font-size:10.5px";
+            y.addEventListener("click",function(){
+              matUnconfirm(cur,dt);
+              renderPanel("material-log",cur);   /* 再描画 */
+            });
+            n2.addEventListener("click",function(){renderPanel("material-log",cur);});
+            td.appendChild(ask);td.appendChild(y);td.appendChild(n2);
+          });
+          td.appendChild(x);
+        })(c4,e.d,e.q);
+        tr.appendChild(c1);tr.appendChild(cs);tr.appendChild(c2);tr.appendChild(c3);tr.appendChild(c4);t.appendChild(tr);
+      }
+      if(log.length){
+        var ftr=document.createElement("tr");
+        var f1=document.createElement("td");f1.textContent="合計";f1.colSpan=1;f1.style.cssText="border:1px solid #b9c3b2;background:#f7f8f5;padding:6px 10px;font-weight:700;text-align:center";
+        var f2=document.createElement("td");f2.textContent=Math.round(sumQ*10)/10;f2.style.cssText="border:1px solid #b9c3b2;background:#f7f8f5;padding:6px 10px;font-weight:700;text-align:right";
+        var f3=document.createElement("td");f3.textContent=Math.round(((log[0].s||0)+(log[0].q||0))*10)/10;   /* v5.39: 最新日＝現在の在庫数 */
+        f3.title="最新日（現在）の在庫合計";f3.style.cssText="border:1px solid #b9c3b2;background:#f7f8f5;padding:6px 10px;font-weight:700;text-align:right";
+        var f4=document.createElement("td");f4.textContent="";f4.style.cssText="border:1px solid #b9c3b2;background:#f7f8f5";
+        var fs=document.createElement("td");fs.textContent="—";fs.style.cssText="border:1px solid #b9c3b2;background:#f7f8f5;padding:6px 10px;text-align:right;color:#888";
+        ftr.appendChild(f1);ftr.appendChild(fs);ftr.appendChild(f2);ftr.appendChild(f3);ftr.appendChild(f4);t.appendChild(ftr);
+      }
+      wrap.appendChild(t);root.appendChild(wrap);
+      var note=document.createElement("div");note.style.cssText="font-size:12px;color:#888;margin-top:8px;line-height:1.6";
+      note.textContent="※ 「確定」を押した入庫だけを、新しい日付順に表示します。在庫合計＝在庫数＋入庫数。確定すると、その在庫合計が資材登録の「在庫数」に反映されます（合計行の在庫合計は最新日＝現在の在庫数）。「✕」でその日の入庫を削除できます。"
+        +(pend.length?(" 未確定の入庫が "+pend.length+" 件あります（資材登録で「確定」を押してください）。"):"");
+      root.appendChild(note);
+      return;
+    }
+  }
+  function buildThreshPanel(root){   /* v5.33: 資材ごとのしきい値設定（独立メニュー） */
+    var rows=matRows();
+    var lowN=5,lv=rdJSON("shiro.farm.material.reorder");lv=parseInt(lv,10);if(!isNaN(lv)&&lv>=0)lowN=lv;
+    var lowMap=rdJSON("shiro.farm.material.reorderItem");
+    if(!lowMap||typeof lowMap!=="object"||lowMap instanceof Array)lowMap={};
+    var cap=document.createElement("div");cap.className="scr-cap";
+    cap.style.cssText="font-size:13px;letter-spacing:0";
+    cap.innerHTML="資材ごとのしきい値<span class=\'ver-chip\'>v5.33</span>";
+    root.appendChild(cap);
+    var g=document.createElement("div");
+    g.style.cssText="display:flex;align-items:center;gap:8px;margin:2px 0 10px;padding:8px 10px;border:1px solid var(--line);border-radius:6px";
+    var gl=document.createElement("span");gl.textContent="共通のしきい値（未設定の資材に適用）";gl.style.cssText="flex:1;font-size:13px";
+    var gi=document.createElement("input");gi.type="number";gi.min="0";gi.className="scr-cell";gi.style.cssText="width:80px;min-width:80px";gi.value=lowN;
+    gi.addEventListener("input",function(){
+      var v=parseInt(gi.value,10);
+      if(isNaN(v)||v<0)return;
+      wrJSON("shiro.farm.material.reorder",v);
+      try{if(window.__syncPushRef)window.__syncPushRef();}catch(e){}
+    });
+    g.appendChild(gl);g.appendChild(gi);root.appendChild(g);
+    var names=[],seen={};
+    for(var i=0;i<rows.length;i++){
+      var nm=String(matNameOf(rows[i])||"").trim();if(!nm)continue;
+      var kk=normPN(nm);if(seen[kk])continue;seen[kk]=1;names.push(nm);
+    }
+    if(!names.length){
+      var p0=document.createElement("div");p0.style.cssText="font-size:12.5px;color:#888;padding:2px;line-height:1.6";
+      p0.textContent="まだ資材がありません。「資材登録」の「使用資材名」を入力すると、ここに設定欄が出ます。";
+      root.appendChild(p0);return;
+    }
+    var t=document.createElement("table");t.className="scr-table";
+    var htr=document.createElement("tr");
+    ["資材名","しきい値","状態"].forEach(function(h){var th=document.createElement("th");th.textContent=h;htr.appendChild(th);});
+    t.appendChild(htr);
+    names.forEach(function(nm){
+      var tr=document.createElement("tr");
+      var td1=document.createElement("td");td1.style.cssText="padding:6px;font-size:13px";td1.textContent=nm;
+      var td2=document.createElement("td");td2.style.cssText="padding:4px";
+      var inp=document.createElement("input");inp.type="number";inp.min="0";inp.className="scr-cell";inp.style.cssText="width:80px;min-width:80px";
+      inp.value=(lowMap[nm]!=null&&lowMap[nm]!=="")?lowMap[nm]:lowN;
+      inp.addEventListener("input",function(){
+        var v=parseInt(inp.value,10);
+        if(isNaN(v)||v<0)delete lowMap[nm];else lowMap[nm]=v;
+        wrJSON("shiro.farm.material.reorderItem",lowMap);
+        try{if(window.__syncPushRef)window.__syncPushRef();}catch(e){}
+      });
+      td2.appendChild(inp);
+      var td3=document.createElement("td");td3.style.cssText="padding:6px;font-size:12px;color:#888";td3.textContent="この数を下回ると赤字";
+      tr.appendChild(td1);tr.appendChild(td2);tr.appendChild(td3);t.appendChild(tr);
+    });
+    root.appendChild(t);
+    var note=document.createElement("div");note.style.cssText="font-size:12px;color:#888;margin-top:8px;line-height:1.6";
+    note.textContent="※ 空欄にすると共通のしきい値（"+lowN+"）を使います。入力は自動保存されます。";
+    root.appendChild(note);
+  }
   /* ---- 永続化の三重化：本体キー＋バックアップキー＋GASサーバー同期（v4.50方式） ---- */
   function rdJSON(k){
     try{var v=localStorage.getItem(k);if(v==null||v==="")return null;
       var o=JSON.parse(v);return o==null?null:o;}catch(e){return null;}
   }
   function wrJSON(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+  var BKSFX=".bak";
+  function rdJSON2(k){   /* v5.03: 本体が無ければバックアップから復元し、本体へ書き戻す */
+    var v=rdJSON(k);
+    if(v!=null)return v;
+    var b=rdJSON(k+BKSFX);
+    if(b!=null){try{localStorage.setItem(k,JSON.stringify(b));}catch(e){}}
+    return b;
+  }
   var FKEY="shiro.farm.farmers",FKEYB="shiro.farm.farmers.bak";
   var farmers=rdJSON(FKEY);
   if(!(farmers instanceof Array)){
@@ -3876,6 +4701,26 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     wrJSON(WCEKEY,wcalEnd);wrJSON(WCEKEYB,wcalEnd);
     if(push!==false&&window.__syncPushRef)window.__syncPushRef();
   }
+  /* ---- 製造カレンダー（v4.87新設：製品登録の製品名を単位に製造量を記録） ---- */
+  var PCKEY="shiro.farm.pcal",PCKEYB="shiro.farm.pcal.bak";
+  var pcal=rdJSON(PCKEY);
+  if(!pcal||typeof pcal!=="object"||pcal instanceof Array){
+    var pcb=rdJSON(PCKEYB);
+    pcal=(pcb&&typeof pcb==="object"&&!(pcb instanceof Array))?pcb:{};
+  }
+  function savePCal(push){
+    wrJSON(PCKEY,pcal);wrJSON(PCKEYB,pcal);
+    if(push!==false&&window.__syncPushRef)window.__syncPushRef();
+  }
+  function prodMst(){   /* 製品登録の製品名一覧（未登録なら製造記録から補完） */
+    var out=[],m=rdJSON("shiro.farm.products");
+    if(m instanceof Array){for(var i=0;i<m.length;i++){var n=m[i]&&m[i][0];if(n&&out.indexOf(n)<0)out.push(n);}}
+    if(!out.length){
+      var r=rdJSON("shiro.farm.product");
+      if(r instanceof Array){for(var j=0;j<r.length;j++){var n2=r[j]&&r[j][1];if(n2&&out.indexOf(n2)<0)out.push(n2);}}
+    }
+    return out;
+  }
   /* ---- 申込農家名簿（農作業受託カレンダー内の帳簿。列はテンプレート準拠：申し込み日/農家名/作業内容/面積/作業終了日） ---- */
   var WLKEY="shiro.farm.workledger",WLKEYB="shiro.farm.workledger.bak";
   var workLedger=rdJSON(WLKEY);
@@ -3933,16 +4778,142 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   var CALT={title:"農作業受託カレンダー",w:"作業"},CALD=null,saveCalD=null;
   var calFromHome=false;   /* データ管理メイン画面のトップから開いたか */
   var calBackTo="home";    /* カレンダーから戻る先: home / paytop / farm */
+  function reloadPCal(){   /* v5.21: 同期などで保存領域だけが更新された場合に読み直す */
+    var st=rdJSON2("shiro.farm.pcal");
+    if(st&&typeof st==="object"&&!(st instanceof Array)){
+      pcal=st;
+      if(CALT&&CALT.title==="製造カレンダー"){CALD=pcal;saveCalD=savePCal;}
+    }
+  }
+  function prodAllTotals(){   /* v5.16: 製品別の全期間製造量（キーの月解釈に依存しない） */
+    var t=rdJSON2("shiro.farm.pcal"),total={},cnt=0;
+    if(!t||typeof t!=="object"||t instanceof Array)return {total:total,cnt:cnt};
+    for(var k in t){
+      var a=t[k];if(!(a instanceof Array))continue;
+      var sp=k.split("|");if(sp.length<2)continue;
+      for(var q=0;q<a.length;q++){
+        var v=parseFloat(prodAmt(a[q]));if(isNaN(v))continue;
+        total[sp[1]]=(total[sp[1]]||0)+v;cnt++;
+      }
+    }
+    return {total:total,cnt:cnt};
+  }
+  function prodMonthTotals(hy,hm){   /* v5.16: 当月の製造量はカレンダー本体と同じ日付キーで数える（ズレない） */
+    var t=rdJSON2("shiro.farm.pcal"),mon={},cnt=0,items=[];
+    if(!t||typeof t!=="object"||t instanceof Array)return {mon:mon,cnt:cnt,items:items};
+    var dim=new Date(hy,hm+1,0).getDate();
+    for(var d=1;d<=dim;d++){
+      var pre=hy+"-"+hm+"-"+d+"|";
+      for(var k in t){
+        if(k.indexOf(pre)!==0)continue;
+        var arr=t[k];if(!(arr instanceof Array))continue;
+        var pn=k.substring(pre.length);
+        for(var q=0;q<arr.length;q++){
+          var v=parseFloat(prodAmt(arr[q]));if(isNaN(v))continue;
+          mon[pn]=(mon[pn]||0)+v;cnt++;items.push({d:d,pn:pn,q:v,raw:k,idx:q,rawItem:arr[q]});
+        }
+      }
+    }
+    items.sort(function(a,b){return a.d-b.d;});
+    return {mon:mon,cnt:cnt,items:items};
+  }
+  function normPN(x){   /* 製品名の表記ゆれ（空白・全角/半角）を吸収 */
+    return String(x==null?"":x).replace(/[\u3000\s]+/g,"").replace(/[Ａ-Ｚａ-ｚ０-９]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0xFEE0);}).toUpperCase();
+  }
+  function pFind(map,name){   /* 正規化して一致するキーを探す */
+    if(map[name]!=null)return name;
+    var t=normPN(name);
+    for(var k in map){if(normPN(k)===t)return k;}
+    return null;
+  }
+  function matProdList(r){   /* 資材登録の「使用製品名」を配列で返す */
+    var raw=String(r[2]||"").trim(),out=[];
+    if(!raw)return out;
+    try{var a=JSON.parse(raw);if(a instanceof Array)return a.map(function(v){return String(v).trim();}).filter(Boolean);}catch(e){}
+    return raw.split(/[、,]/).map(function(v){return v.trim();}).filter(Boolean);
+  }
+  function matStockOf(nm){   /* v5.27: 資材登録の「数量」を資材名ごとに合計した在庫数 */
+    var rows=matRows(),sum=0,cnt=0,last="";
+    if(!(rows instanceof Array))return {sum:0,cnt:0,last:""};
+    for(var i=0;i<rows.length;i++){
+      var r=rows[i];if(!r||!r.length)continue;
+      var n2=String(matNameOf(r)||"").trim();
+      if(normPN(n2)!==normPN(nm))continue;
+      sum+=matQtyOf(r);
+      cnt++;
+    }
+    var cfS=matConfirmedOf(nm);if(cfS.length)last=cfS[0].d;   /* v5.33: 確定済みの最新入庫日 */
+    return {sum:sum,cnt:cnt,last:last};
+  }
+  var DIVKEY="shiro.farm.material.divisor";
+  function matDivMap(){var m=rdJSON2(DIVKEY);if(!m||typeof m!=="object"||m instanceof Array)return {};return m;}
+  function matDivisor(nm){   /* v5.26: 資材ごとの除数（省略時はペール缶=13、その他=1） */
+    var m=matDivMap();
+    if(m[nm]!=null){var v=parseFloat(m[nm]);if(!isNaN(v)&&v>0)return v;}
+    if(normPN(nm).indexOf(normPN("ペール缶"))>=0)return 13;
+    return 1;
+  }
+  function setMatDivisor(nm,v){var m=matDivMap();if(v&&v>1)m[nm]=v;else delete m[nm];wrJSON(DIVKEY,m);}
+  function matMonUsage(y,m,onlyProd){   /* v5.28: onlyProd 指定時はその製品の資材だけ */
+    var rows=matRows(),agg={},order=[],unitOf={},divOf={},miss=[];
+    var M=prodMonthTotals(y,m),monTot=0;
+    for(var kk in M.mon)monTot+=M.mon[kk];
+    if(!(monTot>0))return {order:[],agg:{},unit:{},div:{},miss:miss,noProd:true,monCnt:0};
+    if(!(rows instanceof Array))return {order:[],agg:{},unit:{},div:{},miss:miss,noProd:false,monCnt:M.cnt};
+    for(var i=0;i<rows.length;i++){
+      var r=rows[i];if(!r||!r.length)continue;
+      var nm=String(matNameOf(r)||"").trim();if(!nm)continue;
+      var prods=matProdList(r),qty=0,un="",found=false;
+      if(!prods.length){if(onlyProd)continue;qty=monTot;found=true;}
+      else{
+        for(var p=0;p<prods.length;p++){
+          var key=pFind(M.mon,prods[p]);
+          if(!key)continue;
+          if(onlyProd&&normPN(key)!==normPN(onlyProd))continue;
+          found=true;qty+=M.mon[key];
+          if(!un){for(var qq=0;qq<M.items.length;qq++){if(M.items[qq].pn===key){un=prodUnit(M.items[qq].rawItem);break;}}}
+        }
+      }
+      if(!found){if(miss.indexOf(nm)<0&&miss.length<6)miss.push(nm);continue;}
+      var dv=matDivisor(nm);
+      qty=qty/dv;
+      qty=Math.round(qty*10)/10;
+      if(!(qty>0))continue;
+      agg[nm]=qty;unitOf[nm]=un;divOf[nm]=dv;
+      if(order.indexOf(nm)<0)order.push(nm);
+    }
+    return {order:order,agg:agg,unit:unitOf,div:divOf,miss:miss,noProd:false,monCnt:M.cnt};
+  }
+  function prodUnit(v){   /* v5.07: 製造量の単位（既定kg・本・個） */
+    if(v&&typeof v==="object"&&v.u)return String(v.u);
+    return "kg";
+  }
+  function prodAmt(v){   /* 値だけ取り出す（旧データの数値・文字列にも対応） */
+    if(v&&typeof v==="object")return v.kg;
+    return v;
+  }
   function openOrderCal(){
     if(!CALD){CALD=wcal;saveCalD=saveWCal;}
+    if(CALT.title==="製造カレンダー")reloadPCal();   /* v5.21 */
     var isWorkCal=(CALT.title==="作業申し込みカレンダー"||CALT.title==="作業終了カレンダー"||CALT.title==="農作業受託カレンダー");
-    var calPeople=isWorkCal?clientMst():farmers;   /* 作業系カレンダーは「依頼者登録と作業の登録」の依頼者リスト */
-    var pplLbl=isWorkCal?"依頼者":"農家";
+    var isProdCal=(CALT.title==="製造カレンダー");   /* v4.87: 製造カレンダーは製品登録の製品リストを使う */
+    var calPeople=isWorkCal?clientMst():(isProdCal?prodMst():farmers);   /* 作業系は依頼者リスト、製造系は製品リスト */
+    if(isProdCal){   /* v5.18: カレンダーに記録がある製品は、製品登録に無くても一覧・日付マスに出す */
+      var extra=[];
+      for(var pk2 in CALD){
+        var sp2=String(pk2).split("|");
+        if(sp2.length<2)continue;
+        var pn2=sp2[1];
+        if(pn2&&calPeople.indexOf(pn2)<0&&extra.indexOf(pn2)<0)extra.push(pn2);
+      }
+      if(extra.length)calPeople=calPeople.concat(extra);
+    }
+    var pplLbl=isWorkCal?"依頼者":(isProdCal?"製品":"農家");
     document.getElementById("adm-ptitle").textContent=CALT.title;
     var body=document.getElementById("adm-pbody");
     body.innerHTML='';
     var back=document.createElement("button");back.className="scr-dl";
-    back.textContent=(calBackTo==="paytop")?"← アロエ収穫管理に戻る":(calBackTo==="contract")?"戻る":(calFromHome?"← データ管理メイン画面に戻る":"← アロエ農家管理に戻る");
+    back.textContent=(calBackTo==="paytop")?"← アロエ収穫管理に戻る":(calBackTo==="contract")?"戻る":(calBackTo==="product")?"← 製造製品管理に戻る":(calFromHome?"← データ管理メイン画面に戻る":"← アロエ農家管理に戻る");
     back.addEventListener("click",function(){
       if(calBackTo==="paytop"){navBack();}
       else if(calFromHome){goAdminHome();}
@@ -3975,7 +4946,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     });
     srow.appendChild(sbtn);
     body.appendChild(srow);   /* draw() で日付マスの直後へ移動する */
-    if(isWorkCal&&!calPeople.length){
+    if((isWorkCal||isProdCal)&&!calPeople.length){
       var hint=document.createElement("div");hint.className="scr-empty";
       hint.textContent="依頼者が未登録です。メニューの「依頼者登録と作業の登録」で登録してください";
       body.appendChild(hint);
@@ -4007,6 +4978,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       return set;
     }
     function draw(){
+      if(isProdCal)reloadPCal();   /* v5.21: 画面を描くたびに保存領域から最新の製造データを取り込む */
       lbl.innerHTML=hy+"年"+(hm+1)+"月<span class=\'ver-chip\'>v4.67</span>";
       var hol=holidaySet(hy,hm);
       var first=new Date(hy,hm,1),off=first.getDay(),dim=new Date(hy,hm+1,0).getDate();
@@ -4024,9 +4996,24 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
           if(farmSel){var a8=CALD[key+"|"+farmSel]||[];for(var z8=0;z8<a8.length;z8++){var v8=esc2(a8[z8].kg);if(v8&&!s8[v8]){s8[v8]=1;vals.push(v8);}}}
           else{for(var f8=0;f8<calPeople.length;f8++){var b8=CALD[key+"|"+calPeople[f8]]||[];for(var z8b=0;z8b<b8.length;z8b++){var v8b=esc2(b8[z8b].kg);if(v8b&&!s8[v8b]){s8[v8b]=1;vals.push(v8b);}}}}
           for(var f8b=0;f8b<calPeople.length;f8b++){if(!farmSel||farmSel===calPeople[f8b]){var c8=wcalEnd[key+"|"+calPeople[f8b]];if(c8&&c8.length&&vals.indexOf("✓"+esc2(calPeople[f8b]))<0)vals.push("✓"+esc2(calPeople[f8b]));}}
-        }else if(farmSel){var a=CALD[key+"|"+farmSel];if(a)vals=a.map(function(x){return esc2(isWorkCal?x.kg:(x.kg+"kg"));}).filter(function(v){return v;});}
-        else{var seen={};for(var f3 in calPeople){var a2=CALD[key+"|"+calPeople[f3]]||[];for(var z=0;z<a2.length;z++){if(!seen[a2[z].kg])seen[a2[z].kg]=1;}}
-          vals=Object.keys(seen).map(function(kg){return esc2(isWorkCal?kg:(kg+"kg"));}).filter(function(v){return v;});}
+        }else if(isProdCal){   /* v5.20: 製造カレンダーは保存データのキーを直接走査して日付マスに必ず出す */
+          var pv=[],seenp={};
+          for(var kk in CALD){
+            var spx=String(kk).split("|");
+            if(spx.length<2)continue;
+            if(spx[0]!==key)continue;
+            if(farmSel&&spx[1]!==farmSel)continue;
+            var arrx=CALD[kk];
+            if(!(arrx instanceof Array))continue;
+            for(var xi=0;xi<arrx.length;xi++){
+              var txp=String(prodAmt(arrx[xi]))+prodUnit(arrx[xi]);
+              if(txp&&!seenp[txp]){seenp[txp]=1;pv.push(txp);}
+            }
+          }
+          vals=pv.map(function(v){return esc2(v);});
+        }else if(farmSel){var a=CALD[key+"|"+farmSel];if(a)vals=a.map(function(x){var vv=prodAmt(x);return esc2(isWorkCal?vv:(vv+prodUnit(x)));}).filter(function(v){return v;});}
+        else{var seen={};for(var f3 in calPeople){var a2=CALD[key+"|"+calPeople[f3]]||[];for(var z=0;z<a2.length;z++){var tx=isWorkCal?String(prodAmt(a2[z])):(prodAmt(a2[z])+prodUnit(a2[z]));if(tx&&!seen[tx])seen[tx]=1;}}
+          vals=Object.keys(seen).map(function(v){return esc2(v);}).filter(function(v){return v;});}
         var dow=new Date(hy,hm,d2).getDay();
         grid+='<span class="hc-cell'+((dow===0||hol[d2])?' sun':'')+'" data-day="'+d2+'"><span class="hc-d">'+d2+'</span>';
         if(vals.length)grid+='<span class="hc-tags">'+vals.join("・")+'</span>';
@@ -4038,6 +5025,53 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       document.getElementById("hc-gridwrap").addEventListener("click",dayTap);   /* 再描画のたびに新要素へ1回だけ付ける */
       var sr=document.getElementById("cal-syncrow"),gw=document.getElementById("hc-gridwrap");
       if(sr&&gw&&gw.parentNode===body)body.insertBefore(sr,gw.nextSibling);   /* 日付マスのすぐ下へ */
+      var muOld=document.getElementById("hc-matuse");if(muOld&&muOld.parentNode)muOld.parentNode.removeChild(muOld);
+      if(isProdCal){   /* v5.08: 日付マスの下に、その月の使用資材名と数量を表示 */
+        var mu=matMonUsage(hy,hm,sel.value||"");
+        var mbox=document.createElement("div");mbox.id="hc-matuse";
+        mbox.style.cssText="margin:10px 2px 6px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.62);padding:10px 12px";
+        var T2=prodMonthTotals(hy,hm),det=T2.mon;
+        var detKeys=Object.keys(det),detTxt="",daysTxt="";
+        for(var di=0;di<detKeys.length;di++){detTxt+=(di?"・":"")+esc2(detKeys[di])+" "+Math.round(det[detKeys[di]]*10)/10;}
+        for(var dj=0;dj<T2.items.length;dj++){var it2=T2.items[dj];daysTxt+=(dj?"／":"")+(hm+1)+"/"+it2.d+" "+esc2(it2.pn)+" "+Math.round(it2.q*10)/10;}
+        var mh='<div style="font-size:12.5px;font-weight:800;color:#33502c;margin-bottom:4px">'+hy+'年'+(hm+1)+'月の使用資材'
+          +(sel.value?'<span style="font-weight:600;color:#7d8676;font-size:11px">　'+esc2(sel.value)+'</span>':'');
+        if(mu.order.length)mh+='<span style="font-weight:600;color:#7d8676;font-size:11px">　'+mu.order.length+' 品目</span>';
+        mh+='</div>';
+        if(!mu.order.length){
+          mh+='<div style="font-size:12px;color:#8a9584;line-height:1.6">'+(mu.noProd?"この月は製造予定（製造量）が登録されていないため、使用資材は表示しません。":"この月に表示できる使用資材はありません（按分後の数量が0の月は表示しません）。")+'「01 製造カレンダー」で日付をタップして製造量を登録すると、その月の使用資材が出ます。</div>';
+        }else{
+          mh+='<div style="display:flex;flex-wrap:wrap;gap:6px">';
+          for(var mi=0;mi<mu.order.length;mi++){
+            var mn=mu.order[mi],mq=Math.round(mu.agg[mn]*10)/10;
+            mh+='<span data-mat="'+esc2(mn)+'" style="cursor:pointer;display:inline-flex;align-items:baseline;gap:6px;border:1px solid #dfe5da;background:#fff;border-radius:999px;padding:4px 11px;font-size:12.5px;color:#33502c">'
+              +'<span style="font-weight:800">'+esc2(mn)+'</span><span style="font-weight:700;color:#5c6b56">'+mq+((mu.unit&&mu.unit[mn])?esc2(mu.unit[mn]):'')+'</span>'
+              +'</span>';
+          }
+          mh+='</div>';
+        }
+        mbox.innerHTML=mh;
+        mbox.addEventListener("click",function(ev){   /* v5.27: 資材チップをタップすると現在の在庫数を表示 */
+          var sp=ev.target.closest?ev.target.closest("[data-mat]"):null;
+          if(!sp)return;
+          var nm3=sp.getAttribute("data-mat");
+          var box0=document.getElementById("hc-stockbox");
+          if(box0&&box0.getAttribute("data-mat")===nm3&&box0.style.display!=="none"){box0.style.display="none";return;}
+          if(box0&&box0.parentNode)box0.parentNode.removeChild(box0);
+          var stk=matStockOf(nm3);
+          var sb=document.createElement("div");
+          sb.id="hc-stockbox";sb.setAttribute("data-mat",nm3);
+          sb.style.cssText="margin-top:8px;border:1px solid #c9dcc0;border-radius:10px;background:#f4f9f0;padding:9px 12px;font-size:12.5px;color:#33502c;line-height:1.7";
+          sb.innerHTML='<div style="font-weight:800">'+esc2(nm3)+' の現在の在庫数：'
+            +'<span style="font-size:17px;font-weight:800;color:#2e6b2a">'+Math.round(stk.sum*10)/10+'</span></div>'
+            +'<div style="font-size:11px;color:#6d7c66">資材登録 '+stk.cnt+' 件の「数量」の合計'
+            +(stk.last?'／直近の登録日 '+esc2(stk.last):'')+'</div>';
+          mbox.appendChild(sb);
+        });
+        var gw3=document.getElementById("hc-gridwrap");
+        if(gw3&&gw3.parentNode)gw3.parentNode.insertBefore(mbox,gw3.nextSibling);
+        else body.appendChild(mbox);
+      }
     }
     function markTapCell(dd){
       var olds=document.querySelectorAll(".hc-cell.tap");
@@ -4053,6 +5087,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     var keepF="";   /* 削除後の自動再描画に依頼者選択を引き継ぐ */
     var chipD=0;   /* 作業申し込み日ボタンの選択状態（日マスをクリックしても変えない） */
     function showDetail(dd,noTap){
+      if(isProdCal)reloadPCal();   /* v5.21 */
       if(!noTap)markTapCell(dd);   /* 作業申し込み日ボタン経路は色を変化させない */
       var key=hy+"-"+hm+"-"+dd;
       var prevF="";
@@ -4086,8 +5121,11 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       }else if(isWorkCal&&workMst().length){
         amtHtml='<select class="scr-cell" id="hcd-kg"><option value="">作業内容を選択</option>'
           +workMst().map(function(w){return '<option>'+esc2(w)+'</option>';}).join("")+'</select>';
+      }else if(isProdCal){   /* v5.07: 製造量＋単位（kg／本／個）を選択 */
+        amtHtml='<input class="scr-cell" id="hcd-kg" type="number" step="0.1" placeholder="製造量" style="flex:1 1 92px;min-width:92px">'
+          +'<select class="scr-cell" id="hcd-unit" aria-label="単位" style="flex:0 0 74px;min-width:74px"><option value="kg">kg</option><option value="本">本</option><option value="個">個</option></select>';
       }else{
-        amtHtml='<input class="scr-cell" id="hcd-kg" '+(isWorkCal?'type="text"':'type="number" step="0.1"')+' placeholder="'+(isWorkCal?'作業内容':CALT.w+'量kg')+'">';
+        amtHtml='<input class="scr-cell" id="hcd-kg" '+(isWorkCal?'type="text"':'type="number" step="0.1"')+' placeholder="'+(isWorkCal?'作業内容':CALT.w+'量')+'">';
       }
       html+='<div class="hc-addrow">'
           +amtHtml
@@ -4128,12 +5166,17 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
           }else{
             var vR=objR?eR.kg:eR;
             html+='<div class="scr-row scr-rec"><span class="scr-name">'+esc2(rows[r6][0])+'</span>'
-                +(vR?'<span class="scr-cnt">'+esc2(vR)+(isWorkCal?"":"kg")+'</span>':'')
+                +(vR?'<span class="scr-cnt">'+esc2(vR)+(isWorkCal?"":prodUnit(objR?eR:null))+'</span>':'')
                 +'<button class="hc-delbtn" data-r="'+r6+'">削除</button></div>';
           }
         }
-        var gt=0;for(var t=0;t<rows.length;t++){var gR=rows[t][1];gt+=parseFloat((typeof gR==="object"&&gR)?gR.kg:gR)||0;}
-        html+='<div class="scr-row scr-grand"><span class="scr-name">'+(isWorkCal?"件数":"全体合計")+'</span><span class="scr-cnt">'+(isWorkCal?(rows.length+"件"):(Math.floor(gt)+"kg"))+'</span><span class="hc-delspace"></span></div>';
+        var gtMap={};   /* v5.07: 単位ごとに合計 */
+        for(var t=0;t<rows.length;t++){
+          var gR=rows[t][1],gu=prodUnit((typeof gR==="object"&&gR)?gR:null);
+          gtMap[gu]=(gtMap[gu]||0)+(parseFloat(prodAmt(gR))||0);
+        }
+        var gtTxt=Object.keys(gtMap).map(function(u){var n=gtMap[u];return (Math.round(n*10)/10)+u;}).join("・");
+        html+='<div class="scr-row scr-grand"><span class="scr-name">'+(isWorkCal?"件数":"全体合計")+'</span><span class="scr-cnt">'+(isWorkCal?(rows.length+"件"):gtTxt)+'</span><span class="hc-delspace"></span></div>';
       }
       var old=document.getElementById("hc-detail");
       if(old)old.remove();
@@ -4253,9 +5296,10 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
         var kg=kgEl?kgEl.value.trim():"";
         var ff=document.getElementById("hcd-f").value;
         if(!ff){sv.textContent=pplLbl+"を選択";setTimeout(function(){sv.textContent="保存";},1500);return;}
-        if(kgEl&&kg===""){sv.textContent=isWorkCal?(workMst().length?"作業内容を選択":"作業内容を入力"):(CALT.w+"量を入力");setTimeout(function(){sv.textContent="保存";},1500);return;}
+        if(kgEl&&kg===""){sv.textContent=isWorkCal?(workMst().length?"作業内容を選択":"作業内容を入力"):"製造量を入力";setTimeout(function(){sv.textContent="保存";},1500);return;}
         var key2=hy+"-"+hm+"-"+dd;
         var entry={kg:kg};
+        if(isProdCal){var unEl=document.getElementById("hcd-unit");entry.u=(unEl&&unEl.value)?unEl.value:"kg";}   /* v5.07 */
         if(isAppli||isBoth){
           var av=parseFloat(document.getElementById("hcd-a").value)||0;
           var pv=parseFloat(document.getElementById("hcd-p").value)||0;
@@ -4671,13 +5715,14 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     var sb0=e.target.closest?e.target.closest(".adm-card[data-sub]"):null;
     if(sb0){
       var sk0=sb0.getAttribute("data-sub");
-      if(sk0==="wcal2"||sk0==="wcalend2"||sk0==="wcalboth"){   /* トップは直接、パネル内はサブメニューから開く */
+      if(sk0==="wcal2"||sk0==="wcalend2"||sk0==="wcalboth"||sk0==="pcal"){   /* トップは直接、パネル内はサブメニューから開く */
         var body0=document.getElementById("adm-pbody");body0.innerHTML="";
         var inHome=!!(sb0.closest&&sb0.closest(".adm-home"));
-        calFromHome=inHome;calBackTo=inHome?"home":"contract";
+        calFromHome=inHome;calBackTo=inHome?"home":(sk0==="pcal"?"product":"contract");
         if(!inHome&&curPanel){navStack.push({k:curPanel,extra:curExtra});}
         if(sk0==="wcal2"){CALD=wcal;saveCalD=saveWCal;CALT.title="作業申し込みカレンダー";CALT.w="作業申し込み";}
         else if(sk0==="wcalboth"){CALD=wcal;saveCalD=saveWCal;CALT.title="農作業受託カレンダー";CALT.w="作業";}
+        else if(sk0==="pcal"){CALD=pcal;saveCalD=savePCal;CALT.title="製造カレンダー";CALT.w="製造";}
         else{CALD=wcalEnd;saveCalD=saveWCalEnd;CALT.title="作業終了カレンダー";CALT.w="作業終了";}
         openOrderCal();
         return;
@@ -4709,7 +5754,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   }
   /* ==== 全データの端末間共有（納入先・製品・受託・支払・歩留など localStorage 全ストア） ==== */
   (function(){
-    var KEYS=["shiro.farm.dest","shiro.farm.destlast","shiro.farm.destmst","shiro.farm.product","shiro.farm.contract",
+    var KEYS=["shiro.farm.dest","shiro.farm.destlast","shiro.farm.destmst","shiro.farm.product","shiro.farm.material","shiro.farm.material.bak","shiro.farm.material.schema","shiro.farm.material.inlog","shiro.farm.material.inlog.bak","shiro.farm.material.reorder","shiro.farm.material.reorderItem","shiro.farm.products","shiro.farm.pcal","shiro.farm.pcal.bak","shiro.farm.contract",
               "shiro.farm.payinfo","shiro.farm.payunit","shiro.farm.payunit.last","shiro.farm.payunit.nama","shiro.farm.paydest",
               "shiro.farm.yld","shiro.farm.yldrng","shiro.farm.farmers","shiro.farm.farmerRecs",
               "shiro.farm.farmerdel","shiro.farm.deliv","shiro.farm.clients","shiro.farm.payrng","shiro.farm.workitems","shiro.farm.wcal","shiro.farm.wcalend","shiro.farm.workledger","shiro.farm.wpaydate","shiro.farm.aloeledger","shiro.farm.aloeledger.nama","shiro.farm.aloeledger.bak","shiro.farm.aloeledger.nama.bak","shiro.farm.paywipe"];

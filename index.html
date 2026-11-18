@@ -72,7 +72,7 @@ try{localStorage.setItem('shiro.farm.sync','https://script.google.com/macros/s/A
   }catch(e){}
 })();</script>
 <!-- しろう農園スケジュール管理アプリ v4.55 (2026-11-08 誤流入したテストデータ（山田農園・平良農園とその名簿・旧入力表・支払い済み等の行）を起動時に自動一掃) -->
-<meta name="application-version" content="5.43" />
+<meta name="application-version" content="5.45" />
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
 <meta name="theme-color" content="#D8E8CC" />
@@ -4912,17 +4912,37 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   function normPN(x){   /* 製品名の表記ゆれ（空白・全角/半角）を吸収 */
     return String(x==null?"":x).replace(/[\u3000\s]+/g,"").replace(/[Ａ-Ｚａ-ｚ０-９]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0xFEE0);}).toUpperCase();
   }
-  function pFind(map,name){   /* 正規化して一致するキーを探す */
+  function pFind(map,name){   /* v5.44: 完全一致（正規化後）→前方一致→包含一致→共通前置 の4段階で探す */
     if(map[name]!=null)return name;
     var t=normPN(name);
-    for(var k in map){if(normPN(k)===t)return k;}
-    return null;
+    if(!t)return null;
+    var ks=Object.keys(map),i,n;
+    for(i=0;i<ks.length;i++){if(normPN(ks[i])===t)return ks[i];}
+    for(i=0;i<ks.length;i++){n=normPN(ks[i]);if(n&&(n.indexOf(t)===0||t.indexOf(n)===0))return ks[i];}   /* 前方一致（どちらが長い方でも） */
+    for(i=0;i<ks.length;i++){n=normPN(ks[i]);if(n&&(n.indexOf(t)>=0||t.indexOf(n)>=0))return ks[i];}     /* 包含一致 */
+    var best=null,bestLen=0;   /* 共通前置（3文字以上・最長優先）—「アロエベラ１００」↔「アロエベラジュース」等 */
+    for(i=0;i<ks.length;i++){n=normPN(ks[i]);if(!n)continue;
+      var L=0;while(L<n.length&&L<t.length&&n.charAt(L)===t.charAt(L))L++;
+      if(L>=3&&L>bestLen){best=ks[i];bestLen=L;}}
+    return best;
   }
-  function matProdList(r){   /* 資材登録の「使用製品名」を配列で返す */
-    var raw=String(r[2]||"").trim(),out=[];
-    if(!raw)return out;
-    try{var a=JSON.parse(raw);if(a instanceof Array)return a.map(function(v){return String(v).trim();}).filter(Boolean);}catch(e){}
-    return raw.split(/[、,]/).map(function(v){return v.trim();}).filter(Boolean);
+  function matProdList(r){   /* v5.45: norm後の行は r[1] が「使用製品名」。r[2] は在庫数のため誤認していた（列ずれ修正） */
+    var out=[],cand=[r&&r[1],r&&r[2]];
+    for(var ci=0;ci<cand.length;ci++){
+      var raw=String(cand[ci]==null?"":cand[ci]).trim();
+      if(!raw)continue;
+      var parsed=null;
+      try{var a=JSON.parse(raw);if(a instanceof Array)parsed=a.map(function(v){return String(v).trim();}).filter(Boolean);}catch(e){}
+      if(!parsed)parsed=raw.split(/[、,]/).map(function(v){return v.trim();}).filter(Boolean);
+      if(parsed.length){out=parsed;break;}   /* 最初に中身のある列（r[1]優先）を採用 */
+    }
+    /* 在庫数・入庫数・日付として解釈できる値は製品名とみなさない（誤マッチ防止） */
+    out=out.filter(function(v){
+      if(/^\d{4}-\d{1,2}-\d{1,2}$/.test(v))return false;
+      var f=parseFloat(v);if(!isNaN(f)&&String(f)===v)return false;
+      return true;
+    });
+    return out;
   }
   function matStockOf(nm){   /* v5.27: 資材登録の「数量」を資材名ごとに合計した在庫数 */
     var rows=matRows(),sum=0,cnt=0,last="";
@@ -4961,7 +4981,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
         for(var p=0;p<prods.length;p++){
           var key=pFind(M.mon,prods[p]);
           if(!key)continue;
-          if(onlyProd&&normPN(key)!==normPN(onlyProd))continue;
+          if(onlyProd){var op=pFind((function(){var m2={};m2[key]=1;return m2;})(),onlyProd);if(!op)continue;}   /* v5.44: 前方/包含一致も許容 */
           found=true;qty+=M.mon[key];
           if(!un){for(var qq=0;qq<M.items.length;qq++){if(M.items[qq].pn===key){un=prodUnit(M.items[qq].rawItem);break;}}}
         }
@@ -5981,6 +6001,7 @@ if((function(){try{return localStorage.getItem("shiro.farm.name")===ADMIN_NAME;}
   }
 })();
 </script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","spa":2}' crossorigin="anonymous"></script>
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","spa":2}' crossorigin="anonymous"></script>
 </body>
 </html>

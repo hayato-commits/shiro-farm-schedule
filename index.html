@@ -72,7 +72,7 @@ try{localStorage.setItem('shiro.farm.sync','https://script.google.com/macros/s/A
   }catch(e){}
 })();</script>
 <!-- しろう農園スケジュール管理アプリ v4.55 (2026-11-08 誤流入したテストデータ（山田農園・平良農園とその名簿・旧入力表・支払い済み等の行）を起動時に自動一掃) -->
-<meta name="application-version" content="5.45" />
+<meta name="application-version" content="5.62" />
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
 <meta name="theme-color" content="#D8E8CC" />
@@ -1987,7 +1987,10 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       body.appendChild(backPR);
       var scrPR=document.createElement("div");scrPR.className="adm-screen";
       body.appendChild(scrPR);
-      buildSheet(scrPR,"shiro.farm.products","製品登録",["製品名","使用資材名","備考"]);   /* v5.00: 使用資材名は資材登録から選択 */
+      buildSheet(scrPR,"shiro.farm.products","製品登録",["製品名","使用資材名","納入先"]);   /* v5.59: 備考→納入先（納入先の登録マスタから選択） */
+      var dmb=document.createElement("button");dmb.className="scr-btn2";dmb.textContent="＋ 納入先の登録";dmb.style.cssText="margin:2px 0 10px";   /* v5.60: 製品登録からも納入先を登録できる（納品数量と納品先の確認と同じ画面を開く） */
+      dmb.addEventListener("click",function(){openPanel("destreg");});
+      scrPR.appendChild(dmb);
       /* v4.97: 製品データの書き出し／読み込み（URLが変わっても引き継げるようにする） */
       (function(){
         var PK="shiro.farm.products",PKB="shiro.farm.products.bak";
@@ -2001,57 +2004,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
           try{localStorage.setItem(PK,JSON.stringify(a));localStorage.setItem(PKB,JSON.stringify(a));}catch(e){}
           if(window.__syncPushRef)window.__syncPushRef();
         }
-        var info=document.createElement("div");
-        info.style.cssText="font-size:12px;color:#666;margin:6px 0 8px;line-height:1.6";
-        info.textContent="登録済み製品： "+readRows().length+" 件（起動時に自動で読み込みます）";
-        scrPR.appendChild(info);
-
-        var exBtn=document.createElement("button");exBtn.className="scr-dl";exBtn.textContent="製品データを書き出す";
-        exBtn.style.margin="2px 0";
-        exBtn.addEventListener("click",function(){
-          var txt=JSON.stringify(readRows(),null,1);
-          try{
-            var blob=new Blob([txt],{type:"application/json"});
-            var url=URL.createObjectURL(blob);
-            var a=document.createElement("a");
-            var d=new Date(),pad=function(n){return (n<10?"0":"")+n;};
-            a.href=url;a.download="製品登録_"+d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate())+".json";
-            document.body.appendChild(a);a.click();document.body.removeChild(a);
-            setTimeout(function(){URL.revokeObjectURL(url);},2000);
-            info.textContent="書き出しました（"+readRows().length+" 件）";
-          }catch(e){info.textContent="書き出しに失敗しました。下の読み込み欄からコピーしてください。";}
-        });
-        scrPR.appendChild(exBtn);
-
-        var details=document.createElement("details");
-        details.style.cssText="margin:6px 0 10px;border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:#fff";
-        var summary=document.createElement("summary");
-        summary.style.cssText="cursor:pointer;font-size:13px;color:var(--ink)";
-        summary.textContent="製品データを読み込む（貼り付け）";
-        details.appendChild(summary);
-        var ta=document.createElement("textarea");
-        ta.style.cssText="width:100%;min-height:110px;box-sizing:border-box;margin:6px 0;border:1px solid var(--line);border-radius:6px;padding:6px;font-size:12px;color:var(--ink);background:#fff";
-        ta.placeholder='ここに書き出したJSONを貼り付け';
-        details.appendChild(ta);
-        var imBtn=document.createElement("button");imBtn.className="scr-dl";imBtn.textContent="読み込む";
-        imBtn.style.margin="0 0 6px";
-        imBtn.addEventListener("click",function(){
-          var v=(ta.value||"").trim();
-          if(!v){info.textContent="貼り付け欄が空です。";return;}
-          var a=null;
-          try{a=JSON.parse(v);}catch(e){a=null;}
-          if(!(a instanceof Array)||!a.length){info.textContent="読み込めませんでした（書き出したJSONをそのまま貼り付けてください）。";return;}
-          saveRows(a);
-          ta.value="";
-          info.textContent="読み込みました（"+a.length+" 件）。再読み込みします…";
-          setTimeout(function(){try{location.reload();}catch(e){}},700);
-        });
-        details.appendChild(imBtn);
-        var note=document.createElement("div");
-        note.style.cssText="font-size:11px;color:#888;line-height:1.6";
-        note.textContent="※ 読み込みは登録済みの内容を置き換えます。他端末と共有する場合は、読み込み後に共有ボタンで同期してください。";
-        details.appendChild(note);
-        scrPR.appendChild(details);
+        /* v5.58: 製品データの書き出し／読み込みUI（メッセージ・ボタン・貼り付け欄）は削除 */
       })();
       panel.classList.add("on");panel.setAttribute("aria-hidden","false");
       return;
@@ -2062,7 +2015,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       body.appendChild(backM);
       var scrM=document.createElement("div");scrM.className="adm-screen";
       body.appendChild(scrM);
-      buildSheet(scrM,"shiro.farm.material","資材登録",["使用資材名","使用製品名","在庫数","入庫数","入庫日","確定","入庫ログ"]);   /* v5.31: 登録日を削除し入庫ログを追加 */
+      buildSheet(scrM,"shiro.farm.material","資材登録",["使用資材名","使用製品名","在庫数","入庫数","入庫日","確定","入庫ログ"]);   /* v5.47: 単位は在庫数の入力枠内セレクターに統合（列は増やさない） */   /* v5.31: 登録日を削除し入庫ログを追加 */
       panel.classList.add("on");panel.setAttribute("aria-hidden","false");
       return;
     }
@@ -2119,7 +2072,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       return;
     }
     if(k==="destreg"){   /* 納入先の登録 */
-      var backR2=document.createElement("button");backR2.className="scr-dl";backR2.textContent="← 納品数量と納品先の確認に戻る";
+      var backR2=document.createElement("button");backR2.className="scr-dl";backR2.textContent="戻る";   /* v5.62: 表示を「戻る」に統一 */
       backR2.addEventListener("click",function(){navBack();});
       body.appendChild(backR2);
       buildDestMst(body);
@@ -2297,12 +2250,14 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       var out=[],trs=t.querySelectorAll("tr");
       for(var r=1;r<trs.length;r++){
         var ips=trs[r].querySelectorAll("input,select"),vals=[],has=false;
-        for(var q=0;q<ips.length;q++){if(ips[q].classList&&ips[q].classList.contains("tg-helper"))continue;var v=ips[q].value.trim();vals.push(v);if(v)has=true;}
+        for(var q=0;q<ips.length;q++){if(ips[q].classList&&ips[q].classList.contains("tg-helper"))continue;if(ips[q].classList&&ips[q].classList.contains("mat-unit"))continue;   /* v5.47: 単位セレクターは行データに含めない */
+        var v=ips[q].value.trim();vals.push(v);if(v)has=true;}
         if(has)out.push(vals);
       }
       rows=out;wrJSON(key,rows);wrJSON(key+BKSFX,rows);
       if(window.__syncPushRef)window.__syncPushRef();
     }
+    function selU0check(s){var found=false;for(var i=0;i<s.options.length;i++){if(s.options[i].value===s.value){found=true;break;}}return !found;}
     function addRow(vals){
       var r=document.createElement("tr"),rowRef={};
       for(var q=0;q<fields.length;q++){
@@ -2310,7 +2265,50 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
         ip.className="scr-cell";ip.style.width="100%";ip.style.minWidth="70px";
         if(fields[q]==="日付"||fields[q]==="作業日"||fields[q]==="登録日"||fields[q]==="入庫日")ip.type="date";   /* v5.30: 入庫日はカレンダーから選択 */
         ip.value=(vals&&vals[q])?vals[q]:"";
+        if(fields[q]==="在庫数"){   /* v5.47: 入力枠の中に単位セレクター（本/kg/個/枚）を統合 */
+          ip.style.paddingRight="52px";   /* v5.48: 単位セレクターと重ならない右余白 */
+          ip.style.width="98px";ip.style.minWidth="98px";ip.style.maxWidth="98px";   /* v5.51: 在庫数の枠幅を98pxに固定 */
+          var selU=document.createElement("select");
+          selU.className="scr-cell mat-unit";
+          selU.setAttribute("aria-label","在庫数の単位");
+          selU.style.cssText="position:absolute;right:4px;top:50%;transform:translateY(-50%);width:auto;min-width:0;flex:0 0 auto;padding:2px 3px;font-size:11.5px;border:none;background:transparent;color:#5c6b56;font-weight:700;-webkit-appearance:auto";
+          ["本","kg","個","枚"].forEach(function(u){var o=document.createElement("option");o.value=u;o.textContent=u;selU.appendChild(o);});
+          var nm0=(vals&&vals[0])?String(vals[0]).trim():((ip.value&&ip.value.trim())||"");
+          selU.value=matUnitOf(nm0);
+          if(selU.selectedIndex<0)selU.value="kg";
+          selU.addEventListener("change",function(){
+            var nm="";
+            try{var trU=selU.closest("tr");var i0=trU.querySelector("input");nm=i0?i0.value.trim():"";}catch(e){}
+            if(nm)setMatUnit(nm,selU.value);
+          });
+          td.style.position="relative";
+          td.appendChild(selU);
+        }
+        if(fields[q]==="使用資材名"){   /* v5.50: 使用資材名の枠幅を90pxに固定 */
+          ip.style.width="120px";ip.style.minWidth="120px";ip.style.maxWidth="120px";   /* v5.52: 使用資材名の枠幅を120pxに固定 */
+        }
+        if(fields[q]==="納入先"){   /* v5.59: 納入先の登録マスタから選択するプルダウン */
+          var selD=document.createElement("select");selD.className="scr-cell sel-destmst";selD.style.width="100%";selD.style.minWidth="110px";
+          var dm=window.__destMstRef?window.__destMstRef():[];
+          if(!(dm instanceof Array))dm=[];
+          var opt0=document.createElement("option");opt0.value="";opt0.textContent="（選択してください）";selD.appendChild(opt0);
+          dm.forEach(function(dn){var v0=String(typeof dn==="string"?dn:(dn&&dn[0])||"").trim();if(!v0)return;
+            var o0=document.createElement("option");o0.value=v0;o0.textContent=v0;selD.appendChild(o0);});
+          selD.value=(vals&&vals[q])?vals[q]:"";
+          if(selU0check(selD))selD.selectedIndex=0;
+          td.appendChild(selD);rowRef["納入先"]=selD;r.appendChild(td);continue;
+        }
         if(fields[q]==="使用資材名"||fields[q]==="在庫数"||fields[q]==="入庫数"||fields[q]==="入庫日")rowRef[fields[q]]=ip;
+        if(fields[q]==="使用資材名"){   /* v5.47: 資材名を入力し直したら、その資材の保存済み単位を在庫数のセレクターへ反映 */
+          (function(nmIp){
+            nmIp.addEventListener("change",function(){
+              try{
+                var trU=nmIp.closest("tr"),selU2=trU.querySelector("select.mat-unit");
+                if(selU2)selU2.value=matUnitOf(nmIp.value.trim());
+              }catch(e){}
+            });
+          })(ip);
+        }
         if(fields[q]==="使用製品名"){   /* v4.94: 製品登録からチェック式で複数選択 */
           (function(cell,stored){
             var opts=rdJSON("shiro.farm.products"),plist=[];
@@ -2476,8 +2474,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             }
             function build(){
               choices.innerHTML="";checks=[];
-              var mats=matRows(),mlist=[];
-              if(mats instanceof Array){mats.forEach(function(row){var nm=String((row&&row[1])||"").trim();if(nm&&mlist.indexOf(nm)<0)mlist.push(nm);});}
+              var mats=matRows(),mlist=[];   /* v5.56: 選択肢は資材登録の1列目「使用資材名」（r[0]）から取得（誤って「使用製品名」r[1]を読んでいた） */
+              if(mats instanceof Array){mats.forEach(function(row){var nm=matNameClean((row&&row[0])||"");if(nm&&mlist.indexOf(nm)<0)mlist.push(nm);});}
               var registered=mlist.slice();
               var selected=String(stored.value||"").split(/[、,]/).map(function(v){return v.trim();}).filter(Boolean);
               selected.forEach(function(nm){if(mlist.indexOf(nm)<0)mlist.push(nm);});
@@ -2563,6 +2561,15 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   /* ---- 資材確認（v4.88新設）：資材名ごとの在庫合計としきい値を一覧表示 ---- */
   var MAT_SCHEMA="shiro.farm.material.schema",MAT_VER="4";   /* v5.33: 入庫は確定ボタンで有効化 */
   /* v5.31: 列 = [使用資材名, 使用製品名, 在庫数, 入庫数, 入庫日, 入庫ログ] */
+  function matNameClean(v){   /* v5.55: 使用資材名から「”」等の異常文字を除去（JSON配列の誤流入対策） */
+    var s=String(v==null?"":v).trim();
+    if(!s)return "";
+    if(s.charAt(0)==='['||s.charAt(0)==='"'){
+      try{var a=JSON.parse(s);if(a instanceof Array)return a.map(function(x){return String(x||"").trim();}).filter(Boolean).join("、");}catch(e){}
+    }
+    s=s.replace(/["“”＂‟]*/g,"").trim();   /* 引用符系を全て除去 */
+    return s;
+  }
   function matRows(){   /* v5.34: 列構成は内容から判定（スキーマ印が無くてもズレない） */
     var raw=rdJSON2("shiro.farm.material");
     if(!(raw instanceof Array))raw=[];
@@ -2585,6 +2592,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       if(!String(o[0]||"").trim()){var nmR=idx[keyOf(o)];if(nmR)o[0]=nmR;}
       if(o.length!==r.length)changed=true;
       for(var z=0;z<o.length;z++){if(String(o[z])!==String(r[z]==null?"":r[z])){changed=true;break;}}
+      o[0]=matNameClean(o[0]);   /* v5.55: 使用資材名の「”」混入を常に排除 */
       out.push(o);
     }
     try{
@@ -2613,7 +2621,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   }
   function matNameOf(row){   /* v5.31: 1列目＝「使用資材名」 */
     if(!row||!row.length)return "";
-    return String(row[0]||"").trim();
+    return matNameClean(row[0]);   /* v5.55: 引用符の混入を表示段階でも排除 */
   }
   function matQtyOf(row){var q=parseFloat(row&&row[2]);return isNaN(q)?0:q;}   /* 在庫数 */
   function matInQtyOf(row){var q=parseFloat(row&&row[3]);return isNaN(q)?0:q;}  /* 入庫数 */
@@ -3625,7 +3633,10 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
         if(d&&t2&&d>t2)continue;
         var nm=String(r.name||"").trim()||"（未設定）";
         var ar=Number(r.area)||0;
-        if(!g[nm]){g[nm]={area:0,ens:[]};order.push(nm);}
+        if(!g[nm]){g[nm]={area:0,ens:[],tk:[]};order.push(nm);}   /* v5.53: 作業内容の収集先 */
+        var tk=String(r.kg||"").trim();   /* v5.53: 農作業受託カレンダーの「作業内容」 */
+        if(tk&&g[nm].tk&&g[nm].tk.indexOf(tk)<0)g[nm].tk.push(tk);
+        else if(tk&&!g[nm].tk)g[nm].tk=[tk];
         g[nm].area+=ar;
         var enV=String(r.en||"").trim();
         if(enV)g[nm].ens.push(enV);
@@ -3635,18 +3646,23 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       if(!n){var e0=document.createElement("div");e0.className="scr-empty";
         e0.textContent=(workLedger.length)?"選択した期間の作業データはありません":"作業データはまだありません";
         lst.appendChild(e0);sum.textContent="";return;}
-      var t=document.createElement("table");t.className="scr-table";t.style.cssText="width:672px;max-width:672px;min-width:672px;table-layout:fixed";
+      var t=document.createElement("table");t.className="scr-table";t.style.cssText="width:716px;max-width:716px;min-width:716px;table-layout:fixed";   /* v5.53: 作業内容列の追加幅 */
       var cg=document.createElement("colgroup");
-      ["132px","73px","93px","106px","106px","112px","50px"].forEach(function(w0){var c0=document.createElement("col");c0.style.width=w0;cg.appendChild(c0);});
+      ["112px","84px","73px","93px","100px","98px","106px","50px"].forEach(function(w0){var c0=document.createElement("col");c0.style.width=w0;cg.appendChild(c0);});   /* v5.53: 作業内容列追加（全体幅は従来相当を維持） */
       t.appendChild(cg);
       var tr=document.createElement("tr");
-      var heads=["依頼農家","作業面積","単価","作業料金","作業終了日","支払日","支払済"];
+      var heads=["依頼農家","作業内容","作業面積","単価","作業料金","作業終了日","支払日","支払済"];   /* v5.53: 作業内容列を追加 */
       for(var h=0;h<heads.length;h++){var th=document.createElement("th");th.textContent=heads[h];tr.appendChild(th);}
       t.appendChild(tr);
       order.sort(function(a,b){return (g[b].area*unitOf(b,units))-(g[a].area*unitOf(a,units));});
       for(var k2=0;k2<order.length;k2++){
         var nm2=order[k2],row=document.createElement("tr");
         var c1=document.createElement("td");c1.textContent=nm2;row.appendChild(c1);
+        var c15=document.createElement("td");c15.style.cssText="text-align:left;font-size:11.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap";   /* v5.53: 作業内容 */
+        var tkA=g[nm2].tk||[];
+        c15.textContent=tkA.length?tkA.join("・"):"—";
+        if(!tkA.length)c15.style.color="#a9b3a2";
+        row.appendChild(c15);
         var ra=Math.round(g[nm2].area*100)/100;
         var c2=document.createElement("td");c2.textContent=ra+"a";c2.style.textAlign="right";row.appendChild(c2);
         var c3=document.createElement("td");c3.style.cssText="display:flex;align-items:center;justify-content:flex-end;gap:2px";
@@ -3696,6 +3712,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       }
       var gr=document.createElement("tr");gr.className="scr-grand";
       var g1=document.createElement("td");g1.textContent="合計";gr.appendChild(g1);
+      var g15=document.createElement("td");gr.appendChild(g15);   /* v5.53: 作業内容（合計行は空欄） */
       var g2=document.createElement("td");g2.textContent=(Math.round(totA*100)/100)+"a";g2.style.textAlign="right";gr.appendChild(g2);
       var g3=document.createElement("td");g3.textContent="";gr.appendChild(g3);
       var g4=document.createElement("td");g4.textContent="¥"+totF.toLocaleString("ja-JP");g4.style.textAlign="right";gr.appendChild(g4);
@@ -4375,49 +4392,28 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   }
   window.__showPayDetail=showPayDetail;
   /* ---- 支払日ピッカー（OS標準の「クリア」ボタンを出さない独自UI） ---- */
-  function openDatePicker(cur,cb){
+  function openDatePicker(cur,cb){   /* v5.54: 「開始・終了」と同じネイティブdate入力カレンダーのみのUI */
     var old=document.getElementById("pay-dp");if(old&&old.parentNode)old.parentNode.removeChild(old);
-    var sel=(cur||"").match(/^(\d{4})-(\d{2})-(\d{2})$/);
-    var now=new Date(),by=now.getFullYear(),bm=now.getMonth()+1,bd=now.getDate();   /* v4.71: 初期値は今日にしない（未選択のまま設定を押しても保存されない） */
     var ov=document.createElement("div");ov.id="pay-dp";
     ov.style.cssText="position:fixed;inset:0;z-index:10000;background:rgba(20,26,18,.55);display:flex;align-items:center;justify-content:center;padding:16px";
     var box=document.createElement("div");
     box.style.cssText="background:#fff;border-radius:12px;padding:16px;max-width:340px;width:100%;box-shadow:0 10px 30px rgba(0,0,0,.25);font-size:13px;color:#3f4b3a";
     var t=document.createElement("div");t.textContent="支払日を選ぶ";t.style.cssText="font-weight:800;font-size:14px;margin:0 0 10px;color:#33502c";
     box.appendChild(t);
-    if(!sel){var nt=document.createElement("div");nt.textContent="※日付を選んでから「設定」を押してください（未選択のままでは保存されません）";nt.style.cssText="font-size:11px;color:#7d8676;margin:-4px 0 8px";box.appendChild(nt);}
-    var row=document.createElement("div");row.style.cssText="display:flex;gap:6px;align-items:center;";
-    function mksel(id,from,to,val,suffix){
-      var s=document.createElement("select");s.id=id;
-      s.style.cssText="flex:1;padding:9px 6px;border:1px solid #acb9a3;border-radius:8px;font-size:14px;background:#fff;color:#3f4b3a";
-      if(!sel){var b0=document.createElement("option");b0.value="";b0.textContent="--";s.appendChild(b0);}   /* v4.71: 未設定のときは未選択で開く */
-      for(var i=from;i<=to;i++){var o=document.createElement("option");o.value=String(i);o.textContent=i+suffix;if(sel&&i===val)o.selected=true;s.appendChild(o);}
-      return s;
-    }
-    var sy=mksel("dp-y",by-5,by+5,by,"年"),sm=mksel("dp-m",1,12,bm,"月");
-    row.appendChild(sy);row.appendChild(sm);
-    var sd=document.createElement("select");sd.id="dp-d";
-    sd.style.cssText="flex:1;padding:9px 6px;border:1px solid #acb9a3;border-radius:8px;font-size:14px;background:#fff;color:#3f4b3a";
-    if(!sel){var bd0=document.createElement("option");bd0.value="";bd0.textContent="--日";sd.appendChild(bd0);}   /* v4.71: 未設定のときは未選択で開く */
-    function fillDays(){
-      var y=+sy.value,m=+sm.value,last=new Date(y,m,0).getDate(),blank=(sd.value===""),curv=+sd.value||bd;
-      sd.innerHTML="";
-      if(blank){var b0=document.createElement("option");b0.value="";b0.textContent="--日";sd.appendChild(b0);}   /* v4.71: 未選択を保持 */
-      for(var i=1;i<=last;i++){var o=document.createElement("option");o.value=String(i);o.textContent=i+"日";if(sel&&!blank&&i===Math.min(curv,last))o.selected=true;sd.appendChild(o);}
-    }
-    fillDays();
-    sy.addEventListener("change",fillDays);sm.addEventListener("change",fillDays);
-    row.appendChild(sd);box.appendChild(row);
+    var dIn=document.createElement("input");dIn.type="date";dIn.value=cur||"";
+    dIn.style.cssText="width:100%;padding:10px 8px;border:1px solid #acb9a3;border-radius:8px;font-size:15px;background:#fff;color:#3f4b3a;box-sizing:border-box";
+    box.appendChild(dIn);
+    var nt=document.createElement("div");nt.textContent="※日付を選んでから「設定」を押してください（未選択のままでは保存されません）";nt.style.cssText="font-size:11px;color:#7d8676;margin:8px 0 0";box.appendChild(nt);
     var acts=document.createElement("div");acts.style.cssText="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap";
     function mkbtn(lbl,bg,fg){var b=document.createElement("button");b.type="button";b.textContent=lbl;b.style.cssText="flex:1 1 0;min-width:0;min-height:42px;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;background:"+bg+";color:"+fg+";font-family:inherit";return b;}
     var bok=mkbtn("設定","#33502c","#fff"),bdel=mkbtn("削除","#fdecec","#b3261e"),bcls=mkbtn("閉じる","#ecece6","#33502c");
     acts.appendChild(bok);acts.appendChild(bdel);acts.appendChild(bcls);box.appendChild(acts);
     function close(){if(ov.parentNode)ov.parentNode.removeChild(ov);}
     bok.addEventListener("click",function(){
-      var y=sy.value,m=("0"+sm.value).slice(-2),d=("0"+sd.value).slice(-2);
+      var dv=dIn.value;   /* date入力（開始/終了と同じカレンダー）の値を採用 */
       close();
-      if(!y||!m||!d)return;   /* v4.71: 日付未選択のまま「設定」を押しても保存しない（誤って今日の日付が入る不具合対策） */
-      cb(y+"-"+m+"-"+d);
+      if(!dv)return;
+      cb(dv);
     });
     bdel.addEventListener("click",function(){close();cb("");});
     bcls.addEventListener("click",close);
@@ -4957,6 +4953,10 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     var cfS=matConfirmedOf(nm);if(cfS.length)last=cfS[0].d;   /* v5.33: 確定済みの最新入庫日 */
     return {sum:sum,cnt:cnt,last:last};
   }
+  var UNITKEY="shiro.farm.material.unit";   /* v5.46: 資材ごとの在庫数の単位 {資材名:"本"|"kg"|"個"|"枚"} */
+  function matUnitMap(){var m=rdJSON(UNITKEY);if(!m||typeof m!=="object"||m instanceof Array)m={};return m;}
+  function matUnitOf(nm){var m=matUnitMap();return (nm&&m[nm])?String(m[nm]):"kg";}
+  function setMatUnit(nm,u){var m=matUnitMap();if(nm&&u)m[nm]=u;else if(nm)delete m[nm];wrJSON(UNITKEY,m);}
   var DIVKEY="shiro.farm.material.divisor";
   function matDivMap(){var m=rdJSON2(DIVKEY);if(!m||typeof m!=="object"||m instanceof Array)return {};return m;}
   function matDivisor(nm){   /* v5.26: 資材ごとの除数（省略時はペール缶=13、その他=1） */
@@ -5025,7 +5025,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     var body=document.getElementById("adm-pbody");
     body.innerHTML='';
     var back=document.createElement("button");back.className="scr-dl";
-    back.textContent=(calBackTo==="paytop")?"← アロエ収穫管理に戻る":(calBackTo==="contract")?"戻る":(calBackTo==="product")?"← 製造製品管理に戻る":(calFromHome?"← データ管理メイン画面に戻る":"← アロエ農家管理に戻る");
+    back.textContent=(calBackTo==="paytop")?"← アロエ収穫管理に戻る":(calBackTo==="contract")?"戻る":(calBackTo==="product")?"戻る":(calFromHome?"← データ管理メイン画面に戻る":"← アロエ農家管理に戻る");
     back.addEventListener("click",function(){
       if(calBackTo==="paytop"){navBack();}
       else if(calFromHome){goAdminHome();}
